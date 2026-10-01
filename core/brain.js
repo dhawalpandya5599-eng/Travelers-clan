@@ -39,6 +39,7 @@ class Brain extends EventEmitter {
     this.skills = new Skills();
     this.autosave = autosave;
     this.lastResponse = null;
+    this.lastSubject = null;         // discourse focus for pronouns and fragments
     this._saveTimer = null;
     this.load();
   }
@@ -213,8 +214,21 @@ class Brain extends EventEmitter {
       }
     }
 
-    // 5. Question → reason.
-    const q = L.parseQuestion(input);
+    // 5. Question → reason. Fragments and pronouns refer to the last subject ("and the duration?", "where is she from?").
+    let q = L.parseQuestion(input);
+    if (this.lastSubject) {
+      const frag = input.match(/^(?:and|what about|how about|also)?\s*(?:the|its|his|her|their)?\s*(duration|length|price|cost|start date|start|location|season|group size|advance|dates?)\??$/i);
+      if (frag) {
+        const map = { duration: 'how long is', length: 'how long is', price: 'how much is', cost: 'how much is', start: 'when does', 'start date': 'when does', location: 'where is', season: 'when is', 'group size': 'what is the group size of', advance: 'how much advance for', date: 'when does', dates: 'when does' };
+        const lead = map[frag[1].toLowerCase()] || 'what is';
+        q = L.parseQuestion(`${lead} ${this.lastSubject}${/^when does/.test(lead) ? ' start' : ''}?`) || q;
+        if (q) q.raw = input;
+      } else if (q && q.subject && L.PRONOUN_Q.test(q.subject)) { q.subject = this.lastSubject; if (q.claim) q.claim.s = this.lastSubject; }
+      else if (!q) {
+        const pron = input.match(/\b(it|she|he|they|its|her|his|their)\b/i);
+        if (pron && T.isQuestion(input)) { q = L.parseQuestion(input.replace(new RegExp('\\b' + pron[1] + '\\b', 'i'), this.lastSubject)); if (q) q.raw = input; }
+      }
+    }
     if (!result && q) {
       let a = L.answer(q, this.memory, this.skills, recalled);
       const floor = this.evolution.genome.confidenceFloor;
@@ -234,6 +248,7 @@ class Brain extends EventEmitter {
         }
       }
       result = a;
+      if (q.subject && !L.PRONOUN_Q.test(q.subject) && q.subject.length > 2 && a.via !== 'unknown') this.lastSubject = q.subject;
       this.event('reason', `Answered via ${a.via} (confidence ${a.confidence.toFixed(2)}).`);
     }
 
@@ -245,6 +260,7 @@ class Brain extends EventEmitter {
         const facts = L.extractFacts(input);
         for (const f of facts) this.memory.learnFact(f.s, f.p, f.o, { confidence: 0.7, source: user });
         if (facts.length) {
+          this.lastSubject = facts[facts.length - 1].s;
           this.memory.reward(+0.1);
           this.event('learn', `Learned ${facts.length} fact(s): ${facts.map(L.phrase).join('; ')}.`);
           result = { text: `Learned: ${facts.map(L.phrase).join('; ')}. ${this.curiosityPrompt() || ''}`.trim(), confidence: 0.85, via: 'learn' };

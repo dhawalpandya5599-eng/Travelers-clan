@@ -13,6 +13,9 @@ const R = require('./reason');
 
 const PREDICATES = [
   // [regex, predicate]  — subject in group 1, object in group 2
+  [/^(.{2,60}?)\s+(?:does not|doesn't|do not|don't|did not|didn't)\s+(?:have|include|contain|offer|cover|provide)\s+(.{2,120})$/i, 'has not'],
+  [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(?:located\s+)?in\s+(.{2,120})$/i, 'is in not'],
+  [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(.{2,120})$/i, 'is not'],
   [/^(.{2,60}?)\s+(?:is|are|was|were)\s+(?:a|an|the)?\s*(?:kind of|type of)\s+(.{2,120})$/i, 'is a'],
   [/^(.{2,60}?)\s+(?:is|are)\s+(?:called|named|known as)\s+(.{2,120})$/i, 'is called'],
   [/^(.{2,60}?)\s+(?:is|was)\s+(?:a|an)\s+(.{2,120})$/i, 'is a'],
@@ -91,6 +94,7 @@ const Q = [
   [/^(?:where)\s+(?:is|are|was|were|do|does)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:located|based|from))?\??$/i, 'where'],
   [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:start|begin|happen|leave))?\??$/i, 'when'],
   [/^(?:how much)\s+(?:is|are|does|do)\s+(?:a|an|the)?\s*(.+?)(?:\s+cost)?\??$/i, 'cost'],
+  [/^(?:how long)\s+(?:is|are|does|do|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:take|last))?\??$/i, 'when'],
   [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:offer|provide|sell|have|do|like|need|want)\??$/i, 'what-does'],
   [/^(?:tell me about|describe|explain|what do you know about|what about)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'define'],
   [/^(?:do you (?:know|remember))\s+(?:about\s+|what\s+|who\s+)?(.+?)\??$/i, 'define'],
@@ -98,8 +102,22 @@ const Q = [
   [/^(?:how)\s+(?:do|does|can|should|would)\s+(?:i|we|you|one)?\s*(.+?)\??$/i, 'how'],
 ];
 
+const num = (str) => { const m = String(str).replace(/,/g, '').match(/(\d+(?:\.\d+)?)\s*(k|thousand|lakh)?/i); if (!m) return null; let v = +m[1]; if (/k|thousand/i.test(m[2] || '')) v *= 1000; if (/lakh/i.test(m[2] || '')) v *= 100000; return v; };
+const WORDNUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twenty: 20, twentyfive: 25, thirty: 30, forty: 40, fifty: 50 };
+const pct = (str) => { const m = String(str).match(/(\d+(?:\.\d+)?)\s*(?:%|percent)/i); if (m) return +m[1]; const w = String(str).match(/\b([a-z]+)\s+percent/i); return w && WORDNUM[w[1].toLowerCase()] ? WORDNUM[w[1].toLowerCase()] : null; };
+const costOf = (memory, subject) => { const f = memory.factsAbout(subject).find(x => x.p === 'costs' && x.wrong < 2 && num(x.o) != null); return f ? { v: num(f.o), f } : null; };
+const PRONOUN_Q = /^(it|its|he|she|they|them|him|her|his|their|that|this|the trip|the lead)$/i;
+
 function parseQuestion(text) {
   const t = text.trim();
+  let m;
+  if ((m = t.match(/^how many\s+(.+?)\s+(?:do we have|are there|have we got|do i have)\??$/i)) || (m = t.match(/^how many\s+(.+?)\??$/i))) return { kind: 'count', subject: cleanSubject(m[1]).toLowerCase(), raw: t };
+  if ((m = t.match(/^which\s+(?:is|one is)\s+(cheaper|more expensive|costlier|longer|shorter)\s*,?\s+(?:the\s+)?(.+?)\s+or\s+(?:the\s+)?(.+?)\??$/i))) return { kind: 'compare', cmp: m[1].toLowerCase(), a: cleanSubject(m[2]).toLowerCase(), b: cleanSubject(m[3]).toLowerCase(), subject: m[2], raw: t };
+  if ((m = t.match(/^which\s+(\w+)\s+(?:is|costs)\s+(?:the\s+)?(cheapest|cheaper|most expensive|more expensive|costliest|longest|shortest)\??$/i))) return { kind: 'compare-all', group: m[1].toLowerCase(), cmp: m[2].toLowerCase(), subject: m[1], raw: t };
+  if ((m = t.match(/^how much (?:more|less)\s+(?:does|do|is)\s+(?:the\s+)?(.+?)\s+(?:cost\s+)?than\s+(?:the\s+)?(.+?)\??$/i))) return { kind: 'difference', a: cleanSubject(m[1]).toLowerCase(), b: cleanSubject(m[2]).toLowerCase(), subject: m[1], raw: t };
+  if ((m = t.match(/^(?:what is|what's|how much is)\s+the\s+total\s+(?:cost\s+)?for\s+(\d+)\s+(?:people|persons|pax|travelers|travellers|friends|adults)\s+(?:on|for)\s+(?:the\s+)?(.+?)\??$/i))) return { kind: 'total', n: +m[1], subject: cleanSubject(m[2]).toLowerCase(), raw: t };
+  if ((m = t.match(/^(?:how much|what)\s+(?:is the\s+|is\s+)?advance\s+(?:for|on)\s+(?:the\s+)?(.+?)\??$/i))) return { kind: 'advance', subject: cleanSubject(m[1]).toLowerCase(), raw: t };
+  if ((m = t.match(/^(?:should|must)\s+(?:we|i|you|one)\s+(.+?)\??$/i))) return { kind: 'should', subject: T.tokens(m[1]).join(' '), action: m[1], raw: t };
   for (const [re, p] of YESNO) {
     const m = t.match(re);
     if (!m) continue;
@@ -157,6 +175,54 @@ function answer(question, memory, skills, recalled) {
     const pr = R.prove(memory, c);
     return { text: pr.text, confidence: pr.verdict === 'unknown' ? 0.4 : 0.85, evidence: pr.evidence, via: 'reason' };
   }
+  if (question.kind === 'count') {
+    for (const [, pred] of WHO) { const who = R.whoIs(memory, pred, question.subject.replace(/s$/, '')); if (who.subjects.length) return { text: `${who.subjects.length}: ${who.subjects.map(T.titleCase).join(', ')}.`, confidence: 0.85, evidence: who.evidence, via: 'reason' }; }
+    const who = R.whoIs(memory, /^(is a|is)$/, question.subject.replace(/s$/, ''));
+    return { text: who.subjects.length ? `${who.subjects.length}: ${who.subjects.map(T.titleCase).join(', ')}.` : `I know of none yet.`, confidence: who.subjects.length ? 0.85 : 0.5, evidence: who.evidence, via: 'reason' };
+  }
+  if (question.kind === 'compare' || question.kind === 'difference') {
+    const a = costOf(memory, question.a), b = costOf(memory, question.b);
+    if (a && b) {
+      if (question.kind === 'difference') return { text: `${T.titleCase(question.a)} costs ${a.v} and ${T.titleCase(question.b)} costs ${b.v}: a difference of ${Math.abs(a.v - b.v)}.`, confidence: 0.9, evidence: [a.f.id, b.f.id], via: 'reason' };
+      const wantLow = /cheap|shorter/.test(question.cmp);
+      const win = (a.v < b.v) === wantLow ? question.a : question.b; const lose = win === question.a ? question.b : question.a;
+      const wv = win === question.a ? a.v : b.v, lv = win === question.a ? b.v : a.v;
+      return { text: `${T.titleCase(win)} is ${question.cmp} at ${wv}, versus ${lv} for ${T.titleCase(lose)}.`, confidence: 0.9, evidence: [a.f.id, b.f.id], via: 'reason' };
+    }
+  }
+  if (question.kind === 'compare-all') {
+    const g = T.stem(question.group);
+    const priced = memory.facts.filter(f => f.p === 'costs' && f.wrong < 2 && num(f.o) != null && T.tokens(f.s).includes(g)).map(f => ({ f, v: num(f.o) }));
+    if (priced.length >= 2) {
+      const low = /cheap|short/.test(question.cmp);
+      priced.sort((x, y) => low ? x.v - y.v : y.v - x.v);
+      return { text: `${T.titleCase(priced[0].f.s)} at ${priced[0].v} (then ${priced.slice(1, 3).map(p => `${T.titleCase(p.f.s)} at ${p.v}`).join(', ')}).`, confidence: 0.85, evidence: priced.map(p => p.f.id), via: 'reason' };
+    }
+  }
+  if (question.kind === 'total') {
+    const c = costOf(memory, question.subject);
+    if (c) return { text: `${question.n} × ${c.v} = ${question.n * c.v} for ${T.titleCase(question.subject)}.`, confidence: 0.9, evidence: [c.f.id], via: 'reason' };
+  }
+  if (question.kind === 'advance') {
+    const c = costOf(memory, question.subject);
+    // Most recent rule wins (a specific rule taught today beats the generic curriculum range); ranges like "twenty to thirty" are skipped.
+    const rules = [...memory.factsAbout(question.subject + ' advance'), ...memory.factsAbout('advance'), ...memory.factsAbout(question.subject).filter(f => /advance/i.test(f.o))]
+      .filter(f => f.wrong < 2 && !/\b(to|-|–)\s+[a-z0-9]+\s*(?:%|percent)/i.test(f.o)).sort((a, b) => b.t - a.t);
+    const adv = rules.map(f => pct(f.o)).find(v => v != null) ?? memory.factsAbout('advance').map(f => pct(f.o)).find(v => v != null);
+    if (c && adv != null) return { text: `Advance is ${adv}% of ${c.v} = ${Math.round(c.v * adv / 100)} for ${T.titleCase(question.subject)}.`, confidence: 0.85, evidence: [c.f.id], via: 'reason' };
+  }
+  if (question.kind === 'should') {
+    // Find rules ("X should Y") whose words cover the asked action, including rules inherited via categories.
+    const want = new Set(T.tokens(question.action));
+    const subjectsMentioned = [...memory.concepts.values()].filter(c => c.kind === 'entity' && want.has(T.stem(c.id.split(' ')[0]))).map(c => c.id);
+    const inherited = new Set(subjectsMentioned.flatMap(sub => R.categories(memory, sub).flatMap(c => T.tokens(c.name))));
+    const rules = memory.facts.filter(f => f.p === 'should' && f.wrong < 2).map(f => {
+      const words = T.tokens(f.s + ' ' + f.o);
+      const hit = words.filter(w => want.has(w) || inherited.has(w)).length;
+      return { f, score: hit / Math.max(3, want.size) };
+    }).filter(r => r.score >= 0.5).sort((x, y) => y.score - x.score);
+    if (rules.length) return { text: `Yes. ${rules.slice(0, 2).map(r => phrase(r.f)).join('. ')}.`, confidence: 0.8, evidence: rules.slice(0, 2).map(r => r.f.id), via: 'reason' };
+  }
   // 2b. Reverse lookup: "Who is a hot lead?" — only when the object is a known category, not a definition request.
   for (const [re, pred] of WHO) {
     const m = question.raw.match(re);
@@ -213,4 +279,4 @@ function answer(question, memory, skills, recalled) {
   return { text: null, confidence: 0, evidence: [], via: 'none' };
 }
 
-module.exports = { extractFacts, parseQuestion, detectCorrection, detectIdentity, answer, phrase };
+module.exports = { extractFacts, parseQuestion, detectCorrection, detectIdentity, answer, phrase, PRONOUN_Q };

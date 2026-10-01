@@ -58,6 +58,25 @@ const CASES = [
   // --- list / aggregate ---
   { teach: ['Travelers Clan offers Ladakh trips.', 'Travelers Clan offers Spiti trips.', 'Travelers Clan offers Bali trips.'], q: 'What does Travelers Clan offer?', expect: /ladakh[\s\S]*spiti[\s\S]*bali|bali[\s\S]*ladakh/i, kind: 'aggregate' },
   { teach: ['Riya is a hot lead.', 'Aman is a hot lead.', 'Priya is a cold lead.'], q: 'Who is a hot lead?', expect: /riya[\s\S]*aman|aman[\s\S]*riya/i, notExpect: /priya/i, kind: 'aggregate' },
+  // --- level 2: paraphrase, negation, counting, comparison, multi-hop, numbers, typos ---
+  { teach: ['The Ladakh trip costs 24000 per person.'], q: 'ladakh trip price?', expect: /24000/, kind: 'paraphrase' },
+  { teach: ['The Ladakh trip costs 24000 per person.'], q: 'Tell me the cost of the Ladakh trip', expect: /24000/, kind: 'paraphrase' },
+  { teach: ['Spiti Valley is in Himachal Pradesh.'], q: 'spiti valley location', expect: /himachal/i, kind: 'paraphrase' },
+  { teach: ['The Bali package does not include flights.'], q: 'Does the Bali package include flights?', expect: /no/i, notExpect: /yes/i, kind: 'negation' },
+  { teach: ['Riya is a hot lead.', 'Aman is a hot lead.', 'Priya is a cold lead.'], q: 'How many hot leads do we have?', expect: /\b2\b|two/i, kind: 'counting' },
+  { teach: ['The Ladakh trip costs 24000.', 'The Spiti trip costs 18000.'], q: 'Which is cheaper, Ladakh trip or Spiti trip?', expect: /spiti/i, notExpect: /ladakh trip is cheaper/i, kind: 'comparison' },
+  { teach: ['The Ladakh trip costs 24000.', 'The Spiti trip costs 18000.'], q: 'Which trip is more expensive?', expect: /ladakh/i, kind: 'comparison' },
+  { teach: ['The Ladakh trip costs 24000.', 'The Spiti trip costs 18000.'], q: 'How much more does the Ladakh trip cost than the Spiti trip?', expect: /6000/, kind: 'comparison' },
+  { teach: ['Tosh is in Parvati valley.', 'Parvati valley is in Kullu district.', 'Kullu district is in Himachal Pradesh.'], q: 'Is Tosh in Himachal Pradesh?', expect: /yes/i, kind: 'multihop' },
+  { teach: ['Riya is a hot lead.'], q: 'Should we reply to Riya within ten minutes?', expect: /yes/i, kind: 'multihop' },
+  { teach: ['The Ladakh trip costs 24000 per person.'], q: 'What is the total for 3 people on the Ladakh trip?', expect: /72000/, kind: 'numeric' },
+  { teach: ['The Ladakh trip costs 24000 per person.', 'The advance is twenty percent.'], q: 'How much advance for the Ladakh trip?', expect: /4800/, kind: 'numeric' },
+  { teach: ['The Ladakh trip costs 24000 per person.'], q: 'How much is the Ladkh trip?', expect: /24000/, kind: 'typo' },
+  { teach: ['Riya wants Goa in December.'], q: 'What does riya want', expect: /goa/i, kind: 'typo' },
+  { teach: ['The Ladakh trip costs 24000 per person.', 'The Ladakh trip takes 7 days.'], dialogue: ['How much is the Ladakh trip?'], q: 'and the duration?', expect: /7 days/i, kind: 'context' },
+  { teach: ['Riya is a lead from Mumbai.', 'Riya wants Goa in December.'], dialogue: ['Who is Riya?'], q: 'Where is she from?', expect: /mumbai/i, kind: 'context' },
+  { q: 'What do we know about ghosting and how do we handle it?', expect: /stops replying/i, kind: 'open' },
+  { teach: ['The Ladakh trip costs 24000.', 'The Ladakh trip costs 24000.', 'The Ladakh trip costs 24000.'], q: 'How much is the Ladakh trip?', expect: /^Ladakh Trip costs 24000\.$/i, kind: 'dedupe' },
 ];
 
 async function run() {
