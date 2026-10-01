@@ -11,6 +11,7 @@
     "test": "node --test test/*.test.js",
     "train": "node scripts/train.js",
     "build:web": "node scripts/build-web.js",
+    "exam": "node scripts/eval.js",
     "sync": "node scripts/sync.js",
     "sync:push": "node scripts/sync.js --commit",
     "evolve": "node scripts/train.js --generations 20"

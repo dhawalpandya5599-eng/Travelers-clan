@@ -65,6 +65,10 @@ Every copy of ATLAS keeps learning, and copies **merge** instead of overwrite. A
 
 When cloud credits run out, run the local server: it continues from the last committed mind, keeps training itself daily, and `npm run sync:push` publishes what it learned so the cloud, the website and the browser page pick it up next time.
 
+## The exam
+
+`npm run exam` runs a fixed 54-question exam (recall, teaching, corrections, inference, yes/no, context, comparison, counting, arithmetic over facts, negation, typos, honesty, aggregation). Every change to the mind's code is measured against it; the nightly routine refuses to commit a round that lowers the score.
+
 ## Upbringing (how the parent trains it)
 
 `mind/state.json` is the trained mind, versioned in git. A training round is:
