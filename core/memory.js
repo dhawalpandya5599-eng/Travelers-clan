@@ -203,7 +203,7 @@ class Memory {
     for (const ep of candidates) {
       report.replayed++;
       ep.consolidated = true;
-      if (ep.role !== 'user' && ep.role !== 'lesson') continue;
+      if ((ep.role !== 'user' && ep.role !== 'lesson') || (ep.meta && ep.meta.skip)) continue;
       for (const f of extractFacts(ep.text)) {
         const before = this.facts.length;
         this.learnFact(f.s, f.p, f.o, { confidence: 0.55 + ep.importance * 0.3, source: 'consolidation' });

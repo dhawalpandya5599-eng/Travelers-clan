@@ -9,6 +9,7 @@
  */
 
 const vm = require('vm');
+const cohorts = require('./cohorts');
 
 class Skills {
   constructor(state) {
@@ -32,6 +33,12 @@ class Skills {
         if (typeof output === 'string' && output.trim()) { s.lastUsed = Date.now(); return { name: s.name, output }; }
       } catch (e) { s.losses++; }
     }
+    return null;
+  }
+
+  /** Would any skill claim this input? (no side effects) */
+  peek(input) {
+    for (const s of this.skills.values()) { try { const a = s.match(input); if (a != null && a !== false) return s.name; } catch { /* ignore */ } }
     return null;
   }
 
@@ -84,6 +91,22 @@ class Skills {
   }
 
   registerBuiltins() {
+    this.register({
+      name: 'cohort', description: 'Recognises which customer cohort a lead belongs to and how to talk to them.',
+      match: (input) => { const m = input.match(/^(?:which|what)\s+cohort(?:\s+is\s+this(?:\s+lead|\s+customer|\s+message)?)?[: ]+(.{6,})$|^(?:who is this (?:lead|customer))[: ]+(.{6,})$|^(?:classify|profile)(?:\s+this)?(?:\s+lead|\s+customer)?[: ]+(.{6,})$/i); return m ? (m[1] || m[2] || m[3]) : null; },
+      run: (msg) => {
+        const ranked = cohorts.classify(msg);
+        if (!ranked.length) return 'No clear cohort yet. Ask where they are from, who is travelling and what matters most to them.';
+        const c = cohorts.get(ranked[0].id);
+        const alt = ranked[1] && ranked[1].score >= ranked[0].score * 0.7 ? ` (could also be ${ranked[1].name})` : '';
+        return `${c.name}${alt}. Signals: ${ranked[0].hits.join(', ') || 'budget and group size'}. They decide: ${c.decision}. They need: ${c.needs.slice(0, 3).join(', ')}. Tone: ${c.tone}. Convince with: ${c.triggers.join(', ')}. Watch for: ${c.objections.join(', ')}.`;
+      },
+    });
+    this.register({
+      name: 'reply', description: 'Drafts a first reply to a lead, matched to their cohort, asking for what is missing.',
+      match: (input) => { const m = input.match(/^(?:reply to|draft (?:a )?reply(?: to| for)?|answer|respond to)(?:\s+this)?(?:\s+lead|\s+customer|\s+message)?(?:\s+from\s+(\w+))?[: ]+(.{6,})$/i); return m ? { name: m[1] || '', msg: m[2] } : null; },
+      run: ({ name, msg }) => { const r = cohorts.draftReply(msg, { name }); return `${r.cohort ? `[${r.cohort.name} · ${r.cohort.tone}] ` : ''}${r.reply}`; },
+    });
     // Lead gate: scores a lead message the way the clan triages WhatsApp enquiries.
     this.register({
       name: 'lead-gate', description: 'Scores a lead message as real or junk (date, destination, budget, group, intent).',

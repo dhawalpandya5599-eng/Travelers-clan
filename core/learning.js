@@ -25,6 +25,9 @@ const PREDICATES = [
   [/^(.{2,60}?)\s+(?:has|have|had|contains?|includes?)\s+(.{2,120})$/i, 'has'],
   [/^(.{2,60}?)\s+(?:costs?|charges?|priced at)\s+(.{2,120})$/i, 'costs'],
   [/^(.{2,60}?)\s+(?:likes?|loves?|prefers?|enjoys?)\s+(.{2,120})$/i, 'likes'],
+  [/^(.{2,60}?)\s+(?:worry|worries|worried|fear|fears|hesitate|hesitates)\s+(?:about|over|on)\s+(.{2,120})$/i, 'worries about'],
+  [/^(.{2,60}?)\s+(?:are|is)\s+convinced\s+by\s+(.{2,120})$/i, 'is convinced by'],
+  [/^(.{2,60}?)\s+(?:should|must)\s+be\s+spoken\s+to\s+in\s+(?:a|an)?\s*(.{2,120}?)\s+tone[.!]?$/i, 'tone'],
   [/^(.{2,60}?)\s+(?:wants?|needs?|requires?)\s+(.{2,120})$/i, 'needs'],
   [/^(.{2,60}?)\s+(?:means?|refers? to|stands? for)\s+(.{2,120})$/i, 'means'],
   [/^(.{2,60}?)\s+(?:offers?|provides?|sells?|runs?|organi[sz]es?)\s+(.{2,120})$/i, 'offers'],
@@ -51,7 +54,7 @@ function extractFacts(text) {
     // Compound statements: "Goa is a beach state and Goa season is November to February."
     const parts = raw.split(/,?\s+(?:and|but|while)\s+(?=[A-Z][\w' -]{1,40}\s+(?:is|are|was|has|have|offers?|likes?|costs?|takes?|starts?|needs?|wants?|includes?)\b)/);
     for (const sentence of parts) {
-    const s0 = sentence.replace(/^(?:so|well|and|but|also|btw|fyi)\s*,?\s*/i, '');
+    const s0 = sentence.replace(/^(?:so|well|and|but|also|btw|fyi)(?:,\s*|\s+(?=[a-z]))/i, ''); // filler only when followed by a comma or lowercase word
     if (T.isQuestion(s0) && /\?\s*$/.test(s0)) continue;
     for (const [re, p] of PREDICATES) {
       const m = s0.match(re);
@@ -71,6 +74,7 @@ function extractFacts(text) {
 }
 
 const YESNO = [
+  [/^(?:is|are)\s+(?:the\s+)?(.+?)\s+(high|low)\s+in\s+(.+?)\??$/i, 'trait'],
   [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:located\s+)?in\s+season\s+in\s+([a-z]+)\??$/i, 'season'],
   [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:located\s+)?(?:in|inside|part of)\s+(.+?)\??$/i, 'is in'],
   [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:a|an)\s+(.+?)\??$/i, 'is a'],
@@ -95,6 +99,8 @@ const Q = [
   [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:start|begin|happen|leave))?\??$/i, 'when'],
   [/^(?:how much)\s+(?:is|are|does|do)\s+(?:a|an|the)?\s*(.+?)(?:\s+cost)?\??$/i, 'cost'],
   [/^(?:how long)\s+(?:is|are|does|do|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:take|last))?\??$/i, 'when'],
+  [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:worry|fear|hesitate)\s+(?:about|over)\??$/i, 'worry'],
+  [/^(?:what|which)\s+tone\s+(?:should|do|does)\s+(?:we\s+use\s+(?:for|with)\s+)?(?:a|an|the)?\s*(.+?)(?:\s+be\s+spoken\s+to\s+in)?\??$/i, 'tone'],
   [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:offer|provide|sell|have|do|like|need|want)\??$/i, 'what-does'],
   [/^(?:tell me about|describe|explain|what do you know about|what about)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'define'],
   [/^(?:do you (?:know|remember))\s+(?:about\s+|what\s+|who\s+)?(.+?)\??$/i, 'define'],
@@ -124,6 +130,7 @@ function parseQuestion(text) {
     const s = cleanSubject(m[1]).toLowerCase();
     if (/^(it|that|this|there|he|she|they)$/.test(s) || /^(?:what|who|where|when|why|how)\b/i.test(t)) continue;
     if (p === 'open') return { kind: 'yesno', claim: { s, p: 'is', o: 'open to anyone' }, subject: s, raw: t };
+    if (p === 'trait') return { kind: 'yesno', claim: { s, p: 'is', o: `${m[2]} in ${m[3].replace(/\?$/, '')}` }, subject: s, raw: t };
     return { kind: 'yesno', claim: { s, p, o: (m[2] || '').replace(/\?$/, '').trim() }, subject: s, raw: t };
   }
   for (const [re, kind] of Q) {
@@ -147,7 +154,7 @@ function detectIdentity(text) {
   return m ? m[1].trim() : null;
 }
 
-const PRED_PHRASE = { 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
+const PRED_PHRASE = { 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
   'likes': 'likes', 'needs': 'needs', 'means': 'means', 'offers': 'offers', 'goes to': 'goes to', 'takes': 'takes',
   'starts': 'starts', 'should': 'should', 'is called': 'is called' };
 
@@ -252,6 +259,7 @@ function answer(question, memory, skills, recalled) {
   const byKind = {
     where: f => /^is (in|at)$/.test(f.p), when: f => /^(starts|takes)$/.test(f.p), cost: f => f.p === 'costs',
     'what-does': f => /^(offers|has|likes|needs|goes to)$/.test(f.p), how: f => f.p === 'should',
+    worry: f => f.p === 'worries about', tone: f => f.p === 'tone',
   };
   let chosen = facts;
   if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; }

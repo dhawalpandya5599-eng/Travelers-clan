@@ -77,6 +77,21 @@ const CASES = [
   { teach: ['Riya is a lead from Mumbai.', 'Riya wants Goa in December.'], dialogue: ['Who is Riya?'], q: 'Where is she from?', expect: /mumbai/i, kind: 'context' },
   { q: 'What do we know about ghosting and how do we handle it?', expect: /stops replying/i, kind: 'open' },
   { teach: ['The Ladakh trip costs 24000.', 'The Ladakh trip costs 24000.', 'The Ladakh trip costs 24000.'], q: 'How much is the Ladakh trip?', expect: /^Ladakh Trip costs 24000\.$/i, kind: 'dedupe' },
+  // --- customers: cohorts, personalities, requirements ---
+  { q: 'which cohort is this lead: Hi, 4 of us from office want a long weekend trip to Goa, budget 15k each', expect: /metro young professionals/i, kind: 'cohort' },
+  { q: 'which cohort is this lead: We are 12 college students looking for the cheapest Manali trip', expect: /college groups/i, kind: 'cohort' },
+  { q: 'who is this customer: Planning our honeymoon in Bali in December, private villa please', expect: /honeymoon/i, kind: 'cohort' },
+  { q: 'which cohort: I am a solo female traveler, is Spiti safe for girls?', expect: /solo women/i, kind: 'cohort' },
+  { q: 'classify this lead: Need a quote for a team offsite for 40 employees with GST invoice', expect: /corporate/i, kind: 'cohort' },
+  { q: 'which cohort is this lead: We live in Dubai, planning Kashmir during Eid, 5 people, halal food', expect: /gulf/i, kind: 'cohort' },
+  { q: 'reply to this lead from Riya: 4 of us from office want a long weekend trip to Goa', expect: /^\[.*\] Hi Riya!.*(dates|budget)/i, kind: 'reply' },
+  { q: 'draft reply: My parents aged 65 want Kerala in January, relaxed pace', expect: /doctor on call|easy pace/i, kind: 'reply' },
+  { q: 'What do Indian families with kids need?', expect: /safe comfortable stay|veg/i, kind: 'cohort-fact' },
+  { q: 'What tone should solo women travelers be spoken to in?', expect: /respectful and transparent/i, kind: 'cohort-fact' },
+  { q: 'What do European backpackers worry about?', expect: /touristy/i, kind: 'cohort-fact' },
+  { q: 'Which channel do senior citizens prefer?', expect: /phone call/i, kind: 'cohort-fact' },
+  { q: 'What is the budget of luxury couples?', expect: /150000 to 600000/, kind: 'cohort-fact' },
+  { q: 'Are adventure junkies high in openness?', expect: /yes/i, kind: 'cohort-fact' },
 ];
 
 async function run() {

@@ -168,7 +168,8 @@ class Brain extends EventEmitter {
 
     // 1. Perceive & encode (episodic + Hebbian).
     const valence = /thank|great|love|awesome|good job|well done|perfect/i.test(input) ? 0.6 : /wrong|bad|stupid|useless|no\b/i.test(input) ? -0.4 : 0;
-    const ep = this.memory.remember('user', input, { valence, importance: T.isQuestion(input) ? 0.4 : 0.7, meta: { user } });
+    const isCommand = !!this.skills.peek(input);
+    const ep = this.memory.remember('user', input, { valence, importance: isCommand ? 0.15 : T.isQuestion(input) ? 0.4 : 0.7, meta: { user, skip: isCommand || T.isQuestion(input) || undefined } });
     const recalled = this.memory.recall(input, 6).filter(r => r.ep.id !== ep.id);
     this.event('perceive', `Encoded "${input.slice(0, 60)}"; working memory: ${this.memory.working.slice(0, 5).map(w => w.id).join(', ') || '∅'}.`);
 
@@ -273,7 +274,7 @@ class Brain extends EventEmitter {
     }
 
     // 7. Act: remember own response, update stats.
-    this.memory.remember('atlas', result.text, { importance: 0.3, meta: { via: result.via } });
+    if (result.via !== 'skill') this.memory.remember('atlas', result.text, { importance: 0.3, meta: { via: result.via, skip: true } });
     result.ms = Date.now() - t0;
     result.generation = this.evolution.generation;
     result.workingMemory = this.memory.working.slice(0, 7).map(w => w.id);
