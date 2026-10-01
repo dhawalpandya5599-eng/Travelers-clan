@@ -229,7 +229,7 @@ class Memory {
     const byKey = new Map();
     for (const f of this.facts) { if (f.wrong >= 2 || / not$/.test(f.p)) continue; const k = f.s + '|' + f.p; (byKey.get(k) || byKey.set(k, []).get(k)).push(f); }
     for (const group of byKey.values()) {
-      if (group.length < 2 || !/^(is|is in|is at|costs|takes|starts|is called)$/.test(group[0].p)) continue;
+      if (group.length < 2 || !/^(is in|is at|costs|takes|starts|is called)$/.test(group[0].p)) continue;
       const distinct = group.filter((f, i) => group.findIndex(g => g.o.toLowerCase() === f.o.toLowerCase()) === i);
       if (distinct.length < 2) continue;
       distinct.sort((a, b) => (b.confidence - b.wrong * 0.3 + b.t / 1e15) - (a.confidence - a.wrong * 0.3 + a.t / 1e15));
