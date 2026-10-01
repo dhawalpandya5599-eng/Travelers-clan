@@ -9,6 +9,7 @@
  */
 
 const T = require('./text');
+const R = require('./reason');
 
 const PREDICATES = [
   // [regex, predicate]  — subject in group 1, object in group 2
@@ -43,7 +44,10 @@ function cleanObject(o) {
 /** Extract triples from free text. Returns [{s,p,o}]. */
 function extractFacts(text) {
   const out = [];
-  for (const sentence of T.sentences(text)) {
+  for (const raw of T.sentences(text)) {
+    // Compound statements: "Goa is a beach state and Goa season is November to February."
+    const parts = raw.split(/,?\s+(?:and|but|while)\s+(?=[A-Z][\w' -]{1,40}\s+(?:is|are|was|has|have|offers?|likes?|costs?|takes?|starts?|needs?|wants?|includes?)\b)/);
+    for (const sentence of parts) {
     const s0 = sentence.replace(/^(?:so|well|and|but|also|btw|fyi)\s*,?\s*/i, '');
     if (T.isQuestion(s0) && /\?\s*$/.test(s0)) continue;
     for (const [re, p] of PREDICATES) {
@@ -52,14 +56,37 @@ function extractFacts(text) {
       const s = cleanSubject(m[1]).toLowerCase(); const o = cleanObject(m[2]);
       if (!s || !o || PRONOUN.test(s) || s.split(' ').length > 6) continue;
       if (/^(not|no|never)\b/i.test(o)) { out.push({ s, p: p + ' not', o: o.replace(/^(not|no|never)\s*/i, '') }); break; }
+      // "X is a village in Parvati valley" → X is a village; X is in Parvati valley
+      const loc = p === 'is a' && o.match(/^(.{2,40}?)\s+(?:in|at|near|of)\s+(.{2,80})$/i);
+      if (loc) { out.push({ s, p, o: loc[1] }); out.push({ s, p: /\bat\b/.test(o) ? 'is at' : 'is in', o: loc[2] }); break; }
       out.push({ s, p, o });
       break; // first matching grammar wins per sentence
+    }
     }
   }
   return out;
 }
 
+const YESNO = [
+  [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:located\s+)?in\s+season\s+in\s+([a-z]+)\??$/i, 'season'],
+  [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:located\s+)?(?:in|inside|part of)\s+(.+?)\??$/i, 'is in'],
+  [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:a|an)\s+(.+?)\??$/i, 'is a'],
+  [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(.+?)\??$/i, 'is'],
+  [/^(?:does|do|did)\s+(?:the\s+)?(.+?)\s+(?:have|has|include|includes|contain|offer|offers|cover)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'has'],
+  [/^(?:does|do|did)\s+(?:the\s+)?(.+?)\s+(?:like|likes|love)\s+(.+?)\??$/i, 'likes'],
+  [/^(?:does|do|did)\s+(?:the\s+)?(.+?)\s+(?:need|needs|require|requires)\s+(.+?)\??$/i, 'needs'],
+  [/^(?:does|do|did)\s+(?:the\s+)?(.+?)\s+(?:go|goes|travel|travels)\s+to\s+(.+?)\??$/i, 'goes to'],
+  [/^(?:can|could)\s+(?:anyone|i|we|you)\s+(?:join|book)\s+(?:the\s+)?(.+?)\??$/i, 'open'],
+];
+const WHO = [
+  [/^(?:who|which\s+\w+|what)\s+(?:is|are)\s+(?:a|an|the)?\s*(.+?)\??$/i, /^(is a|is)$/],
+  [/^(?:who|which\s+\w+)\s+(?:has|have)\s+(.+?)\??$/i, /^has$/],
+  [/^(?:who|which\s+\w+)\s+(?:likes?|loves?)\s+(.+?)\??$/i, /^likes$/],
+  [/^(?:who|which\s+\w+)\s+(?:offers?|sells?)\s+(.+?)\??$/i, /^offers$/],
+  [/^(?:who|which\s+\w+)\s+(?:is|are)\s+(?:in|from)\s+(.+?)\??$/i, /^is in$/],
+];
 const Q = [
+  [/^(?:which|what)\s+(state|country|city|region|valley|district)\s+(?:is|are)\s+(?:the\s+)?(.+?)\s+in\??$/i, 'where-kind'],
   [/^(?:what|who)\s+(?:is|are|was|were)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'define'],
   [/^(?:where)\s+(?:is|are|was|were|do|does)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:located|based|from))?\??$/i, 'where'],
   [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:start|begin|happen|leave))?\??$/i, 'when'],
@@ -73,8 +100,17 @@ const Q = [
 
 function parseQuestion(text) {
   const t = text.trim();
+  for (const [re, p] of YESNO) {
+    const m = t.match(re);
+    if (!m) continue;
+    const s = cleanSubject(m[1]).toLowerCase();
+    if (/^(it|that|this|there|he|she|they)$/.test(s) || /^(?:what|who|where|when|why|how)\b/i.test(t)) continue;
+    if (p === 'open') return { kind: 'yesno', claim: { s, p: 'is', o: 'open to anyone' }, subject: s, raw: t };
+    return { kind: 'yesno', claim: { s, p, o: (m[2] || '').replace(/\?$/, '').trim() }, subject: s, raw: t };
+  }
   for (const [re, kind] of Q) {
     const m = t.match(re);
+    if (m && kind === 'where-kind') return { kind: 'where', subject: cleanSubject(m[2]).toLowerCase(), wantKind: m[1].toLowerCase(), raw: t };
     if (m) return { kind, subject: cleanSubject(m[1]).replace(/\?$/, '').trim().toLowerCase(), raw: t };
   }
   if (T.isQuestion(t)) return { kind: 'open', subject: T.tokens(t).join(' '), raw: t };
@@ -111,7 +147,33 @@ function answer(question, memory, skills, recalled) {
   const skill = skills.tryAll(question.raw);
   if (skill) return { text: skill.output, confidence: 0.95, evidence: [`skill:${skill.name}`], via: 'skill' };
 
-  // 2. Semantic facts.
+  // 2. Reasoning: yes/no claims, including season logic and inheritance.
+  if (question.kind === 'yesno') {
+    const c = question.claim;
+    if (c.p === 'season') {
+      const r = R.season(memory, c.s, c.o);
+      if (r) return { text: `${r.yes ? 'Yes' : 'No'}. ${T.titleCase(r.fact.s)} ${r.fact.p} ${r.fact.o}.`, confidence: 0.9, evidence: [r.fact.id], via: 'reason' };
+    }
+    const pr = R.prove(memory, c);
+    return { text: pr.text, confidence: pr.verdict === 'unknown' ? 0.4 : 0.85, evidence: pr.evidence, via: 'reason' };
+  }
+  // 2b. Reverse lookup: "Who is a hot lead?" — only when the object is a known category, not a definition request.
+  for (const [re, pred] of WHO) {
+    const m = question.raw.match(re);
+    if (!m) continue;
+    const who = R.whoIs(memory, pred, cleanSubject(m[1]));
+    if (who.subjects.length) return { text: `${who.subjects.map(T.titleCase).join(', ')}.`, confidence: 0.85, evidence: who.evidence, via: 'reason' };
+  }
+  // 2c. "Which state is Tosh in?" — walk the location chain.
+  if (question.kind === 'where') {
+    const hops = R.chain(memory, question.subject);
+    if (hops.length > 1 || (hops.length === 1 && question.wantKind)) {
+      const pick = question.wantKind ? hops.find(h => memory.factsAbout(h.o).some(f => /^(is a|is)$/.test(f.p) && f.o.toLowerCase().includes(question.wantKind))) || hops[hops.length - 1] : hops[hops.length - 1];
+      const path = [T.titleCase(question.subject), ...hops.slice(0, hops.indexOf(pick) + 1).map(h => h.o)];
+      return { text: `${path[0]} is in ${path.slice(1).join(', which is in ')}.`, confidence: 0.85, evidence: hops.map(h => h.id), via: 'reason' };
+    }
+  }
+
   const subj = question.subject;
   let facts = memory.factsAbout(subj);
   if (!facts.length) {
@@ -127,12 +189,15 @@ function answer(question, memory, skills, recalled) {
   };
   let chosen = facts;
   if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; }
-  chosen = chosen.filter(f => f.wrong < 2).slice(0, 4);
+  chosen = chosen.filter(f => f.wrong < 2);
+  // Aggregate: many facts with the same predicate become one list ("X offers: a; b; c").
+  const samePred = chosen.length > 2 && chosen.every(f => f.p === chosen[0].p && f.s === chosen[0].s);
+  if (!samePred) chosen = chosen.slice(0, 4);
   if (chosen.length) {
     for (const f of chosen) f.uses++;
-    const conf = Math.min(0.95, chosen.reduce((a, f) => a + f.confidence, 0) / chosen.length + 0.1 * (chosen.length - 1));
+    const conf = Math.min(0.95, chosen.reduce((a, f) => a + f.confidence, 0) / chosen.length + 0.1 * (Math.min(chosen.length, 4) - 1));
     const lines = chosen.map(phrase);
-    const text = lines.length === 1 ? lines[0] + '.' : lines.join('. ') + '.';
+    const text = samePred ? `${T.titleCase(chosen[0].s)} ${PRED_PHRASE[chosen[0].p] || chosen[0].p}: ${chosen.map(f => f.o).join('; ')}.` : lines.length === 1 ? lines[0] + '.' : lines.join('. ') + '.';
     return { text, confidence: conf, evidence: chosen.map(f => f.id), via: 'facts' };
   }
 
