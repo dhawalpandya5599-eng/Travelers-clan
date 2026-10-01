@@ -164,3 +164,13 @@ test('council: a good plan passes and the news desk learns headlines', async () 
   const r2 = await b.council.review({ message: '4 friends, Goa in December, 4 days, budget 15k per person' });
   assert.strictEqual(r2.agents.news.verdict, 'block');
 });
+
+test('dialogue tester: conversations score well and replies answer objections', async () => {
+  const b = new Brain({ dataDir: tmp() }); b.evolution.genome.curiosity = 0;
+  b.studyCurriculum(path.join(__dirname, '..', 'curriculum'));
+  const r = await b.council.ask('dialogue', { count: 6, seed: 3 });
+  const d = r.agents.dialogue;
+  assert.ok(d.output.average >= 80, 'average ' + d.output.average + '\n' + d.findings.join('\n'));
+  const t = d.output.transcripts[0];
+  assert.notStrictEqual(t.log[1].text, t.log[3].text, 'replies must not repeat');
+});

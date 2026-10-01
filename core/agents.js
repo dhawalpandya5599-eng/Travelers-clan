@@ -31,6 +31,45 @@ function parseRequirements(text) {
   return { destination: dest, month, group, budget, days, needs, raw: t };
 }
 
+/** Compose the clan's next message from the stage, the chosen action, the last customer message and what the mind knows. */
+function composeReply({ stage, action, lastLead, cohort, name, memory, req }) {
+  const hi = name ? `Hi ${name}!` : 'Hi!';
+  const first = (name || '').split(' ')[0];
+  const tone = cohort ? cohort.tone : '';
+  const warm = /patient|reassuring|respectful|warm/.test(tone) ? 'I completely understand, ' : /formal|polished|professional/.test(tone) ? 'Thank you for raising this. ' : 'Good question! ';
+  // Objection: find the playbook answer ("The X objection should be answered with Y") that overlaps the customer's words.
+  const objAnswer = () => {
+    const words = new Set(T.tokens(lastLead || ''));
+    const rules = memory.facts.filter(f => /objection$/.test(f.s) && f.p === 'should' && f.wrong < 2).map(f => ({ f, hit: T.tokens(f.s.replace(/ objection$/, '')).filter(t => words.has(t)).length })).filter(r => r.hit > 0).sort((a, b) => b.hit - a.hit);
+    const generic = { safe: 'every departure has a trained trip leader, a doctor on call and verified reviews from past travelers you can speak to', price: 'the price includes stay, transport, meals and activities, and you can pay 30% now and the rest two weeks before departure', expensive: 'the price includes stay, transport, meals and activities, and you can split the payment', food: 'veg and Jain meals are arranged at every stop', hidden: 'the price is all inclusive and the written list of inclusions and exclusions is attached', private: 'this can run as a private trip with no group', date: 'we have another departure the following week and one free date change', cold: 'we provide layered clothing lists and heated stays', walking: 'the pace is easy with minimal walking and a vehicle at every stop', altitude: 'the plan has acclimatisation days, oxygen in the vehicle and a doctor on call', wifi: 'the stay has tested wifi and a speed test screenshot is attached', invoice: 'a GST invoice and vendor documents are attached', discount: 'I can add a bonfire night and airport pickup at no cost, and split the payment', certification: 'our guides are certified and the certificates are attached', group: 'we hold seats for 48 hours and share a group payment link so everyone can pay their part' };
+    if (rules.length) return `${warm}${rules[0].f.o.replace(/^(be\s+)?answered with\s*/i, 'here is how we handle it: ')}.`;
+    const key = Object.keys(generic).find(k => new RegExp('\\b' + k, 'i').test(lastLead || ''));
+    return `${warm}${key ? generic[key] : 'here is exactly how we handle it, with photos and a past traveler you can talk to'}.`;
+  };
+  switch (stage) {
+    case 'enquiry': return null; // the cohort opener with qualifying questions (draftReply) is right here
+    case 'qualified': {
+      const d = req && req.destination ? req.destination.name : 'the trip';
+      const missing = []; if (!req || !req.month) missing.push('your travel dates'); if (!req || !req.group) missing.push('how many of you are travelling'); if (!req || !req.budget) missing.push('a rough budget per person');
+      const asked = (lastLead || '').split('?').slice(0, -1).map(q => q.trim().split(/[.,;]/).pop().trim()).map(q => q.split(/\s+/).length > 8 ? q.split(/\s+/).slice(-6).join(' ') : q).filter(q => q.length > 3);
+      const ack = asked.length ? ` I will cover ${asked.map(a => a.replace(/^(and|also|plus)\s+/i, '')).join(' and ')} in it.` : '';
+      return `${hi} Perfect, ${req && req.month ? DEST.MONTHS[req.month - 1] : 'those dates'} works well for ${d}. I am sending the day-by-day plan with the all-inclusive price per person within the hour, plus photos and reviews from the last group.${ack}${missing.length ? ` To finalise it, could you share ${missing.join(' and ')}?` : action === 'call' ? ' Can I call you for five minutes to understand what matters most?' : ' Anything you want built in?'}`;
+    }
+    case 'quote': {
+      const d = req && req.destination; if (!d) return null;
+      const days = (req.days || d.idealDays); const perPerson = Math.round(d.costPerDay * days / 100) * 100;
+      const plan = d.route.slice(0, Math.max(d.minDays, days)).map((r, i) => `D${i + 1} ${r}`).join(' · ');
+      return `${hi} Here is the ${days}-day ${d.name} plan: ${plan}. ${perPerson} per person all inclusive (stay, transport, meals, activities)${req.group ? `, ${perPerson * req.group} for ${req.group}` : ''}. Photos and reviews from the last group attached. ${action === 'call' ? 'Shall I call you to walk through it?' : 'Shall I hold seats for 48 hours?'}`;
+    }
+    case 'objection': return `${objAnswer()} ${action === 'call' ? 'Shall I call you for five minutes to walk you through it?' : 'Shall I hold seats for 48 hours while you decide?'}`;
+    case 'quoted': return `${hi} Just checking if you had a chance to look at the plan. Happy to adjust anything, and we also have a departure the following week if dates are tight.`;
+    case 'negotiation': return `${hi} ${action === 'split_payment' ? 'You can pay 30% now and the rest two weeks before departure.' : action === 'small_discount' ? 'For a group this size I can do 5% off, valid till Friday.' : action === 'big_discount' ? 'If you confirm today I can do 12% off.' : 'The price stays, but I will add a bonfire night and airport pickup at no cost.'} Shall I send the link?`;
+    case 'advance': return `${hi} Here is the payment link for the advance: [link]. Seats are held for 24 hours, and you get the welcome kit the moment it lands.`;
+    case 'balance': return `${hi} A reminder that the balance is due 15 days before departure. The trip group and packing list go out a week before.`;
+    default: return null;
+  }
+}
+
 // ---------------------------------------------------------------- SALES
 const sales = {
   name: 'sales', title: 'Sales', duty: 'qualify, pick the next move, draft the message',
@@ -42,7 +81,12 @@ const sales = {
     const top = cohorts.classify(text)[0]; const cohort = top ? cohorts.get(top.id) : null;
     const type = cohort ? (cohort.type || cohort.id) : '*';
     const best = ctx.funnel && ctx.funnel.n ? (ctx.funnel.best(type, stage) || ctx.funnel.best('*', stage)) : null;
-    const draft = cohorts.draftReply(lines.filter(l => !/^clan:/i.test(l)).join(' '), { name: task.name || '' });
+    const leadLines = lines.filter(l => !/^clan:/i.test(l)).map(l => l.replace(/^lead:\s*/i, ''));
+    const lastLead = leadLines[leadLines.length - 1] || '';
+    const req = parseRequirements(leadLines.join(' '));
+    const lastIsLead = !/^clan:/i.test(lines[lines.length - 1] || '');
+    const composed = composeReply({ stage: stage === 'quoted' && lastIsLead ? 'quote' : stage, action: best ? best.action : 'reply_fast_qualify', lastLead, cohort, name: task.name || '', memory: ctx.memory, req });
+    const draft = composed ? { reply: composed } : cohorts.draftReply(leadLines.join(' '), { name: task.name || '' });
     const findings = [], suggestions = [], lessons = [];
     if (lead && /JUNK/.test(lead.output)) findings.push('Lead looks like junk: one polite reply, no chase.');
     if (best && best.rate < 0.2 && stage !== 'enquiry') suggestions.push(`Weak stage for this type (${Math.round(best.rate * 100)}% book): consider moving to a call.`);
@@ -217,4 +261,54 @@ const tester = {
   },
 };
 
-module.exports = { AGENTS: { sales, operations, cx, news, marketing, critic, tester }, parseRequirements };
+// ---------------------------------------------------------------- DIALOGUE TESTER
+/**
+ * Plays synthetic customers against the clan's own replies for several turns, scores each dialogue, and
+ * teaches from the failures. The customer is simulated from a cohort with latent traits (journeys.js); the
+ * clan side is what ATLAS would send: the Sales draft after the council has reviewed it.
+ * Score (0-100): qualified (asked dates, group, budget) 25 · every question answered 25 · objection answered with
+ * proof 20 · tone matched 10 · reached a next step (itinerary, call, or payment) 20.
+ */
+const dialogue = {
+  name: 'dialogue', title: 'Dialogue tester', duty: 'simulate customers, score multi-turn conversations, teach from failures',
+  async run(task, ctx) {
+    const J = require('./journeys'); const { COHORTS } = require('./cohorts');
+    const n = Math.min(12, Math.max(1, +task.count || 6)); const findings = [], suggestions = [], lessons = []; const transcripts = [];
+    J.setSeed(+task.seed || (Date.now() % 100000));
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      const cohort = COHORTS[Math.floor(J.rnd() * COHORTS.length)]; const p = J.person(cohort);
+      const log = [{ who: 'lead', text: p.opener }]; const asked = new Set(); let objectionAnswered = null, nextStep = false, toneOk = true, unanswered = 0;
+      const objection = J.pick(J.OBJECTIONS[p.type] || J.OBJECTIONS.friends);
+      for (let turn = 0; turn < 3; turn++) {
+        const convo = log.map(m => `${m.who}: ${m.text}`).join('\n');
+        const salesOut = sales.run({ conversation: convo, name: p.name.split(' ')[0] }, ctx);
+        const cxOut = cx.run({ conversation: convo }, ctx);
+        const reply = salesOut.output.draft; log.push({ who: 'clan', text: reply });
+        if (/dates?|when/i.test(reply)) asked.add('dates'); if (/how many|group size|of you/i.test(reply)) asked.add('group'); if (/budget/i.test(reply)) asked.add('budget');
+        if (/itinerary|plan|pdf|call|payment|link|price|per person/i.test(reply)) nextStep = true;
+        const wantTone = cohort.tone; const curt = /^(ok|fine|yes|no|let me know)\b/i.test(reply); if (curt) toneOk = false;
+        // The customer answers what was asked, then raises an objection or a question.
+        if (turn === 0) log.push({ who: 'lead', text: J.stylize(`${p.requirements.month}, ${p.requirements.groupSize} of us, budget ${p.requirements.budgetPerPerson} per person`, p) });
+        else if (turn === 1) log.push({ who: 'lead', text: J.stylize(`hmm ${objection}?`, p) });
+        else { const last = log[log.length - 2].text; const answers = new Set(T.tokens(objection)); objectionAnswered = T.tokens(last).filter(t => answers.has(t)).length >= Math.min(2, answers.size) || /understand|here is|covered|policy|proof|photo|review|doctor|safe|private|invoice|wifi|discount|split/i.test(last); }
+        unanswered = (cx.run({ conversation: log.map(m => `${m.who}: ${m.text}`).join('\n') }, ctx).output.unanswered || []).length; // judged after our reply
+      }
+      const given = parseRequirements(log.filter(m => m.who === 'lead').map(m => m.text).join(' ')); const qualified = asked.size >= 2 || ((given.month ? 1 : 0) + (given.group ? 1 : 0) + (given.budget ? 1 : 0)) >= 2;
+      const score = (qualified ? 25 : asked.size * 10) + (unanswered === 0 ? 25 : 10) + (objectionAnswered ? 20 : 0) + (toneOk ? 10 : 0) + (nextStep ? 20 : 0);
+      total += score;
+      const why = [];
+      if (!qualified) why.push('did not qualify (dates, group, budget)'); if (unanswered) why.push(`${unanswered} question(s) left unanswered`); if (!objectionAnswered) why.push(`objection "${objection}" not answered`); if (!toneOk) why.push('curt reply'); if (!nextStep) why.push('no next step offered');
+      transcripts.push({ person: `${p.name} (${cohort.name})`, score, why, log });
+      if (why.length) { findings.push(`${p.name} (${cohort.name}) scored ${score}: ${why.join('; ')}.`); }
+      if (!objectionAnswered) lessons.push(`The ${objection} objection from ${cohort.name} should be answered with proof before the next pitch.`);
+      if (!qualified) lessons.push(`${cohort.name} leads should be asked the dates, the group size and the budget in the first reply.`);
+    }
+    const avg = Math.round(total / n);
+    if (avg < 70) suggestions.push('Reply drafts must answer the last customer message before pitching; add objection answers to the draft.');
+    if (findings.some(f => /not answered/.test(f))) suggestions.push('Give the Sales draft access to the objection library (lesson 8) so objections get a scripted answer.');
+    return { agent: 'dialogue', verdict: avg >= 80 ? 'ok' : avg >= 60 ? 'warn' : 'block', findings, suggestions, lessons: [...new Set(lessons)].slice(0, 12), output: { dialogues: n, average: avg, transcripts } };
+  },
+};
+
+module.exports = { AGENTS: { sales, operations, cx, news, marketing, critic, tester, dialogue }, parseRequirements };

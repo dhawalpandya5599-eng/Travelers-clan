@@ -447,6 +447,7 @@ class Brain extends EventEmitter {
       this.pendingQuestion = null;
     }
     this.pendingQuestion = saved;
+    await this.council.ask('dialogue', { count: 6 });
     const exam = await this.council.ask('tester', { message: 'routine examination' });
     const sleep = await this.sleep();
     const evo = this.evolve(generations);

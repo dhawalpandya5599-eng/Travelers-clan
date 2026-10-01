@@ -56,6 +56,8 @@ const cycles = arg('cycles', 2);
       const convFile = path.join(__dirname, '..', 'synth', 'conversations.json');
       if (fs.existsSync(convFile)) { const { conversations } = JSON.parse(fs.readFileSync(convFile, 'utf8')); const n = brain.learnConversions(conversations, { source: 'synthetic-conversations' }); console.log(`Conversations: ${conversations.length} studied, ${n} conversion facts.`); }
     }
+    const dlg = await brain.council.ask('dialogue', { count: 8, seed: c + 1 });
+    console.log(`Cycle ${c + 1}: dialogue tester average ${dlg.agents.dialogue.output.average}/100 (${dlg.agents.dialogue.verdict}), taught ${dlg.taught} fact(s).`);
     const exam = await brain.council.ask('tester', { message: 'routine examination' });
     console.log(`Cycle ${c + 1}: tester ${exam.agents.tester.output.pass}/${exam.agents.tester.output.probes} probes, taught ${exam.taught} fact(s)${exam.agents.tester.findings.length ? ' · ' + exam.agents.tester.findings[0].slice(0, 90) : ''}.`);
     await brain.sleep();

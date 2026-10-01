@@ -17,8 +17,17 @@ const STAGE_CUES = [
   ['enquiry', /./],
 ];
 function detectStage(transcript) {
-  const text = Array.isArray(transcript) ? transcript.slice(-4).map(m => (typeof m === 'string' ? m : m.text)).join('\n') : String(transcript);
-  for (const [stage, re] of STAGE_CUES) if (re.test(text)) return stage;
+  const lines = (Array.isArray(transcript) ? transcript.map(m => (typeof m === 'string' ? m : m.text)) : String(transcript).split(/\n+/)).map(l => l.trim()).filter(Boolean);
+  const last = lines[lines.length - 1] || ''; const lastIsClan = /^clan:/i.test(last);
+  const lead = lines.filter(l => !/^clan:/i.test(l)).map(l => l.replace(/^lead:\s*/i, ''));
+  const lastLead = lead[lead.length - 1] || '';
+  const clanQuoted = lines.some(l => /^clan:/i.test(l) && /\b(per person|per head|all inclusive|itinerary|pdf|price|quote)\b/i.test(l));
+  if (/\b(payment link|how do we pay|how to pay|send (the )?link|pay now|paid|lets do it|let's do it|book it|confirm)\b/i.test(lastLead)) return 'advance';
+  if (/\b(discount|cheaper|best price|final price|negotiat|can you do|lower|any offer)\b/i.test(lastLead)) return 'negotiation';
+  if (/\b(hmm|but|is it|what about|concern|worried|safe|hidden|veg|jain|walking|altitude|private or group|approval|invoice|gst|wifi|expensive|too much|cold|certification|refund|cancel)\b/i.test(lastLead) && (clanQuoted || lead.length > 1)) return 'objection';
+  if (clanQuoted) return 'quoted';
+  const info = [/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|\bweekend\b|\d{1,2}\/\d{1,2}/i, /\b\d{1,3}\s*(of us|people|pax|persons|adults|friends|members|employees)\b|\b(couple|solo|alone|my wife|my husband|my parents)\b/i, /\bbudget\b|\d{2,3}\s*k\b|\d{4,7}|lakh/i].filter(re => re.test(lead.join(' '))).length;
+  if (info >= 2) return 'qualified';
   return 'enquiry';
 }
 
