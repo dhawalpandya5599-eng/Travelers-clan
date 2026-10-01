@@ -123,8 +123,10 @@ function patchServer(file) {
     const list = path.join(os.tmpdir(), `atlas-files-${stamp}.txt`);
     fs.writeFileSync(list, files.join('\n') + '\n');
     try { fs.unlinkSync(out); } catch { /* none */ }
-    // `tar` ships with Windows 10+ (bsdtar) and every macOS/Linux; -a picks zip from the extension.
-    execSync(`tar -a -c -f "${out}" -C "${site}" -T "${list}"`, { stdio: 'inherit' });
+    // Windows 10+ ships bsdtar, which writes real zip files (-a picks the format from the extension);
+    // macOS/Linux use zip, since GNU tar cannot write zip.
+    if (process.platform === 'win32') execSync(`tar -a -c -f "${out}" -C "${site}" -T "${list}"`, { stdio: 'inherit' });
+    else execSync(`cd "${site}" && zip -q "${out}" -@ < "${list}"`, { stdio: 'inherit' });
     const size = fs.statSync(out).size;
     if (size < 1000) throw new Error('archive came out empty');
     console.log(`Deploy archive: ${out} (${(size / 1048576).toFixed(1)} MB, ${files.length} files)`);
