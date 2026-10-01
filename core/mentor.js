@@ -19,25 +19,58 @@ try { Anthropic = require('@anthropic-ai/sdk'); } catch { /* optional */ }
 
 const MODEL = process.env.ATLAS_MENTOR_MODEL || 'claude-fable-5-1';
 
+/**
+ * Local mentor: Ollama (https://ollama.com) running on the same machine, no key and no credits.
+ * Set OLLAMA_URL (default http://127.0.0.1:11434) and OLLAMA_MODEL (default llama3.2). Probed once at start.
+ */
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
+
 class Mentor {
   constructor() {
     this.client = null;
     this.enabled = false;
+    this.backend = null;          // 'claude' | 'ollama'
     this.calls = 0;
     this.lastError = null;
     const hasCreds = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN;
     if (Anthropic && hasCreds) {
-      try { this.client = new Anthropic(); this.enabled = true; } catch (e) { this.lastError = e.message; }
+      try { this.client = new Anthropic(); this.enabled = true; this.backend = 'claude'; } catch (e) { this.lastError = e.message; }
     } else {
-      this.lastError = !Anthropic ? 'SDK not installed (npm install @anthropic-ai/sdk)' : 'ANTHROPIC_API_KEY not set';
+      this.lastError = !Anthropic ? 'no Claude SDK/key' : 'ANTHROPIC_API_KEY not set';
+      this.probeOllama();
     }
   }
 
-  status() { return { enabled: this.enabled, model: MODEL, calls: this.calls, lastError: this.lastError }; }
+  /** Is a local Ollama server answering? If so, use it. */
+  async probeOllama() {
+    if (process.env.ATLAS_NO_OLLAMA) return false;
+    try {
+      const r = await fetch(OLLAMA_URL + '/api/tags', { signal: AbortSignal.timeout(1500) });
+      if (!r.ok) throw new Error('status ' + r.status);
+      const tags = await r.json();
+      const names = (tags.models || []).map(m => m.name);
+      if (!names.length) { this.lastError = 'Ollama is running but has no models (run: ollama pull ' + OLLAMA_MODEL + ')'; return false; }
+      this.ollamaModel = names.find(n => n.startsWith(OLLAMA_MODEL)) || names[0];
+      this.enabled = true; this.backend = 'ollama'; this.lastError = null;
+      return true;
+    } catch (e) { this.lastError = (this.lastError ? this.lastError + '; ' : '') + 'no local Ollama at ' + OLLAMA_URL; return false; }
+  }
+
+  status() { return { enabled: this.enabled, backend: this.backend, model: this.backend === 'ollama' ? 'ollama/' + this.ollamaModel : MODEL, calls: this.calls, lastError: this.lastError }; }
 
   async ask(system, user, { maxTokens = 2000 } = {}) {
     if (!this.enabled) return null;
     this.calls++;
+    if (this.backend === 'ollama') {
+      try {
+        const r = await fetch(OLLAMA_URL + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(120000),
+          body: JSON.stringify({ model: this.ollamaModel, stream: false, options: { num_predict: maxTokens, temperature: 0.3 }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }) });
+        if (!r.ok) throw new Error('Ollama status ' + r.status);
+        const j = await r.json();
+        return (j.message && j.message.content || '').trim() || null;
+      } catch (e) { this.lastError = e.message; return null; }
+    }
     try {
       const params = { model: MODEL, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }], output_config: { effort: 'medium' } };
       let response;

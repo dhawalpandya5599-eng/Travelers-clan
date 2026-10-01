@@ -15,7 +15,7 @@ npm test             # 9 tests on memory, reasoning, skills, sleep, evolution
 npm run train        # accelerated upbringing: study curriculum, self-quiz, sleep, evolve 10 generations
 ```
 
-Optional mentor (Claude Fable 5.1, with server-side refusal fallbacks):
+Optional mentor, two ways. Free and local: install [Ollama](https://ollama.com), run `ollama pull llama3.2`, start ATLAS; it finds the local model on its own (set `OLLAMA_MODEL` to use another). Or Claude Fable 5.1 with server-side refusal fallbacks:
 
 ```
 npm install @anthropic-ai/sdk

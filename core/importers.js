@@ -62,3 +62,45 @@ function importWhatsApp(brain, text, { staff = [] } = {}) {
 }
 
 module.exports = { parseWhatsApp, importWhatsApp, valence };
+
+/**
+ * Meta ads: campaign rows (as exported from Ads Manager or pulled through the Meta tools) become
+ * facts and findings. Each row: {name, status, objective, spend, leads|results, costPerResult, resultType, impressions, clicks, ctr, frequency}.
+ */
+function adsLesson(rows, { period = 'the last 90 days', currency = 'INR' } = {}) {
+  const live = rows.filter(r => +r.spend > 0);
+  const out = [];
+  const total = live.reduce((a, r) => a + +r.spend, 0);
+  const leads = live.reduce((a, r) => a + (+r.leads || 0), 0);
+  out.push(`Total ad spend in ${period} is ${Math.round(total)} ${currency}.`);
+  if (leads) out.push(`Total form leads from ads in ${period} is ${leads}.`, `Blended cost per form lead is ${Math.round(total / leads)} ${currency} in ${period}.`);
+  for (const r of live) {
+    const n = r.name.replace(/\[.*?\]\s*/g, '').replace(/https?:\S+/g, 'WhatsApp link').trim();
+    out.push(`${n} campaign is ${String(r.status).toLowerCase()}.`);
+    out.push(`${n} campaign spent ${Math.round(+r.spend)} ${currency} in ${period}.`);
+    if (r.results != null) out.push(`${n} campaign has ${r.results} ${r.resultType || 'results'} in ${period}.`);
+    if (r.costPerResult != null) out.push(`${n} campaign costs ${Math.round(+r.costPerResult)} ${currency} per ${(r.resultType || 'result').replace(/s$/, '')}.`);
+    if (r.ctr != null) out.push(`${n} campaign has a click rate of ${r.ctr} percent.`);
+    if (r.frequency != null) out.push(`${n} campaign has a frequency of ${(+r.frequency).toFixed(2)}.`);
+  }
+  // Findings, by the clan's own rules.
+  const priced = live.filter(r => r.costPerResult != null && r.leads).sort((a, b) => +a.costPerResult - +b.costPerResult);
+  if (priced.length >= 2) {
+    const best = priced[0], worst = priced[priced.length - 1];
+    const bn = best.name.replace(/\[.*?\]\s*/g, '').trim(), wn = worst.name.replace(/\[.*?\]\s*/g, '').trim();
+    out.push(`The cheapest leads come from ${bn} campaign.`);
+    out.push(`${wn} campaign costs ${(+worst.costPerResult / +best.costPerResult).toFixed(1)} times more per lead than ${bn} campaign.`);
+    out.push(`Budget should move from ${wn} campaign to ${bn} campaign.`);
+  }
+  for (const r of live) { if (+r.frequency > 3) out.push(`${r.name} campaign is fatigued because its frequency is above three.`); if (r.ctr != null && +r.ctr < 1) out.push(`${r.name.replace(/\[.*?\]\s*/g, '').replace(/https?:\S+/g, 'WhatsApp link').trim()} campaign needs a new creative because its click rate is under one percent.`); }
+  return out;
+}
+
+function importAds(brain, rows, opts = {}) {
+  const sentences = adsLesson(rows, opts);
+  const facts = brain.teach(sentences.join('\n'), { source: 'meta-ads', importance: 0.9 });
+  return { sentences: sentences.length, facts };
+}
+
+module.exports.adsLesson = adsLesson;
+module.exports.importAds = importAds;

@@ -17,6 +17,7 @@ const PREDICATES = [
   [/^(.{2,60}?)\s+(?:lowers?|reduces?|decreases?|hurts?)\s+(.{2,120})$/i, 'lowers'],
   [/^(.{2,60}?)\s+(?:usually\s+|often\s+|mostly\s+)?(?:travels?|visits?|goes?)\s+in\s+(.{2,120})$/i, 'travels in'],
   [/^(.{2,60}?)\s+(?:pays?|paid)\s+(?:in|with|by)\s+(.{2,120})$/i, 'pays in'],
+  [/^(.{2,60}?)\s+(?:comes?|came)\s+from\s+(.{2,120})$/i, 'comes from'],
   [/^(.{2,60}?)\s+(?:does not|doesn't|do not|don't|did not|didn't)\s+(?:have|include|contain|offer|cover|provide)\s+(.{2,120})$/i, 'has not'],
   [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(?:located\s+)?in\s+(.{2,120})$/i, 'is in not'],
   [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(.{2,120})$/i, 'is not'],
@@ -64,7 +65,7 @@ function extractFacts(text) {
       const m = s0.match(re);
       if (!m) continue;
       const s = cleanSubject(m[1]).toLowerCase(); const o = cleanObject(m[2]);
-      if (!s || !o || PRONOUN.test(s) || s.split(' ').length > 6) continue;
+      if (!s || !o || PRONOUN.test(s) || s.split(' ').length > 8) continue;
       if (/^(not|no|never)\b/i.test(o)) { out.push({ s, p: p + ' not', o: o.replace(/^(not|no|never)\s*/i, '') }); break; }
       // "X is a village in Parvati valley" → X is a village; X is in Parvati valley
       const loc = p === 'is a' && o.match(/^(.{2,40}?)\s+(?:in|at|near|of)\s+(.{2,80})$/i);
@@ -92,6 +93,7 @@ const YESNO = [
   [/^(?:can|could)\s+(?:anyone|i|we|you)\s+(?:join|book)\s+(?:the\s+)?(.+?)\??$/i, 'open'],
 ];
 const WHO = [
+  [/^(?:who|which\s+\w+)\s+(?:needs?|requires?)\s+(.+?)\??$/i, /^needs$/, 0.2],
   [/^(?:what|which)\s+(?:raises|increases|improves|boosts)\s+(.+?)\??$/i, /^raises$/, 0.3],
   [/^(?:what|which)\s+(?:lowers|reduces|decreases|hurts)\s+(.+?)\??$/i, /^lowers$/, 0.3],
   [/^(?:who|which\s+\w+|what)\s+(?:is|are)\s+(?:a|an|the)?\s*(.+?)\??$/i, /^(is a|is)$/],
@@ -106,7 +108,8 @@ const Q = [
   [/^(?:where)\s+(?:is|are|was|were|do|does)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:located|based|from))?\??$/i, 'where'],
   [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:usually\s+|often\s+)?(?:start|begin|happen|leave|travel|go|visit))?\??$/i, 'when'],
   [/^(?:what|which currency)\s+(?:do|does|did)\s+(?:a|an|the)?\s*(.+?)\s+pay\s+(?:in|with)\??$/i, 'pay'],
-  [/^(?:how much)\s+(?:is|are|does|do)\s+(?:a|an|the)?\s*(.+?)(?:\s+cost)?\??$/i, 'cost'],
+  [/^(?:how much)\s+(?:is|are|does|do|did|was|were)\s+(?:a|an|the)?\s*(.+?)(?:\s+cost(?:\s+per\s+[\w ]+)?)?\??$/i, 'cost'],
+  [/^(?:where)\s+(?:do|does|did)\s+(?:a|an|the)?\s*(.+?)\s+come\s+from\??$/i, 'from'],
   [/^(?:how long)\s+(?:is|are|does|do|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:take|last))?\??$/i, 'when'],
   [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:worry|fear|hesitate)\s+(?:about|over)\??$/i, 'worry'],
   [/^(?:what|which)\s+tone\s+(?:should|do|does)\s+(?:we\s+use\s+(?:for|with)\s+)?(?:a|an|the)?\s*(.+?)(?:\s+be\s+spoken\s+to\s+in)?\??$/i, 'tone'],
@@ -164,7 +167,7 @@ function detectIdentity(text) {
   return m ? m[1].trim() : null;
 }
 
-const PRED_PHRASE = { raises: 'raises', lowers: 'lowers', 'travels in': 'usually travel in', 'pays in': 'pay in', 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
+const PRED_PHRASE = { 'comes from': 'come from', raises: 'raises', lowers: 'lowers', 'travels in': 'usually travel in', 'pays in': 'pay in', 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
   'likes': 'likes', 'needs': 'needs', 'means': 'means', 'offers': 'offers', 'goes to': 'goes to', 'takes': 'takes',
   'starts': 'starts', 'should': 'should', 'is called': 'is called' };
 
@@ -259,23 +262,31 @@ function answer(question, memory, skills, recalled) {
 
   const subj = question.subject;
   let facts = memory.factsAbout(subj);
+  let matched = subj;
   if (!facts.length) {
     // try the longest noun-ish chunk of the subject
     const toks = T.tokens(subj);
     for (let n = toks.length; n >= 1 && !facts.length; n--) {
-      for (let i = 0; i + n <= toks.length && !facts.length; i++) facts = memory.factsAbout(toks.slice(i, i + n).join(' '));
+      for (let i = 0; i + n <= toks.length && !facts.length; i++) { const chunk = toks.slice(i, i + n).join(' '); facts = memory.factsAbout(chunk); if (facts.length) matched = chunk; }
     }
   }
   const byKind = {
     where: f => /^is (in|at)$/.test(f.p), when: f => /^(starts|takes|travels in)$/.test(f.p), cost: f => f.p === 'costs',
     'what-does': f => /^(offers|has|likes|needs|goes to)$/.test(f.p), how: f => f.p === 'should',
-    worry: f => f.p === 'worries about', tone: f => f.p === 'tone', pay: f => f.p === 'pays in',
+    worry: f => f.p === 'worries about', tone: f => f.p === 'tone', pay: f => f.p === 'pays in', from: f => f.p === 'comes from',
   };
   let chosen = facts;
   const VERB_PRED = { offer: /^offers$/, provide: /^offers$/, sell: /^offers$/, have: /^has$/, like: /^likes$/, need: /^needs$/, want: /^(needs|likes)$/ };
   if (question.verb && VERB_PRED[question.verb]) { const narrowed = facts.filter(f => VERB_PRED[question.verb].test(f.p)); if (narrowed.length) chosen = narrowed; }
   else if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; }
   chosen = chosen.filter(f => f.wrong < 2);
+  // Prefer the facts whose wording matches the question's extra words ("per form lead", "in July").
+  const extra = new Set(T.tokens(question.raw).filter(t => !T.tokens(matched).includes(t)));
+  if (extra.size) {
+    const score = (f) => T.tokens(f.p + ' ' + f.o).filter(t => extra.has(t)).length;
+    const best = Math.max(...chosen.map(score));
+    if (best > 0) chosen = chosen.filter(f => score(f) === best).concat(chosen.filter(f => score(f) < best));
+  }
   // Aggregate: many facts with the same predicate become one list ("X offers: a; b; c").
   const samePred = chosen.length > 2 && chosen.every(f => f.p === chosen[0].p && f.s === chosen[0].s);
   if (!samePred) chosen = chosen.slice(0, 4);
