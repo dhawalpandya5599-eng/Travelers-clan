@@ -154,4 +154,7 @@ ${read('public/app.js')}
 `;
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist', 'atlas-web.html'), page);
-console.log(`dist/atlas-web.html: ${(page.length / 1024).toFixed(0)} KB`);
+// Standalone build: a complete document you can upload to any website or admin panel as-is.
+const standalone = `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="robots" content="noindex">\n</head>\n<body>\n${page}\n</body>\n</html>\n`;
+fs.writeFileSync(path.join(root, 'dist', 'atlas-standalone.html'), standalone);
+console.log(`dist/atlas-web.html: ${(page.length / 1024).toFixed(0)} KB · dist/atlas-standalone.html: ${(standalone.length / 1024).toFixed(0)} KB`);

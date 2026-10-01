@@ -49,6 +49,8 @@ ATLAS_DATA=mind npm run build:web                              # bake the mind i
 
 Add lessons to `curriculum/` and rerun; the web page then opens already educated.
 
+**Embedding in an existing website or admin panel:** the build also writes `dist/atlas-standalone.html`, a complete page with no server needs. Upload it anywhere (for example `/admin/atlas.html` on your host, or as a WordPress page via the file manager) and link to it from the admin menu, or embed it with `<iframe src="/admin/atlas.html" style="width:100%;height:90vh;border:0"></iframe>`. Memory lives in the browser of whoever opens it.
+
 ## How the brain works
 
 | Region (neuroscience) | Module | What it does |
