@@ -44,7 +44,7 @@ class Mentor {
 
   /** Is a local Ollama server answering? If so, use it. */
   async probeOllama() {
-    if (process.env.ATLAS_NO_OLLAMA) return false;
+    if (process.env.ATLAS_NO_OLLAMA || typeof window !== 'undefined') return false; // browsers use the page's own mentor
     try {
       const r = await fetch(OLLAMA_URL + '/api/tags', { signal: AbortSignal.timeout(1500) });
       if (!r.ok) throw new Error('status ' + r.status);
