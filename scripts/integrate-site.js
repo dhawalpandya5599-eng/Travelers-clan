@@ -108,14 +108,26 @@ function patchServer(file) {
   if (ZIP) {
     const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
     const out = path.join(path.dirname(site), `travelersclan_${stamp}.zip`);
-    const excl = ['node_modules', '.git', 'data'];
-    if (process.platform === 'win32') {
-      const ps = `Compress-Archive -Path (Get-ChildItem -Path '${site}' -Exclude ${excl.join(',')} | ForEach-Object { $_.FullName }) -DestinationPath '${out}' -Force`;
-      execSync(`powershell -NoProfile -Command "${ps.replace(/"/g, '\\"')}"`, { stdio: 'inherit' });
-    } else {
-      execSync(`cd "${site}" && zip -qr "${out}" . ${excl.map(e => `-x "${e}/*" -x "*/${e}/*"`).join(' ')}`, { stdio: 'inherit' });
-    }
-    console.log('Deploy archive:', out);
+    // Build an explicit file list: skip node_modules, .git, live data, and zero-byte files (Hostinger's
+    // uploader rejects archives that contain empty files).
+    const files = [], empty = [];
+    const walk = (dir, rel) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const r = rel ? rel + '/' + e.name : e.name;
+        if (e.isDirectory()) { if (!['node_modules', '.git', 'data'].includes(e.name) && !(rel === '' && e.name === 'data')) walk(path.join(dir, e.name), r); }
+        else if (e.isFile()) { const st = fs.statSync(path.join(dir, e.name)); if (st.size === 0) empty.push(r); else if (!/\.zip$/i.test(e.name)) files.push(r); }
+      }
+    };
+    walk(site, '');
+    if (empty.length) console.log(`Skipping ${empty.length} empty file(s): ${empty.slice(0, 8).join(', ')}${empty.length > 8 ? ', …' : ''}`);
+    const list = path.join(os.tmpdir(), `atlas-files-${stamp}.txt`);
+    fs.writeFileSync(list, files.join('\n') + '\n');
+    try { fs.unlinkSync(out); } catch { /* none */ }
+    // `tar` ships with Windows 10+ (bsdtar) and every macOS/Linux; -a picks zip from the extension.
+    execSync(`tar -a -c -f "${out}" -C "${site}" -T "${list}"`, { stdio: 'inherit' });
+    const size = fs.statSync(out).size;
+    if (size < 1000) throw new Error('archive came out empty');
+    console.log(`Deploy archive: ${out} (${(size / 1048576).toFixed(1)} MB, ${files.length} files)`);
     console.log('Upload it in hPanel → Websites → travelersclan.in → Deploy (same as your usual zip). ATLAS will be at https://travelersclan.in' + MOUNT);
   }
 })();
