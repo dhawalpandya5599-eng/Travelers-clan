@@ -210,6 +210,7 @@
     return { update, flash };
   })();
 
+  if (LOCAL && LOCAL.loadOpenModel) { const bm = $('btn-openmodel'); bm.hidden = false; bm.onclick = async () => { bm.disabled = true; bm.textContent = 'Loading model…'; try { const m = await LOCAL.loadOpenModel(t => { bm.textContent = t.slice(0, 40); }); bm.textContent = '✓ ' + m; addMsg('atlas', 'Open-source model loaded in this browser. I now understand free-form messages and polish replies with it.'); refresh(); } catch (e) { bm.textContent = '🧠 Load open model'; bm.disabled = false; addMsg('atlas', 'Could not load the open model here: ' + (e.message || e) + '. It works when this page is served from your website or opened as a local file with WebGPU.'); } }; }
   if (LOCAL) { const ex = document.getElementById('btn-export'); if (ex) { ex.addEventListener('click', (e) => { e.preventDefault(); LOCAL.exportMind(); }); } }
   // ---------- Boot ----------
   addMsg('atlas', 'I am ATLAS. I was born knowing nothing. Teach me about the clan, ask me questions, correct me when I am wrong, and reward good answers. I sleep to consolidate and evolve to improve.');

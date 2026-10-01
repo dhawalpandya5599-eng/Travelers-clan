@@ -15,6 +15,18 @@ npm test             # 9 tests on memory, reasoning, skills, sleep, evolution
 npm run train        # accelerated upbringing: study curriculum, self-quiz, sleep, evolve 10 generations
 ```
 
+## Language models (all optional, open-source first)
+
+| Where | How to switch it on | What it adds |
+|---|---|---|
+| Local, free | install [Ollama](https://ollama.com), `ollama pull llama3.2` (or `qwen2.5:7b`), start ATLAS | free-form understanding, replies polished in the customer's language, a second critic, learning from messy statements |
+| Any OpenAI-compatible server (LM Studio, llama.cpp, vLLM, Groq, OpenRouter, Together, Hugging Face) | `OPENAI_BASE_URL=https://api.groq.com/openai/v1 OPENAI_MODEL=llama-3.3-70b-versatile OPENAI_API_KEY=...` | same, with bigger open models |
+| In the browser | the **Load open model** button on your website or local file (WebLLM, ~0.7 GB, WebGPU) | same, no server at all |
+| claude.ai | nothing to do; the page uses Claude through your account | same |
+| Claude API | `ANTHROPIC_API_KEY` | same, with the frontier model |
+
+Without any model, every agent still runs on rules and memory; the model is the fluency layer, the mind is the memory.
+
 Optional mentor, two ways. Free and local: install [Ollama](https://ollama.com), run `ollama pull llama3.2`, start ATLAS; it finds the local model on its own (set `OLLAMA_MODEL` to use another). Or Claude Fable 5.1 with server-side refusal fallbacks:
 
 ```

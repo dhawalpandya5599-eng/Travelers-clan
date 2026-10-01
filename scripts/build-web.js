@@ -97,7 +97,21 @@ const glue = `
       var sys = 'You write small JavaScript skills for ATLAS. A skill is a CommonJS module that sets module.exports = { match, run }. match(input) returns null when the skill does not apply, else an args value. run(args, input) returns a string. No require, no IO, no async, pure functions only. Respond with JSON only: {"name": "kebab-case", "description": "...", "source": "<module code>", "tests": [{"input": "...", "expect": "<substring of expected output>"}]} with at least 2 tests.';
       return this.ask(sys, 'Need: ' + need + '\\nExample inputs:\\n' + examples.join('\\n')).then(function (out) { if (!out) return null; var m = out.match(/\\{[\\s\\S]*\\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e) { return null; } });
     } };
-  samplePromise.then(function (s) { mentor.enabled = !!s; mentor.lastError = s ? null : 'Claude mentor is available only when this page is opened on claude.ai'; });
+  samplePromise.then(function (s) { mentor.enabled = !!s; mentor.lastError = s ? null : 'No model yet: open this page on claude.ai, or load the open-source model below.'; });
+  // Optional in-browser open-source model (WebLLM, runs on your GPU/CPU, no server, no key). Loaded on demand because the
+  // weights are ~0.7 GB; it only works where the page may fetch from the web (your website or a local file, not inside claude.ai).
+  var webllmEngine = null;
+  mentor.loadOpenModel = function (onProgress) {
+    var modelId = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+    return import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm').then(function (webllm) {
+      return webllm.CreateMLCEngine(modelId, { initProgressCallback: function (p) { if (onProgress) onProgress(p.text || ''); } }).then(function (engine) {
+        webllmEngine = engine; mentor.enabled = true; mentor.model = 'webllm/' + modelId; mentor.lastError = null;
+        mentor.ask = function (system, user) { mentor.calls++; return engine.chat.completions.create({ messages: [{ role: 'system', content: system }, { role: 'user', content: user }], temperature: 0.3, max_tokens: 400 }).then(function (r) { return (r.choices[0].message.content || '').trim() || null; }).catch(function (e) { mentor.lastError = e.message; return null; }); };
+        return mentor.model;
+      });
+    });
+  };
+  mentor.json = function (system, user, opts) { return mentor.ask(system + ' Respond with JSON only, no prose, no code fences.', user, opts).then(function (out) { if (!out) return null; var m = out.match(/\{[\s\S]*\}/); if (!m) return null; try { return JSON.parse(m[0]); } catch (e) { return null; } }); };
   brain.mentor = mentor;
 
   var sinceSleep = 0, lastSleep = Date.now(), lastEvolve = Date.now();
@@ -129,6 +143,7 @@ const glue = `
         }
       }).catch(function (e) { return { error: e.message }; });
     },
+    loadOpenModel: function (onProgress) { return mentor.loadOpenModel(onProgress); },
     exportMind: function () {
       brain.saveNow();
       var data = __require('fs').readFileSync('/atlas/data/state.json');

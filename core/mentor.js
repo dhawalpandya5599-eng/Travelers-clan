@@ -25,6 +25,14 @@ const MODEL = process.env.ATLAS_MENTOR_MODEL || 'claude-fable-5-1';
  */
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
+/**
+ * Any OpenAI-compatible endpoint serving an open-source model also works (LM Studio, llama.cpp server, vLLM,
+ * Groq, OpenRouter, Together, Hugging Face router): set OPENAI_BASE_URL (e.g. http://127.0.0.1:1234/v1 or
+ * https://api.groq.com/openai/v1), OPENAI_MODEL (e.g. llama-3.3-70b-versatile, qwen2.5:14b) and OPENAI_API_KEY if required.
+ */
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || '';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'llama-3.3-70b-versatile';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 
 class Mentor {
   constructor() {
@@ -36,10 +44,21 @@ class Mentor {
     const hasCreds = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN;
     if (Anthropic && hasCreds) {
       try { this.client = new Anthropic(); this.enabled = true; this.backend = 'claude'; } catch (e) { this.lastError = e.message; }
+    } else if (OPENAI_BASE_URL) {
+      this.enabled = true; this.backend = 'openai-compatible'; this.openModel = OPENAI_MODEL;
     } else {
       this.lastError = !Anthropic ? 'no Claude SDK/key' : 'ANTHROPIC_API_KEY not set';
       this.probeOllama();
     }
+  }
+
+  /** Call any OpenAI-compatible chat endpoint (open-source models). */
+  async askOpenAI(system, user, maxTokens) {
+    const r = await fetch(OPENAI_BASE_URL.replace(/\/$/, '') + '/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(OPENAI_API_KEY ? { Authorization: 'Bearer ' + OPENAI_API_KEY } : {}) }, signal: AbortSignal.timeout(120000),
+      body: JSON.stringify({ model: this.openModel, max_tokens: maxTokens, temperature: 0.3, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }) });
+    if (!r.ok) throw new Error('open model endpoint status ' + r.status + ': ' + (await r.text()).slice(0, 200));
+    const j = await r.json();
+    return (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content || '').trim() || null;
   }
 
   /** Is a local Ollama server answering? If so, use it. */
@@ -57,11 +76,12 @@ class Mentor {
     } catch (e) { this.lastError = (this.lastError ? this.lastError + '; ' : '') + 'no local Ollama at ' + OLLAMA_URL; return false; }
   }
 
-  status() { return { enabled: this.enabled, backend: this.backend, model: this.backend === 'ollama' ? 'ollama/' + this.ollamaModel : MODEL, calls: this.calls, lastError: this.lastError }; }
+  status() { return { enabled: this.enabled, backend: this.backend, model: this.backend === 'ollama' ? 'ollama/' + this.ollamaModel : this.backend === 'openai-compatible' ? 'open/' + this.openModel : MODEL, calls: this.calls, lastError: this.lastError }; }
 
   async ask(system, user, { maxTokens = 2000 } = {}) {
     if (!this.enabled) return null;
     this.calls++;
+    if (this.backend === 'openai-compatible') { try { return await this.askOpenAI(system, user, maxTokens); } catch (e) { this.lastError = e.message; return null; } }
     if (this.backend === 'ollama') {
       try {
         const r = await fetch(OLLAMA_URL + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(120000),
@@ -85,6 +105,14 @@ class Mentor {
       this.lastError = e.message;
       return null;
     }
+  }
+
+  /** Ask for strict JSON; returns parsed object or null. */
+  async json(system, user, opts) {
+    const out = await this.ask(system + ' Respond with JSON only, no prose, no code fences.', user, opts);
+    if (!out) return null;
+    const m = out.match(/\{[\s\S]*\}/); if (!m) return null;
+    try { return JSON.parse(m[0]); } catch { return null; }
   }
 
   /** Answer a question using the agent's own memories as context, so the answer is grounded. */

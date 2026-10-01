@@ -174,3 +174,31 @@ test('dialogue tester: conversations score well and replies answer objections', 
   const t = d.output.transcripts[0];
   assert.notStrictEqual(t.log[1].text, t.log[3].text, 'replies must not repeat');
 });
+
+test('open-source model backend: understanding, polishing, critique and learning via an OpenAI-compatible server', async () => {
+  const http = require('http');
+  const srv = http.createServer((req, res) => { let body = ''; req.on('data', c => body += c); req.on('end', () => {
+    const j = JSON.parse(body); const sys = j.messages[0].content; let content;
+    if (/extract travel requirements/i.test(sys)) content = '{"destination":"Spiti","month":"August","days":8,"group":5,"budgetPerPerson":28000,"needs":["adventure"],"language":"hinglish","mood":"excited"}';
+    else if (/strict quality critic/i.test(sys)) content = '{"problems":["No acclimatisation mentioned"],"fixes":["Add acclimatisation line"]}';
+    else if (/turn a message into simple facts/i.test(sys)) content = '{"facts":["Spiti trip costs 28000 per person."]}';
+    else if (/salesperson/i.test(sys)) content = 'Arre bhai, August mein Spiti best hai! Plan bhej raha hoon.';
+    else content = 'ok';
+    res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ choices: [{ message: { content } }] }));
+  }); });
+  await new Promise(r => srv.listen(0, r));
+  process.env.OPENAI_BASE_URL = `http://127.0.0.1:${srv.address().port}/v1`; process.env.OPENAI_MODEL = 'mock-open-model';
+  delete require.cache[require.resolve('../core/mentor')]; delete require.cache[require.resolve('../core/brain')];
+  const { Brain: B2 } = require('../core/brain');
+  try {
+    const b = new B2({ dataDir: tmp() }); b.evolution.genome.curiosity = 0;
+    assert.strictEqual(b.mentor.status().backend, 'openai-compatible');
+    const r = await b.council.handle({ conversation: 'lead: bhai 5 log hain, spiti jaana hai august mein 8 din, 28k budget per head, trek bhi' });
+    assert.strictEqual(r.agents.operations.output.requirements.destination, 'Spiti');
+    assert.match(r.agents.sales.output.draft, /Arre bhai/);
+    assert.ok(r.agents.critic.findings.some(f => /\(model\)/.test(f)));
+    const s = await b.respond('Honestly the Spiti departure we are running is priced at twenty eight thousand a head.');
+    assert.strictEqual(s.via, 'model');
+    assert.ok(b.memory.factsAbout('spiti trip').some(f => f.p === 'costs'));
+  } finally { delete process.env.OPENAI_BASE_URL; delete process.env.OPENAI_MODEL; srv.close(); delete require.cache[require.resolve('../core/mentor')]; delete require.cache[require.resolve('../core/brain')]; }
+});

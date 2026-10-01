@@ -273,13 +273,21 @@ class Brain extends EventEmitter {
       const skill = this.skills.tryAll(input);
       if (skill) result = { text: skill.output, confidence: 0.95, evidence: ['skill:' + skill.name], via: 'skill' };
       else {
-        const facts = L.extractFacts(input);
+        let facts = L.extractFacts(input);
+        // Rambling sentences produce junk subjects ("honestly the spiti departure we"); with a model present, let it restate instead.
+        if (this.mentor.enabled && facts.some(f => f.s.split(' ').length > 4 || /\b(we|i|you|honestly|basically|actually)\b/.test(f.s))) facts = [];
         for (const f of facts) this.memory.learnFact(f.s, f.p, f.o, { confidence: 0.7, source: user });
         if (facts.length) {
           this.lastSubject = facts[facts.length - 1].s;
           this.memory.reward(+0.1);
           this.event('learn', `Learned ${facts.length} fact(s): ${facts.map(L.phrase).join('; ')}.`);
           result = { text: `Learned: ${facts.map(L.phrase).join('; ')}. ${this.curiosityPrompt() || ''}`.trim(), confidence: 0.85, via: 'learn' };
+        } else if (this.mentor.enabled && input.split(' ').length >= 4) {
+          // The rules could not read this statement; ask the model to restate it as simple facts, then learn them.
+          const got = await this.mentor.json('You turn a message into simple facts for a memory system.', `Message: "${input}"\nReturn {"facts": [up to 4 short sentences of the form "<subject> is/has/costs/needs/should <object>" that this message states as true]}`, { maxTokens: 200 });
+          const learned = []; for (const sent of (got && got.facts) || []) for (const f of L.extractFacts(sent)) if (this.memory.learnFact(f.s, f.p, f.o, { confidence: 0.6, source: 'model:' + user })) learned.push(f);
+          if (learned.length) { this.event('learn', `Model restated the message; learned ${learned.length} fact(s).`); result = { text: `Learned: ${learned.map(L.phrase).join('; ')}.`, confidence: 0.75, via: 'model' }; }
+          else result = { text: `Noted. I will keep that in mind. ${this.curiosityPrompt() || ''}`.trim(), confidence: 0.6, via: 'note' };
         } else if (recalled.length && recalled[0].score > 0.3) {
           result = { text: `That reminds me of something: "${recalled[0].ep.text.slice(0, 160)}". I have noted what you said.`, confidence: 0.5, via: 'episodic' };
         } else {

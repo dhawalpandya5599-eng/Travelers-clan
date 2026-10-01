@@ -10,15 +10,34 @@ class Council {
   constructor(brain) { this.brain = brain; }
   ctx() { const b = this.brain; return { brain: b, memory: b.memory, skills: b.skills, funnel: b.funnel, conversion: b.conversion, risk: b.risk, mentor: b.mentor }; }
 
-  /** Full pass on a conversation or a message. */
+  /** Full pass on a conversation or a message. With a language model present (Claude, Ollama or any open model
+   *  endpoint) the council also understands free-form text, polishes the draft in the customer's own style and
+   *  gets a second-opinion critique; without one, the rule-based agents run alone. */
   async handle(task) {
     task = typeof task === 'string' ? { conversation: task } : task;
     const ctx = this.ctx(); const out = {};
+    const text = task.conversation || task.message || '';
+    const req = parseRequirements(text);
+    const llm = ctx.mentor && ctx.mentor.enabled ? ctx.mentor : null;
+    // 1. Understanding: when the rules cannot see the destination or dates, ask the model to extract them.
+    if (llm && (!req.destination || !req.month || !req.group)) {
+      const got = await llm.json('You extract travel requirements from a customer conversation for an Indian travel company.', `Conversation:\n${text}\n\nReturn {"destination": string|null, "month": month name|null, "days": number|null, "group": number|null, "budgetPerPerson": number in INR|null, "needs": [short tags], "language": "english"|"hinglish"|"other", "mood": "neutral"|"excited"|"anxious"|"annoyed"}`, { maxTokens: 300 });
+      if (got) { task.llm = got; if (got.destination && !req.destination) { const DEST = require('./destinations'); const d = DEST.find(got.destination); if (d) req.destination = d; } if (got.month && !req.month) req.month = require('./destinations').monthNum(got.month); if (got.group && !req.group) req.group = +got.group; if (got.budgetPerPerson && !req.budget) req.budget = +got.budgetPerPerson; if (got.days && !req.days) req.days = +got.days; }
+    }
     out.sales = AGENTS.sales.run(task, ctx);
-    out.operations = AGENTS.operations.run(task, ctx);
+    out.operations = AGENTS.operations.run({ ...task, requirements: req }, ctx);
     out.cx = AGENTS.cx.run(task, ctx);
-    out.news = AGENTS.news.run({ ...task, requirements: parseRequirements(task.conversation || task.message || '') }, ctx);
+    out.news = AGENTS.news.run({ ...task, requirements: req }, ctx);
     out.critic = AGENTS.critic.run(task, ctx, out);
+    // 2. Polish: rewrite the draft in the customer's style, answering every open point the critic found.
+    if (llm && out.sales && out.sales.output.draft) {
+      const openPoints = [...(out.cx.output.unanswered || []), ...out.critic.findings.filter(f => /draft/i.test(f))];
+      const polished = await llm.ask(`You are the best WhatsApp salesperson at Travelers Clan, an Indian group-travel company. Rewrite the draft reply so it answers every open point, keeps every fact and number from the draft, matches the customer's language and register (reply in Hinglish if they wrote Hinglish), uses the tone "${out.cx.output.tone}", stays under 90 words, no emojis unless the customer used them, no markdown.`, `Conversation:\n${text}\n\nDraft:\n${out.sales.output.draft}\n\nOpen points to address:\n${openPoints.join('\n') || 'none'}`, { maxTokens: 300 });
+      if (polished) { out.sales.output.draftRules = out.sales.output.draft; out.sales.output.draft = polished; out.sales.output.polishedBy = ctx.mentor.status().model; }
+      // 3. Second opinion from the model, added to the critic's findings.
+      const second = await llm.json('You are a strict quality critic for a travel company. Find real problems only.', `Conversation:\n${text}\n\nProposed reply:\n${out.sales.output.draft}\n\nOperations summary: ${out.operations.output.requirements ? JSON.stringify(out.operations.output.requirements) : 'none'}\n\nReturn {"problems": [max 3 short strings], "fixes": [max 3 short strings]}`, { maxTokens: 300 });
+      if (second && Array.isArray(second.problems)) { for (const pr of second.problems.slice(0, 3)) out.critic.findings.push(`(model) ${pr}`); for (const fx of (second.fixes || []).slice(0, 3)) out.critic.suggestions.push(`(model) ${fx}`); if (second.problems.length && out.critic.verdict === 'ok') out.critic.verdict = 'warn'; }
+    }
     return this.finish(out, 'lead');
   }
 
