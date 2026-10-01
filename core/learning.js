@@ -13,6 +13,10 @@ const R = require('./reason');
 
 const PREDICATES = [
   // [regex, predicate]  — subject in group 1, object in group 2
+  [/^(.{2,60}?)\s+(?:raises?|increases?|improves?|boosts?)\s+(.{2,120})$/i, 'raises'],
+  [/^(.{2,60}?)\s+(?:lowers?|reduces?|decreases?|hurts?)\s+(.{2,120})$/i, 'lowers'],
+  [/^(.{2,60}?)\s+(?:usually\s+|often\s+|mostly\s+)?(?:travels?|visits?|goes?)\s+in\s+(.{2,120})$/i, 'travels in'],
+  [/^(.{2,60}?)\s+(?:pays?|paid)\s+(?:in|with|by)\s+(.{2,120})$/i, 'pays in'],
   [/^(.{2,60}?)\s+(?:does not|doesn't|do not|don't|did not|didn't)\s+(?:have|include|contain|offer|cover|provide)\s+(.{2,120})$/i, 'has not'],
   [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(?:located\s+)?in\s+(.{2,120})$/i, 'is in not'],
   [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(.{2,120})$/i, 'is not'],
@@ -75,6 +79,8 @@ function extractFacts(text) {
 
 const YESNO = [
   [/^(?:is|are)\s+(?:the\s+)?(.+?)\s+(high|low)\s+in\s+(.+?)\??$/i, 'trait'],
+  [/^(?:does|do|did|will)\s+(?:the\s+)?(.+?)\s+(?:raise|increase|improve|boost)\s+(.+?)\??$/i, 'raises'],
+  [/^(?:does|do|did|will)\s+(?:the\s+)?(.+?)\s+(?:lower|reduce|decrease|hurt)\s+(.+?)\??$/i, 'lowers'],
   [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:located\s+)?in\s+season\s+in\s+([a-z]+)\??$/i, 'season'],
   [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:located\s+)?(?:in|inside|part of)\s+(.+?)\??$/i, 'is in'],
   [/^(?:is|are|was|were)\s+(?:the\s+)?(.+?)\s+(?:a|an)\s+(.+?)\??$/i, 'is a'],
@@ -86,6 +92,8 @@ const YESNO = [
   [/^(?:can|could)\s+(?:anyone|i|we|you)\s+(?:join|book)\s+(?:the\s+)?(.+?)\??$/i, 'open'],
 ];
 const WHO = [
+  [/^(?:what|which)\s+(?:raises|increases|improves|boosts)\s+(.+?)\??$/i, /^raises$/, 0.3],
+  [/^(?:what|which)\s+(?:lowers|reduces|decreases|hurts)\s+(.+?)\??$/i, /^lowers$/, 0.3],
   [/^(?:who|which\s+\w+|what)\s+(?:is|are)\s+(?:a|an|the)?\s*(.+?)\??$/i, /^(is a|is)$/],
   [/^(?:who|which\s+\w+)\s+(?:has|have)\s+(.+?)\??$/i, /^has$/],
   [/^(?:who|which\s+\w+)\s+(?:likes?|loves?)\s+(.+?)\??$/i, /^likes$/],
@@ -96,7 +104,8 @@ const Q = [
   [/^(?:which|what)\s+(state|country|city|region|valley|district)\s+(?:is|are)\s+(?:the\s+)?(.+?)\s+in\??$/i, 'where-kind'],
   [/^(?:what|who)\s+(?:is|are|was|were)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'define'],
   [/^(?:where)\s+(?:is|are|was|were|do|does)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:located|based|from))?\??$/i, 'where'],
-  [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:start|begin|happen|leave))?\??$/i, 'when'],
+  [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:usually\s+|often\s+)?(?:start|begin|happen|leave|travel|go|visit))?\??$/i, 'when'],
+  [/^(?:what|which currency)\s+(?:do|does|did)\s+(?:a|an|the)?\s*(.+?)\s+pay\s+(?:in|with)\??$/i, 'pay'],
   [/^(?:how much)\s+(?:is|are|does|do)\s+(?:a|an|the)?\s*(.+?)(?:\s+cost)?\??$/i, 'cost'],
   [/^(?:how long)\s+(?:is|are|does|do|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:take|last))?\??$/i, 'when'],
   [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:worry|fear|hesitate)\s+(?:about|over)\??$/i, 'worry'],
@@ -155,7 +164,7 @@ function detectIdentity(text) {
   return m ? m[1].trim() : null;
 }
 
-const PRED_PHRASE = { 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
+const PRED_PHRASE = { raises: 'raises', lowers: 'lowers', 'travels in': 'usually travel in', 'pays in': 'pay in', 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
   'likes': 'likes', 'needs': 'needs', 'means': 'means', 'offers': 'offers', 'goes to': 'goes to', 'takes': 'takes',
   'starts': 'starts', 'should': 'should', 'is called': 'is called' };
 
@@ -232,10 +241,10 @@ function answer(question, memory, skills, recalled) {
     if (rules.length) return { text: `Yes. ${rules.slice(0, 2).map(r => phrase(r.f)).join('. ')}.`, confidence: 0.8, evidence: rules.slice(0, 2).map(r => r.f.id), via: 'reason' };
   }
   // 2b. Reverse lookup: "Who is a hot lead?" — only when the object is a known category, not a definition request.
-  for (const [re, pred] of WHO) {
+  for (const [re, pred, loose] of WHO) {
     const m = question.raw.match(re);
     if (!m) continue;
-    const who = R.whoIs(memory, pred, cleanSubject(m[1]));
+    const who = R.whoIs(memory, pred, cleanSubject(m[1]), loose);
     if (who.subjects.length) return { text: `${who.subjects.map(T.titleCase).join(', ')}.`, confidence: 0.85, evidence: who.evidence, via: 'reason' };
   }
   // 2c. "Which state is Tosh in?" — walk the location chain.
@@ -258,9 +267,9 @@ function answer(question, memory, skills, recalled) {
     }
   }
   const byKind = {
-    where: f => /^is (in|at)$/.test(f.p), when: f => /^(starts|takes)$/.test(f.p), cost: f => f.p === 'costs',
+    where: f => /^is (in|at)$/.test(f.p), when: f => /^(starts|takes|travels in)$/.test(f.p), cost: f => f.p === 'costs',
     'what-does': f => /^(offers|has|likes|needs|goes to)$/.test(f.p), how: f => f.p === 'should',
-    worry: f => f.p === 'worries about', tone: f => f.p === 'tone',
+    worry: f => f.p === 'worries about', tone: f => f.p === 'tone', pay: f => f.p === 'pays in',
   };
   let chosen = facts;
   const VERB_PRED = { offer: /^offers$/, provide: /^offers$/, sell: /^offers$/, have: /^has$/, like: /^likes$/, need: /^needs$/, want: /^(needs|likes)$/ };

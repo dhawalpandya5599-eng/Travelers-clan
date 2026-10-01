@@ -92,6 +92,15 @@ const CASES = [
   { q: 'Which channel do senior citizens prefer?', expect: /phone call/i, kind: 'cohort-fact' },
   { q: 'What is the budget of luxury couples?', expect: /150000 to 600000/, kind: 'cohort-fact' },
   { q: 'Are adventure junkies high in openness?', expect: /yes/i, kind: 'cohort-fact' },
+  // --- world cohorts and conversion learning ---
+  { q: 'which cohort is this lead: Hi from Tokyo, my wife and I want a 7 day Kerala trip in April, premium hotels', expect: /East Asia/i, kind: 'world' },
+  { q: 'who is this customer: Bachelor trip, 6 friends from Nairobi, Goa in December, dollars ok?', expect: /friend groups from Africa/i, kind: 'world' },
+  { q: 'When do customers from the Gulf usually travel?', expect: /june|july|august/i, kind: 'world' },
+  { q: 'What do customers from North America pay in?', expect: /usd/i, kind: 'world' },
+  { conversions: true, q: 'predict: a honeymoon couple, we replied in 5 minutes with reviews and a private villa offer, price within budget', expect: /Booking chance ([5-9]\d|100)%/, kind: 'conversion' },
+  { conversions: true, q: 'predict: college group asked price, we replied next day, ignored the budget objection, no follow up', expect: /Booking chance ([0-9]|[1-3]\d)%/, kind: 'conversion' },
+  { conversions: true, q: 'What raises the booking rate?', expect: /first reply within ten minutes|social proof|right tone/i, kind: 'conversion' },
+  { conversions: true, q: 'Does ignoring the objection lower the booking rate?', expect: /yes/i, kind: 'conversion' },
 ];
 
 async function run() {
@@ -103,6 +112,7 @@ async function run() {
     const b = new Brain({ dataDir: dir, autosave: false });
     b.evolution.genome.curiosity = 0;
     b.studyCurriculum(path.join(__dirname, '..', 'curriculum'));
+    if (c.conversions) { const f = path.join(__dirname, '..', 'synth', 'conversations.json'); if (fs.existsSync(f)) b.learnConversions(JSON.parse(fs.readFileSync(f, 'utf8')).conversations, { source: 'synthetic' }); }
     for (const t of c.teach || []) await b.respond(t);
     for (const d of c.dialogue || []) await b.respond(d);
     const r = await b.respond(c.q);

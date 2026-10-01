@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'importers', 'brain'];
+const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'importers', 'brain'];
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 

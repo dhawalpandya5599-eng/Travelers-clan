@@ -63,6 +63,12 @@ function mergeMinds(base, other) {
   for (const s of other.skills || []) { const k = skills.get(s.name); if (!k) skills.set(s.name, s); else { k.wins += s.wins || 0; k.losses += s.losses || 0; if (s.learned && !k.source) Object.assign(k, { learned: true, source: s.source, tests: s.tests }); } }
   out.skills = [...skills.values()];
 
+  // Conversion model: counts add up.
+  const bc = base.conversion || { counts: { booked: {}, lost: {} }, n: { booked: 0, lost: 0 }, vocab: [] }, oc = other.conversion || { counts: { booked: {}, lost: {} }, n: { booked: 0, lost: 0 }, vocab: [] };
+  const counts = { booked: { ...bc.counts.booked }, lost: { ...bc.counts.lost } };
+  for (const lab of ['booked', 'lost']) for (const [k, v] of Object.entries(oc.counts[lab] || {})) counts[lab][k] = (counts[lab][k] || 0) + v;
+  out.conversion = { counts, n: { booked: (bc.n.booked || 0) + (oc.n.booked || 0), lost: (bc.n.lost || 0) + (oc.n.lost || 0) }, vocab: [...new Set([...(bc.vocab || []), ...(oc.vocab || [])])] };
+
   // Evolution: fittest genome, longest lineage.
   const be = base.evolution || {}, oe = other.evolution || {};
   const bf = (be.history || []).slice(-1)[0]?.best ?? -1, of = (oe.history || []).slice(-1)[0]?.best ?? -1;

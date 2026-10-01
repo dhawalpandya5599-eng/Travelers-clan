@@ -29,7 +29,7 @@ class Skills {
       try {
         const args = s.match(input);
         if (args == null || args === false) continue;
-        const output = s.run(args, input);
+        const output = s.run(args, input, this.context);
         if (typeof output === 'string' && output.trim()) { s.lastUsed = Date.now(); return { name: s.name, output }; }
       } catch (e) { s.losses++; }
     }
@@ -91,6 +91,23 @@ class Skills {
   }
 
   registerBuiltins() {
+    this.register({
+      name: 'predict', description: 'Predicts whether a lead will book from how the conversation went, with reasons.',
+      match: (input) => { const m = input.match(/^(?:predict|will (?:this|the) lead book|chance of booking|booking chance)[: ]+(.{10,})$/i); return m ? m[1] : null; },
+      run: (desc, input, ctx) => {
+        const model = ctx && ctx.conversion; if (!model || !model.n.booked) return 'I have not studied enough conversations yet to predict bookings.';
+        const t = desc.toLowerCase();
+        const mins = (t.match(/replied (?:in|after|within) (\d+)\s*(min|minute|hour|day)/) || []);
+        const firstReplyMinutes = mins[1] ? +mins[1] * ({ min: 1, minute: 1, hour: 60, day: 1440 }[mins[2]]) : /instant|immediately|right away|within 10 min/.test(t) ? 5 : /next day|a day later/.test(t) ? 1500 : 45;
+        const conv = { type: (cohorts.classify(desc)[0] || {}).id || 'unknown', region: 'in', firstReplyMinutes, toneMatched: !/wrong tone|cold reply|curt|rude/.test(t),
+          triggerUsed: /discount|limited seats|early.?bird|private|doctor|reviews|quote/.test(t) ? 'some' : null, objection: /(price|expensive|safety|safe|food|hidden|dates|exam|permission|leave)/.test(t) ? 'some' : null,
+          objectionAnswered: !/(ignored|did not answer|didn't answer|no answer|unanswered)/.test(t), priceVsBudget: /over budget|too expensive|expensive/.test(t) ? 1.25 : /under budget|cheaper than|within budget/.test(t) ? 0.85 : 1.0,
+          followUps: (t.match(/(\d) follow/) || [])[1] ? +(t.match(/(\d) follow/))[1] : /follow/.test(t) ? 1 : 0, socialProof: /(photos|reviews|testimonial|social proof)/.test(t) };
+        const r = model.predict(conv); if (!r) return 'Not enough data yet.';
+        const say = (k) => k.replace(/^(\w+)=(.+)$/, (_, a, b) => ({ delay: 'reply ' + b, tone: 'tone ' + b, trigger: 'trigger ' + b, objection: 'objection ' + b, objectionAnswered: 'objection answered ' + b, price: 'price ' + b, followups: b + ' follow-ups', 'social-proof': 'social proof ' + b }[a] || k));
+        return `Booking chance ${Math.round(r.p * 100)}%. Helping: ${r.for.map(say).join(', ') || 'nothing much'}. Hurting: ${r.against.map(say).join(', ') || 'nothing much'}. ${r.p < 0.4 ? 'Fix the biggest hurting factor and follow up within 24 hours.' : 'Send the payment link now.'}`;
+      },
+    });
     this.register({
       name: 'cohort', description: 'Recognises which customer cohort a lead belongs to and how to talk to them.',
       match: (input) => { const m = input.match(/^(?:which|what)\s+cohort(?:\s+is\s+this(?:\s+lead|\s+customer|\s+message)?)?[: ]+(.{6,})$|^(?:who is this (?:lead|customer))[: ]+(.{6,})$|^(?:classify|profile)(?:\s+this)?(?:\s+lead|\s+customer)?[: ]+(.{6,})$/i); return m ? (m[1] || m[2] || m[3]) : null; },

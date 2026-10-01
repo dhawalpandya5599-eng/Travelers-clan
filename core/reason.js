@@ -104,9 +104,9 @@ function prove(memory, claim) {
 }
 
 /** Reverse lookup: subjects whose fact matches (predicate, object). */
-function whoIs(memory, predicateRe, object) {
+function whoIs(memory, predicateRe, object, minBack = 0.6) {
   const o = object.toLowerCase().replace(/^(the|a|an)\s+/, '');
-  const hits = memory.facts.filter(f => f.wrong < 2 && predicateRe.test(f.p) && overlap(f.o, o) >= 0.99 && overlap(o, f.o) >= 0.6);
+  const hits = memory.facts.filter(f => f.wrong < 2 && predicateRe.test(f.p) && overlap(f.o, o) >= 0.99 && overlap(o, f.o) >= minBack);
   const subjects = [...new Set(hits.map(f => f.s))];
   return { subjects, evidence: hits.map(f => f.id) };
 }

@@ -1,5 +1,38 @@
 # Lesson 6: Customer cohorts around the globe
 
+Customers from western India usually travel in October, November, December.
+Customers from western India prefer WhatsApp.
+Customers from western India pay in INR.
+Customers from northern India usually travel in May, June, October.
+Customers from northern India prefer WhatsApp call.
+Customers from northern India pay in INR.
+Customers from southern India usually travel in April, May, August.
+Customers from southern India prefer WhatsApp text.
+Customers from southern India pay in INR.
+Customers from eastern India usually travel in October, November, December.
+Customers from eastern India prefer phone call.
+Customers from eastern India pay in INR.
+Customers from the Gulf usually travel in June, July, August.
+Customers from the Gulf prefer WhatsApp call.
+Customers from the Gulf pay in AED.
+Customers from the UK and Europe usually travel in July, August, December.
+Customers from the UK and Europe prefer email.
+Customers from the UK and Europe pay in EUR.
+Customers from North America usually travel in June, July, November.
+Customers from North America prefer email and video call.
+Customers from North America pay in USD.
+Customers from Southeast Asia and Australia usually travel in December, January, June.
+Customers from Southeast Asia and Australia prefer WhatsApp and Instagram.
+Customers from Southeast Asia and Australia pay in SGD.
+Customers from Africa usually travel in December, April, August.
+Customers from Africa prefer WhatsApp.
+Customers from Africa pay in USD.
+Customers from Latin America usually travel in January, February, July.
+Customers from Latin America prefer Instagram and WhatsApp.
+Customers from Latin America pay in USD.
+Customers from East Asia usually travel in April, May, October.
+Customers from East Asia prefer email and LINE or WeChat.
+Customers from East Asia pay in USD.
 Indian metro young professionals are a customer cohort.
 Indian metro young professionals usually come from Mumbai, Bengaluru, Pune.
 Indian metro young professionals are 24 to 34 years old.
