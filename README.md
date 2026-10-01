@@ -38,6 +38,17 @@ ATLAS is a single Node.js process with no build step and no database (its mind i
 
 Keep `ATLAS_DATA` on a persistent disk: that folder is ATLAS's memory.
 
+## Inside an existing Express website (travelersclan.in)
+
+Copy this repo as a folder named `atlas` into the site's source, then add two lines to the site's `server.js`:
+
+```js
+const atlas = require('./atlas/integrations/express');
+app.use('/admin/atlas', atlas({ dataDir: __dirname + '/data/atlas', express }));
+```
+
+Put those lines after your admin authentication middleware so only admins reach `/admin/atlas`. The folder `data/atlas` must survive deploys (keep it out of the build output or point `dataDir` at a persistent path). The first boot seeds from `atlas/mind/state.json`, the mind trained by the parent. No new npm dependencies.
+
 ## Upbringing (how the parent trains it)
 
 `mind/state.json` is the trained mind, versioned in git. A training round is:

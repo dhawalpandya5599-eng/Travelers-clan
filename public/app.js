@@ -2,9 +2,10 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const LOCAL = window.ATLAS_LOCAL || null; // set when the brain runs inside this page (no server)
+  const BASE = window.ATLAS_BASE || '';     // set when mounted under a prefix inside another site
   const api = async (method, url, body) => {
     if (LOCAL) return LOCAL.request(method, url, body);
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+    const r = await fetch(BASE + url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
     return r.json();
   };
   const fmt = (n, d = 3) => (n == null ? '–' : typeof n === 'number' ? +n.toFixed(d) : n);
@@ -94,7 +95,7 @@
   }
   function connect() {
     if (LOCAL) { LOCAL.onEvent(e => { pushLog(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); }); return; }
-    const es = new EventSource('/api/events');
+    const es = new EventSource(BASE + '/api/events');
     es.onmessage = (m) => { const e = JSON.parse(m.data); pushLog(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); };
     es.onerror = () => { es.close(); setTimeout(connect, 3000); };
   }
