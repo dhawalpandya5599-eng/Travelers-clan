@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATLAS · Travelers Clan Mind</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%235ee1c2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="pulse" id="pulse"></span>
+    <h1>ATLAS <small>the mind of the Travelers Clan</small></h1>
+  </div>
+  <div class="vitals" id="vitals">
+    <div class="vital"><span class="k">generation</span><b id="v-gen">–</b></div>
+    <div class="vital"><span class="k">fitness</span><b id="v-fit">–</b></div>
+    <div class="vital"><span class="k">facts</span><b id="v-facts">–</b></div>
+    <div class="vital"><span class="k">concepts</span><b id="v-concepts">–</b></div>
+    <div class="vital"><span class="k">synapses</span><b id="v-syn">–</b></div>
+    <div class="vital"><span class="k">memories</span><b id="v-ep">–</b></div>
+    <div class="vital"><span class="k">approval</span><b id="v-appr">–</b></div>
+    <div class="vital"><span class="k">mentor</span><b id="v-mentor">–</b></div>
+  </div>
+</header>
+
+<main class="grid">
+  <section class="panel chat">
+    <h2>Dialogue <span class="hint">teach · ask · correct · reward</span></h2>
+    <div class="messages" id="messages"></div>
+    <form id="chat-form" class="composer">
+      <input id="chat-input" autocomplete="off" placeholder='Try: "Goa is a beach state" · "What is Goa?" · "20% off 5000" · "No, Goa is..."'>
+      <button type="submit">Send</button>
+    </form>
+    <div class="feedback">
+      <button id="fb-up" title="Reward the last answer">👍 good</button>
+      <button id="fb-down" title="Punish the last answer">👎 wrong</button>
+      <span id="dopamine" class="dopamine"><i></i><label>dopamine</label></span>
+    </div>
+  </section>
+
+  <section class="panel brain">
+    <h2>Semantic cortex <span class="hint">concepts &amp; Hebbian synapses · node glow = activation</span></h2>
+    <canvas id="graph"></canvas>
+    <div class="wm" id="wm"></div>
+  </section>
+
+  <section class="panel evolution">
+    <h2>Evolution <span class="hint">fitness per generation</span></h2>
+    <canvas id="evo" height="140"></canvas>
+    <div class="genome" id="genome"></div>
+    <div class="actions">
+      <button id="btn-sleep">💤 Sleep (consolidate)</button>
+      <button id="btn-evolve">🧬 Evolve ×5</button>
+      <button id="btn-grow">🌱 Grow skill</button>
+      <a class="btn" href="/api/export" download="atlas-mind.json">⬇ Export mind</a>
+    </div>
+  </section>
+
+  <section class="panel teach">
+    <h2>Curriculum <span class="hint">paste lessons; one fact per sentence works best</span></h2>
+    <textarea id="teach-text" placeholder="Travelers Clan runs a Ladakh trip in June. The Ladakh trip costs 24000 per person. The advance is 5000."></textarea>
+    <div class="actions"><button id="btn-teach">📚 Teach</button><span id="teach-result" class="hint"></span></div>
+    <h3>Strongest facts</h3>
+    <ul id="facts" class="facts"></ul>
+    <h3>Skills</h3>
+    <ul id="skills" class="skills"></ul>
+  </section>
+
+  <section class="panel activity">
+    <h2>Neural activity <span class="hint">live cognitive events</span></h2>
+    <ul id="log" class="log"></ul>
+  </section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
