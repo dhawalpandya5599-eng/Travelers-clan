@@ -264,6 +264,10 @@ class Brain extends EventEmitter {
   async sleep() {
     const report = this.memory.consolidate(L.extractFacts);
     this.memory.decay(1);
+    // Dreaming: rehearse the facts that are least used, so rarely-asked knowledge does not fade.
+    const stale = this.memory.facts.filter(f => f.wrong < 2).sort((a, b) => a.uses - b.uses).slice(0, 12);
+    for (const f of stale) this.memory.encode(L.phrase(f), 0.3);
+    report.dreamed = stale.length;
     // Mentor reflection on the last stretch of conversation.
     const recent = this.memory.episodes.slice(-30).filter(e => e.role === 'user' || e.role === 'atlas');
     if (this.mentor.enabled && recent.length >= 4) {
@@ -272,7 +276,7 @@ class Brain extends EventEmitter {
       for (const s of lessons) for (const f of L.extractFacts(s)) if (this.memory.learnFact(f.s, f.p, f.o, { confidence: 0.7, source: 'reflection' })) n++;
       report.reflected = n;
     }
-    this.event('sleep', `Slept: replayed ${report.replayed} episodes, formed ${report.newFacts} facts, pruned ${report.pruned}, merged ${report.merged}${report.reflected != null ? `, reflected ${report.reflected}` : ''}.`, report);
+    this.event('sleep', `Slept: replayed ${report.replayed} episodes, formed ${report.newFacts} facts, pruned ${report.pruned}, merged ${report.merged}, dreamed ${report.dreamed}${report.contradictions.length ? `, found ${report.contradictions.length} contradiction(s)` : ''}${report.reflected != null ? `, reflected ${report.reflected}` : ''}.`, report);
     this.save();
     return report;
   }
@@ -356,7 +360,7 @@ class Brain extends EventEmitter {
       lessonsLearned: this.lessonsLearned, generation: this.evolution.generation, genome: this.evolution.genome,
       fitness: h.length ? h[h.length - 1].best : null, approval: +this.evolution.humanScore().toFixed(3), feedback: this.evolution.feedback,
       memory: this.memory.stats(), skills: this.skills.list(), mentor: this.mentor.status(), unknowns: this.unknowns.slice(-10),
-      pendingQuestion: this.pendingQuestion, history: h.slice(-120).map(e => ({ generation: e.generation, best: e.best, mean: e.mean })),
+      pendingQuestion: this.pendingQuestion, contradictions: this.memory.contradictions || [], history: h.slice(-120).map(e => ({ generation: e.generation, best: e.best, mean: e.mean })),
       topFacts: this.memory.facts.slice().sort((a, b) => b.confidence - a.confidence).slice(0, 12).map(f => ({ text: L.phrase(f), confidence: +f.confidence.toFixed(2), source: f.source })),
       log: this.log.slice(-40),
     };

@@ -67,6 +67,9 @@
     $('dopamine').style.setProperty('--d', s.memory.dopamine);
     $('wm').innerHTML = '<span class="label">working memory</span>' + (s.memory.workingMemory.map(w => `<span title="activation ${w.activation}">${esc(w.id)}</span>`).join('') || '<span class="label">∅</span>');
     $('genome').innerHTML = Object.entries(s.genome).map(([k, v]) => `<div>${k}<b>${fmt(v, 3)}</b></div>`).join('');
+    const asks = [...(s.contradictions || []).map(c => `<li>Which is right? <b>${esc(c.s)} ${esc(c.p)}</b> ${c.options.map(esc).join(' <i>or</i> ')}<span>contradiction</span></li>`),
+      ...s.unknowns.slice(-5).reverse().map(u => `<li>${esc(u.q)}<span>unanswered</span></li>`)];
+    $('asks').innerHTML = asks.join('') || '<li class="hint">Nothing pending. Ask me something hard.</li>';
     $('facts').innerHTML = s.topFacts.map(f => `<li>${esc(f.text)}<span>${f.confidence} · ${esc(f.source)}</span></li>`).join('') || '<li class="hint">Nothing learned yet. Teach me.</li>';
     $('skills').innerHTML = s.skills.map(k => `<li class="${k.learned ? 'learned' : ''}" title="${esc(k.description)}">${esc(k.name)} ${k.wins || k.losses ? `+${k.wins}/−${k.losses}` : ''}</li>`).join('');
     if (!logSeeded) { logSeeded = true; for (const e of s.log) pushLog(e); }

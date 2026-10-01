@@ -25,7 +25,8 @@ class Memory {
     this.facts = [];             // {id,s,p,o,confidence,source,t,uses,wrong}
     this.working = [];           // [{id,activation}]
     this.dopamine = 0.5;         // reward signal 0..1
-    this.simOffset = 0;          // ms of simulated time (used by self-tests to age a scratch brain)
+    this.simOffset = 0;
+    this.contradictions = [];       // unresolved conflicting facts, refreshed at each sleep          // ms of simulated time (used by self-tests to age a scratch brain)
     if (state) this.load(state);
   }
 
@@ -222,6 +223,20 @@ class Memory {
         this.concepts.delete(id); report.merged++;
       }
     }
+    // Contradictions: same subject and predicate, different objects. Keep both, lower the loser's
+    // confidence, and surface the pair so the chief can settle it.
+    report.contradictions = [];
+    const byKey = new Map();
+    for (const f of this.facts) { if (f.wrong >= 2 || / not$/.test(f.p)) continue; const k = f.s + '|' + f.p; (byKey.get(k) || byKey.set(k, []).get(k)).push(f); }
+    for (const group of byKey.values()) {
+      if (group.length < 2 || !/^(is|is in|is at|costs|takes|starts|is called)$/.test(group[0].p)) continue;
+      const distinct = group.filter((f, i) => group.findIndex(g => g.o.toLowerCase() === f.o.toLowerCase()) === i);
+      if (distinct.length < 2) continue;
+      distinct.sort((a, b) => (b.confidence - b.wrong * 0.3 + b.t / 1e15) - (a.confidence - a.wrong * 0.3 + a.t / 1e15));
+      for (const f of distinct.slice(1)) f.confidence = Math.max(0.2, f.confidence - 0.1);
+      report.contradictions.push({ s: distinct[0].s, p: distinct[0].p, options: distinct.map(f => f.o) });
+    }
+    this.contradictions = report.contradictions;
     return report;
   }
 

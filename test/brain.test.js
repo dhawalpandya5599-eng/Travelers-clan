@@ -110,3 +110,13 @@ test('skills: lead gate scores hot and cold leads', () => {
   assert.match(s.tryAll('score this lead: 4 friends, ladakh in june, budget 25k each, want to book').output, /HOT/);
   assert.match(s.tryAll('score lead: price?').output, /COLD|JUNK/);
 });
+
+test('sleep detects contradictions and dreams stale facts', async () => {
+  const b = new Brain({ dataDir: tmp() });
+  b.memory.learnFact('ladakh trip', 'costs', '24000', { confidence: 0.7 });
+  b.memory.learnFact('ladakh trip', 'costs', '26000', { confidence: 0.7 });
+  const r = await b.sleep();
+  assert.strictEqual(r.contradictions.length, 1);
+  assert.deepStrictEqual(r.contradictions[0].options.sort(), ['24000', '26000']);
+  assert.ok(r.dreamed >= 2);
+});
