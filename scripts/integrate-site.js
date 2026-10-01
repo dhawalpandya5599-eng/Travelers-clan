@@ -21,6 +21,7 @@ const args = process.argv.slice(2);
 const flag = (k) => { const i = args.indexOf(k); return i > -1 ? args[i + 1] : null; };
 const MOUNT = flag('--mount') || '/admin/atlas';
 const ZIP = args.includes('--zip');
+const FORCE = args.includes('--force'); // remove an earlier ATLAS block and re-insert it at the best spot
 const given = args.find(a => !a.startsWith('--') && a !== MOUNT);
 
 const SKIP = new Set(['node_modules', '.git', 'atlas', 'dist', 'hbuilds', 'AppData', 'Library', 'Program Files', 'Windows', '$Recycle.Bin']);
@@ -70,11 +71,18 @@ function copyDir(src, dst) {
 
 function patchServer(file) {
   let src = fs.readFileSync(file, 'utf8');
-  if (src.includes('// ATLAS:begin')) { console.log('server.js already mounts ATLAS; leaving it as is.'); return false; }
+  if (src.includes('// ATLAS:begin')) {
+    if (!FORCE) { console.log('server.js already mounts ATLAS; leaving it as is (use --force to re-place it).'); return false; }
+    src = src.replace(/\n?\/\/ ATLAS:begin[\s\S]*?\/\/ ATLAS:end\n?/, '\n');
+  }
   const block = `\n// ATLAS:begin — the clan's learning mind, mounted at ${MOUNT} (keep after your admin auth middleware)\nconst atlas = require('./atlas/integrations/express');\napp.use('${MOUNT}', atlas({ dataDir: __dirname + '/data/atlas', express }));\n// ATLAS:end\n`;
-  // Insert before the first app.listen(...) so every middleware above it (auth, parsers) is already registered.
-  const m = src.match(/^[ \t]*(?:const\s+\w+\s*=\s*)?(?:app|server)\.listen\s*\(/m);
-  if (m) { src = src.slice(0, m.index) + block + src.slice(m.index); }
+  // Insert above the first catch-all handler (a 404 page or error handler registered with app.use and no
+  // path), otherwise before app.listen(...). Either way every middleware above (auth, parsers) is already registered.
+  const catchAll = src.match(/^[ \t]*app\.use\(\s*(?:async\s*)?(?:function\s*)?\(\s*(?:req|request|_req|_)\s*,\s*(?:res|response)\b/m)
+    || src.match(/^[ \t]*app\.(?:use|all|get)\(\s*['"]\*['"]|^[ \t]*app\.use\(\s*\/\^?\.\*/m);
+  const listen = src.match(/^[ \t]*(?:const\s+\w+\s*=\s*)?(?:app|server|http)\.listen\s*\(/m);
+  const m = catchAll && (!listen || catchAll.index < listen.index) ? catchAll : listen;
+  if (m) { src = src.slice(0, m.index) + block + src.slice(m.index); console.log(`Inserted the ATLAS mount ${m === catchAll ? 'above the catch-all 404 handler' : 'before app.listen'}.`); }
   else if (/const\s+app\s*=\s*express\(\)/.test(src)) { src = src.replace(/(const\s+app\s*=\s*express\(\)\s*;?)/, `$1${block}`); }
   else throw new Error('could not find app.listen( or const app = express() in server.js');
   if (!/\bexpress\b\s*=\s*require\(['"]express['"]\)/.test(src)) console.warn('warning: server.js does not require express under the name "express"; adjust the ATLAS block if needed.');
