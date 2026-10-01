@@ -16,6 +16,9 @@ const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
+const stateFile = [process.env.ATLAS_DATA && path.join(process.env.ATLAS_DATA, 'state.json'), path.join(root, 'mind', 'state.json'), path.join(root, 'data', 'state.json')].filter(Boolean).find(f => fs.existsSync(f));
+const pretrained = stateFile ? fs.readFileSync(stateFile, 'utf8') : null;
+if (stateFile) console.log('embedding mind from', path.relative(root, stateFile));
 const shims = `
 var process = { env: {} };
 var __modules = {};
@@ -44,12 +47,14 @@ __modules['vm'] = function (m) {
 };
 __modules['@anthropic-ai/sdk'] = function () { throw new Error('no sdk in browser'); };
 // A tiny file system over browser storage: state.json lives in localStorage, curriculum is embedded.
+// PRETRAINED is the mind as raised by the parent at build time; a fresh browser starts from it.
+var PRETRAINED = ${JSON.stringify(pretrained)};
 var CURRICULUM = ${JSON.stringify(Object.fromEntries(curriculum))};
 __modules['fs'] = function (m) {
   var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del: function (k) { try { localStorage.removeItem(k); } catch (e) {} } };
   var isCurr = function (p) { return /\\/curriculum\\b/.test(p); };
   m.exports = {
-    existsSync: function (p) { return isCurr(p) ? true : store.get(p) != null; },
+    existsSync: function (p) { if (isCurr(p)) return true; if (store.get(p) == null && PRETRAINED && /state\\.json$/.test(p)) store.set(p, PRETRAINED); return store.get(p) != null; },
     readFileSync: function (p) { if (isCurr(p)) { var f = p.split('/').pop(); if (!(f in CURRICULUM)) throw new Error('ENOENT'); return CURRICULUM[f]; } var v = store.get(p); if (v == null) throw new Error('ENOENT ' + p); return v; },
     writeFileSync: function (p, v) { store.set(p, String(v)); },
     renameSync: function (a, b) { var v = store.get(a); if (v != null) { store.set(b, v); store.del(a); } },

@@ -21,7 +21,7 @@ const DEFAULT_GENOME = {
 };
 
 const BOUNDS = {
-  learningRate: [0.02, 0.9], decayTau: [4, 720], consolidationThreshold: [0.05, 1.5], curiosity: [0, 1],
+  learningRate: [0.02, 0.9], decayTau: [4, 720], consolidationThreshold: [0.05, 1.5], curiosity: [0.3, 1],
   explorationEps: [0, 0.5], wmCapacity: [3, 15], associationThreshold: [0.01, 0.4], confidenceFloor: [0.1, 0.8],
 };
 

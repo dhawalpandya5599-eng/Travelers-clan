@@ -38,6 +38,17 @@ ATLAS is a single Node.js process with no build step and no database (its mind i
 
 Keep `ATLAS_DATA` on a persistent disk: that folder is ATLAS's memory.
 
+## Upbringing (how the parent trains it)
+
+`mind/state.json` is the trained mind, versioned in git. A training round is:
+
+```
+ATLAS_DATA=mind npm run train -- --generations 20 --cycles 3   # study curriculum, self-quiz, sleep, evolve
+ATLAS_DATA=mind npm run build:web                              # bake the mind into dist/atlas-web.html
+```
+
+Add lessons to `curriculum/` and rerun; the web page then opens already educated.
+
 ## How the brain works
 
 | Region (neuroscience) | Module | What it does |
