@@ -186,8 +186,9 @@ const PRED_PHRASE = { spent: 'spent', excludes: 'excludes', affects: 'affects', 
   'likes': 'likes', 'needs': 'needs', 'means': 'means', 'offers': 'offers', 'goes to': 'goes to', 'takes': 'takes',
   'starts': 'starts', 'should': 'should', 'is called': 'is called' };
 
+const NEG_PHRASE = { 'needs not': 'does not need', 'has not': 'does not have', 'is not': 'is not', 'is a not': 'is not a', 'is in not': 'is not in', 'is at not': 'is not at', 'offers not': 'does not offer', 'likes not': 'does not like', 'allows not': 'does not allow', 'costs not': 'does not cost', 'should not': 'should not' };
 function phrase(f) {
-  const p = PRED_PHRASE[f.p] || f.p.replace(' not', ' not');
+  const p = NEG_PHRASE[f.p] || PRED_PHRASE[f.p] || f.p.replace(/ not$/, '');
   return `${T.titleCase(f.s)} ${p} ${f.o}`;
 }
 
