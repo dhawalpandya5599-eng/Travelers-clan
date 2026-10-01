@@ -136,6 +136,7 @@ function parseQuestion(text) {
   for (const [re, kind] of Q) {
     const m = t.match(re);
     if (m && kind === 'where-kind') return { kind: 'where', subject: cleanSubject(m[2]).toLowerCase(), wantKind: m[1].toLowerCase(), raw: t };
+    if (m && kind === 'what-does') { const verb = (t.match(/\s(offer|provide|sell|have|do|like|need|want)\??$/i) || [])[1]; return { kind, subject: cleanSubject(m[1]).replace(/\?$/, '').trim().toLowerCase(), verb: verb && verb.toLowerCase(), raw: t }; }
     if (m) return { kind, subject: cleanSubject(m[1]).replace(/\?$/, '').trim().toLowerCase(), raw: t };
   }
   if (T.isQuestion(t)) return { kind: 'open', subject: T.tokens(t).join(' '), raw: t };
@@ -262,7 +263,9 @@ function answer(question, memory, skills, recalled) {
     worry: f => f.p === 'worries about', tone: f => f.p === 'tone',
   };
   let chosen = facts;
-  if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; }
+  const VERB_PRED = { offer: /^offers$/, provide: /^offers$/, sell: /^offers$/, have: /^has$/, like: /^likes$/, need: /^needs$/, want: /^(needs|likes)$/ };
+  if (question.verb && VERB_PRED[question.verb]) { const narrowed = facts.filter(f => VERB_PRED[question.verb].test(f.p)); if (narrowed.length) chosen = narrowed; }
+  else if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; }
   chosen = chosen.filter(f => f.wrong < 2);
   // Aggregate: many facts with the same predicate become one list ("X offers: a; b; c").
   const samePred = chosen.length > 2 && chosen.every(f => f.p === chosen[0].p && f.s === chosen[0].s);
