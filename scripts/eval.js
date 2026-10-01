@@ -101,6 +101,15 @@ const CASES = [
   { conversions: true, q: 'predict: college group asked price, we replied next day, ignored the budget objection, no follow up', expect: /Booking chance ([0-9]|[1-3]\d)%/, kind: 'conversion' },
   { conversions: true, q: 'What raises the booking rate?', expect: /first reply within ten minutes|social proof|right tone/i, kind: 'conversion' },
   { conversions: true, q: 'Does ignoring the objection lower the booking rate?', expect: /yes/i, kind: 'conversion' },
+  // --- end-to-end funnel learned from journeys ---
+  { journeys: true, q: 'next step: hi we are 4 friends planning goa in december, budget 15k each. what packages do you have', expect: /Stage: qualified.*Do: (send social proof then price|send itinerary pdf|call)/i, kind: 'funnel' },
+  { journeys: true, q: 'next step: hi, saw your ad. do you do spiti trips?', expect: /Stage: enquiry.*Do: reply fast/i, kind: 'funnel' },
+  { journeys: true, q: 'next step:\nlead: family of 4, kerala in may, budget 30k pp\nclan: 32,000 per person all inclusive\nlead: hmm is it safe for kids? and what about veg food', expect: /Stage: objection.*Do: (answer with proof|call)/i, kind: 'funnel' },
+  { journeys: true, q: 'next step:\nclan: 24,000 per person\nlead: any discount possible? we are many', expect: /Stage: negotiation.*Do: (hold price add value|split payment|small discount)/i, kind: 'funnel' },
+  { journeys: true, q: 'next step:\nlead: ok lets do it. how do we pay', expect: /Stage: advance.*Do: send payment link now/i, kind: 'funnel' },
+  { journeys: true, q: 'why do we lose leads?', expect: /lost mostly because/i, kind: 'funnel' },
+  { journeys: true, q: 'What is the best action when they object?', expect: /answer with proof|call/i, kind: 'funnel' },
+  { journeys: true, q: 'What is the most common reason a lead is lost?', expect: /no reply|ghosted|slow|price|objection|decide|quiet/i, kind: 'funnel' },
 ];
 
 async function run() {
@@ -112,6 +121,7 @@ async function run() {
     const b = new Brain({ dataDir: dir, autosave: false });
     b.evolution.genome.curiosity = 0;
     b.studyCurriculum(path.join(__dirname, '..', 'curriculum'));
+    if (c.journeys) { const f = path.join(__dirname, '..', 'synth', 'journeys.json'); if (fs.existsSync(f)) b.learnJourneys(JSON.parse(fs.readFileSync(f, 'utf8')).journeys, { source: 'synthetic' }); }
     if (c.conversions) { const f = path.join(__dirname, '..', 'synth', 'conversations.json'); if (fs.existsSync(f)) b.learnConversions(JSON.parse(fs.readFileSync(f, 'utf8')).conversations, { source: 'synthetic' }); }
     for (const t of c.teach || []) await b.respond(t);
     for (const d of c.dialogue || []) await b.respond(d);

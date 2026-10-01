@@ -69,6 +69,13 @@ function mergeMinds(base, other) {
   for (const lab of ['booked', 'lost']) for (const [k, v] of Object.entries(oc.counts[lab] || {})) counts[lab][k] = (counts[lab][k] || 0) + v;
   out.conversion = { counts, n: { booked: (bc.n.booked || 0) + (oc.n.booked || 0), lost: (bc.n.lost || 0) + (oc.n.lost || 0) }, vocab: [...new Set([...(bc.vocab || []), ...(oc.vocab || [])])] };
 
+  // Funnel model: counts add up.
+  const bf2 = base.funnel || { stats: {}, losses: {}, drop: {}, n: 0 }, of2 = other.funnel || { stats: {}, losses: {}, drop: {}, n: 0 };
+  const stats = JSON.parse(JSON.stringify(bf2.stats || {}));
+  for (const [k, v] of Object.entries(of2.stats || {})) { const t = stats[k] || (stats[k] = { n: 0, booked: 0, done: 0, revenue: 0, referred: 0 }); for (const f of Object.keys(v)) t[f] = (t[f] || 0) + v[f]; }
+  const addMaps = (a, b) => { const o = JSON.parse(JSON.stringify(a || {})); for (const [t, m] of Object.entries(b || {})) { o[t] = o[t] || {}; for (const [k, v] of Object.entries(m)) o[t][k] = (o[t][k] || 0) + v; } return o; };
+  out.funnel = { stats, losses: addMaps(bf2.losses, of2.losses), drop: addMaps(bf2.drop, of2.drop), n: (bf2.n || 0) + (of2.n || 0) };
+
   // Evolution: fittest genome, longest lineage.
   const be = base.evolution || {}, oe = other.evolution || {};
   const bf = (be.history || []).slice(-1)[0]?.best ?? -1, of = (oe.history || []).slice(-1)[0]?.best ?? -1;

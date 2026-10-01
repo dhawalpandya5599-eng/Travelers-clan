@@ -35,14 +35,14 @@ class Memory {
   advance(hours) { this.simOffset += hours * HOUR; }
 
   // ---------- Episodic ----------
-  remember(role, text, { valence = 0, importance = 0.5, meta = {} } = {}) {
+  remember(role, text, { valence = 0, importance = 0.5, meta = {}, encode = true } = {}) {
     const ep = {
       id: 'e' + T.hash(text + this.now() + Math.random()), t: this.now(), role, text: String(text).slice(0, 2000),
       tokens: T.tokens(text), valence, importance, access: 0, lastAccess: this.now(), consolidated: false, meta,
     };
     this.episodes.push(ep);
     if (this.episodes.length > 5000) this.forgetWeakestEpisodes(500);
-    this.encode(text, importance);
+    if (encode) this.encode(text, importance);
     return ep;
   }
 

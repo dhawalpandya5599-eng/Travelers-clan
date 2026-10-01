@@ -283,7 +283,7 @@ function answer(question, memory, skills, recalled) {
   // Prefer the facts whose wording matches the question's extra words ("per form lead", "in July").
   const extra = new Set(T.tokens(question.raw).filter(t => !T.tokens(matched).includes(t)));
   if (extra.size) {
-    const score = (f) => T.tokens(f.p + ' ' + f.o).filter(t => extra.has(t)).length;
+    const score = (f) => T.tokens(f.s + ' ' + f.p + ' ' + f.o).filter(t => extra.has(t)).length;
     const best = Math.max(...chosen.map(score));
     if (best > 0) chosen = chosen.filter(f => score(f) === best).concat(chosen.filter(f => score(f) < best));
   }

@@ -10,6 +10,7 @@
 
 const vm = require('vm');
 const cohorts = require('./cohorts');
+const { detectStage } = require('./funnel');
 
 class Skills {
   constructor(state) {
@@ -91,6 +92,31 @@ class Skills {
   }
 
   registerBuiltins() {
+    this.register({
+      name: 'next-step', description: 'Reads a conversation, detects the funnel stage and the customer type, and says exactly what to do next, with a draft.',
+      match: (input) => { const m = input.match(/^(?:next step|what next|what should (?:i|we) do next|next action|advise)(?:\s+for)?[: ]+([\s\S]{6,})$/i); return m ? m[1] : null; },
+      run: (convo, input, ctx) => {
+        const funnel = ctx && ctx.funnel; if (!funnel || !funnel.n) return 'I have not studied enough customer journeys yet.';
+        const lines = convo.split(/\n+/).map(l => l.trim()).filter(Boolean);
+        const stage = detectStage(lines);
+        const top = cohorts.classify(convo)[0]; const type = top ? (cohorts.get(top.id).type || top.id) : '*';
+        const best = funnel.best(type, stage) || funnel.best('*', stage);
+        if (!best) return `Stage: ${stage}. No learned policy yet for this stage.`;
+        const DRAFT = { reply_fast_qualify: 'Reply now: "Thanks for reaching out! To plan this right: which dates, how many of you, and a rough budget per person?"', reply_fast_price: 'Reply now with the starting price per person and ask for dates.', send_itinerary_pdf: 'Send the day-by-day plan as a PDF with the all-inclusive price per person.', send_social_proof_then_price: 'Send photos and two reviews from the last group, then the all-inclusive price.', call: 'Ask for a 5-minute call: "Can I call you to understand what matters most?"', answer_with_proof: 'Answer the concern specifically, attach proof (photos, policy, a past traveler to talk to).', follow_up_24h: 'Tomorrow: "Just checking if you had a chance to look at the plan. Happy to adjust anything."', offer_date_flex: 'Offer the following week\'s departure as an alternative date.', hold_price_add_value: 'Hold the price; add a bonfire night and airport pickup at no cost.', split_payment: 'Offer 30% now and the balance two weeks before departure.', small_discount: 'Offer 5% for the group size, valid until Friday.', send_payment_link_now: 'Send the advance payment link now; hold seats for 24 hours.', remind_7d_before: 'Remind about the balance 7 days before departure.', trip_group_and_packing_list: 'Create the WhatsApp trip group and send the packing list a week before.', ask_review_2d: 'Ask for a review two days after the trip ends.', referral_reward: 'Offer a referral discount on their next trip.' };
+        const pct = (r) => Math.round(r * 100);
+        return `Stage: ${stage}. Customer type: ${type === '*' ? 'unknown' : type}. Do: ${best.action.replace(/_/g, ' ')} (books ${pct(best.rate)}%, captures ${pct(best.revenue)}% of lead value, ${best.n} similar cases${best.alternatives[0] ? `; next best ${best.alternatives[0].action.replace(/_/g, ' ')} at ${pct(best.alternatives[0].rate)}%` : ''}). ${DRAFT[best.action] || ''}`;
+      },
+    });
+    this.register({
+      name: 'why-lost', description: 'Explains why leads are lost, overall or for a customer type, from studied journeys.',
+      match: (input) => { const m = input.match(/^(?:why (?:do|are) (?:we )?(?:lose|losing)|why (?:do )?(.+?) (?:leads )?(?:get lost|drop|ghost)|loss reasons?)(?:\s+(?:for\s+)?(\w+))?\s*(?:leads|customers)?\??$/i); return m ? (m[1] || m[2] || '*') : null; },
+      run: (who, input, ctx) => {
+        const funnel = ctx && ctx.funnel; if (!funnel || !funnel.n) return 'I have not studied enough customer journeys yet.';
+        const type = who === '*' ? '*' : (Object.keys(funnel.losses).find(t => t !== '*' && who.toLowerCase().includes(t)) || '*');
+        const L = funnel.lossReasons(type).slice(0, 4); const D = funnel.dropoff(type);
+        return `${type === '*' ? 'Overall' : type[0].toUpperCase() + type.slice(1) + ' customers'}: lost mostly because ${L.map(l => `${l.why} (${Math.round(l.share * 100)}%)`).join(', ')}. Funnel: ${D.map(d => `${d.stage} ${d.reached}`).join(' → ')}.`;
+      },
+    });
     this.register({
       name: 'predict', description: 'Predicts whether a lead will book from how the conversation went, with reasons.',
       match: (input) => { const m = input.match(/^(?:predict|will (?:this|the) lead book|chance of booking|booking chance)[: ]+(.{10,})$/i); return m ? m[1] : null; },

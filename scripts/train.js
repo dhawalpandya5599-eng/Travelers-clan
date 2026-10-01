@@ -45,12 +45,14 @@ const cycles = arg('cycles', 2);
         const top = cohorts.classify(cu.message)[0];
         const ok = r.text.startsWith(cohorts.get(cu.cohort).name) || (top && top.type && top.type === cohorts.get(cu.cohort).type);
         if (ok) { right++; brain.memory.reward(0.02); brain.skills.feedback('cohort', true); } else brain.skills.feedback('cohort', false);
-        brain.memory.remember('experience', `${cu.name} from ${cu.region} (${cohorts.get(cu.cohort).name}) asked: ${cu.message}`, { importance: 0.3, meta: { source: 'synthetic', cohort: cu.cohort, skip: true } });
+        brain.memory.remember('experience', `${cu.name} from ${cu.region} (${cohorts.get(cu.cohort).name}) asked: ${cu.message}`, { importance: 0.3, meta: { source: 'synthetic', cohort: cu.cohort, skip: true }, encode: false });
         brain.pendingQuestion = null;
       }
       console.log(`Cycle ${c + 1}: cohort practice ${right}/${sample.length} customers recognised.`);
     }
     if (c === 0) {
+      const jFile = path.join(__dirname, '..', 'synth', 'journeys.json');
+      if (fs.existsSync(jFile)) { const { journeys } = JSON.parse(fs.readFileSync(jFile, 'utf8')); const n = brain.learnJourneys(journeys, { source: 'synthetic-journeys' }); console.log(`Journeys: ${journeys.length} studied, ${n} funnel facts.`); }
       const convFile = path.join(__dirname, '..', 'synth', 'conversations.json');
       if (fs.existsSync(convFile)) { const { conversations } = JSON.parse(fs.readFileSync(convFile, 'utf8')); const n = brain.learnConversions(conversations, { source: 'synthetic-conversations' }); console.log(`Conversations: ${conversations.length} studied, ${n} conversion facts.`); }
     }
