@@ -27,6 +27,8 @@ npm start
 
 ATLAS is a single Node.js process with no build step and no database (its mind is one JSON file).
 
+**Zero-install option:** `npm run build:web` bundles the whole brain into `dist/atlas-web.html`, a single page that runs entirely in the browser (memory lives in that browser's storage). Published as a claude.ai artifact it gains Claude as a mentor through the page's own ask-Claude capability.
+
 | Option | Steps |
 |---|---|
 | **Your laptop** (fastest) | Install Node 18+, then `git clone`, `cd Travelers-clan`, `npm start`, open http://localhost:3000 |

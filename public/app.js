@@ -1,7 +1,9 @@
 /* ATLAS front-end: chat, live knowledge-graph (force layout), evolution chart, event stream. */
 (() => {
   const $ = (id) => document.getElementById(id);
+  const LOCAL = window.ATLAS_LOCAL || null; // set when the brain runs inside this page (no server)
   const api = async (method, url, body) => {
+    if (LOCAL) return LOCAL.request(method, url, body);
     const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
     return r.json();
   };
@@ -91,6 +93,7 @@
     while (log.children.length > 80) log.lastChild.remove();
   }
   function connect() {
+    if (LOCAL) { LOCAL.onEvent(e => { pushLog(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); }); return; }
     const es = new EventSource('/api/events');
     es.onmessage = (m) => { const e = JSON.parse(m.data); pushLog(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); };
     es.onerror = () => { es.close(); setTimeout(connect, 3000); };
@@ -185,6 +188,7 @@
     return { update, flash };
   })();
 
+  if (LOCAL) { const ex = document.getElementById('btn-export'); if (ex) { ex.addEventListener('click', (e) => { e.preventDefault(); LOCAL.exportMind(); }); } }
   // ---------- Boot ----------
   addMsg('atlas', 'I am ATLAS. I was born knowing nothing. Teach me about the clan, ask me questions, correct me when I am wrong, and reward good answers. I sleep to consolidate and evolve to improve.');
   connect();

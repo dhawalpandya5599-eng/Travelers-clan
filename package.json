@@ -10,6 +10,7 @@
     "dev": "node --watch server.js",
     "test": "node --test test/*.test.js",
     "train": "node scripts/train.js",
+    "build:web": "node scripts/build-web.js",
     "evolve": "node scripts/train.js --generations 20"
   },
   "license": "MIT",
