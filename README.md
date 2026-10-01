@@ -40,6 +40,9 @@ Keep `ATLAS_DATA` on a persistent disk: that folder is ATLAS's memory.
 
 ## Inside an existing Express website (travelersclan.in)
 
+**Automatic (recommended):** on the PC that holds the site's source, double-click `ATLAS-install.bat` (Windows) or run `node scripts/integrate-site.js --zip`. It finds the site folder, copies ATLAS into `<site>/atlas`, inserts the mount lines into `server.js` (idempotent, marked `// ATLAS:begin`), smoke-tests the router, and writes `travelersclan_<timestamp>.zip` next to the site folder for the usual hPanel upload. Pass the site path explicitly if it lives somewhere unusual: `node scripts/integrate-site.js D:\sites\travelersclan --zip`.
+
+**Manual:** 
 Copy this repo as a folder named `atlas` into the site's source, then add two lines to the site's `server.js`:
 
 ```js
