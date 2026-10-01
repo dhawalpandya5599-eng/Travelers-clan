@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'importers', 'brain'];
+const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'importers', 'brain'];
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
@@ -33,7 +33,7 @@ function __require(name) {
   return module.exports;
 }
 // --- Node shims ---
-__modules['path'] = function (m) { m.exports = { join: function () { return Array.prototype.slice.call(arguments).join('/').replace(/\\/+/g, '/'); }, extname: function (p) { var i = p.lastIndexOf('.'); return i < 0 ? '' : p.slice(i); } }; };
+__modules['path'] = function (m) { m.exports = { join: function () { return Array.prototype.slice.call(arguments).join('/').replace(/\\/+/g, '/'); }, extname: function (p) { var i = p.lastIndexOf('.'); return i < 0 ? '' : p.slice(i); }, basename: function (p) { return p.split('/').pop(); }, dirname: function (p) { return p.split('/').slice(0, -1).join('/') || '/'; } }; };
 __modules['events'] = function (m) {
   function EE() { this._l = {}; }
   EE.prototype.on = function (k, f) { (this._l[k] = this._l[k] || []).push(f); return this; };
@@ -117,6 +117,8 @@ const glue = `
           case 'POST /api/feedback': brain.feedback(!!body.good, body.note || ''); return { ok: true, dopamine: brain.memory.dopamine };
           case 'POST /api/teach': return { facts: brain.teach(String(body.text || ''), { source: body.source || 'chief' }) };
           case 'POST /api/import/whatsapp': return importWhatsApp(brain, String(body.text || ''), { staff: String(body.staff || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean) });
+          case 'POST /api/import/mind': return brain.absorb(body.state || body, { source: body.source || 'upload' });
+          case 'POST /api/upbringing': return brain.upbringing({ generations: Math.min(50, +body.generations || 5) });
           case 'POST /api/sleep': return brain.sleep();
           case 'POST /api/evolve': return brain.evolve(Math.min(50, Math.max(1, +body.generations || 1)));
           case 'POST /api/grow': return brain.growSkill().then(function (s) { return s || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : brain.mentor.lastError }; });

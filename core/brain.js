@@ -16,6 +16,7 @@ const L = require('./learning');
 const { Skills } = require('./skills');
 const { Evolution } = require('./evolution');
 const { Mentor } = require('./mentor');
+const { mergeMinds, summary } = require('./merge');
 
 const VERSION = '0.1.0';
 
@@ -31,6 +32,7 @@ class Brain extends EventEmitter {
     this.log = [];                   // recent cognitive events for the UI
     this.pendingQuestion = null;     // curiosity question awaiting an answer
     this.unknowns = [];              // questions it could not answer -> training signal
+    this.absorbedSeeds = [];         // hashes of seed minds already merged in
     this.mentor = new Mentor();
     this.evolution = new Evolution();
     this.memory = new Memory(this.evolution.genome);
@@ -53,6 +55,7 @@ class Brain extends EventEmitter {
       this.interactions = s.interactions || 0;
       this.lessonsLearned = s.lessonsLearned || 0;
       this.unknowns = s.unknowns || [];
+      this.absorbedSeeds = s.absorbedSeeds || [];
       this.log = (s.log || []).slice(-100);
       this.event('system', `State restored: ${this.memory.episodes.length} episodes, ${this.memory.concepts.size} concepts, generation ${this.evolution.generation}.`);
       return true;
@@ -69,11 +72,7 @@ class Brain extends EventEmitter {
     try {
       fs.mkdirSync(this.dataDir, { recursive: true });
       const tmp = this.file + '.tmp';
-      fs.writeFileSync(tmp, JSON.stringify({
-        version: VERSION, born: this.born, interactions: this.interactions, lessonsLearned: this.lessonsLearned,
-        unknowns: this.unknowns.slice(-200), log: this.log.slice(-100),
-        evolution: this.evolution.dump(), memory: this.memory.dump(), skills: this.skills.dump(),
-      }));
+      fs.writeFileSync(tmp, JSON.stringify(this.current()));
       fs.renameSync(tmp, this.file);
     } catch (e) { this.event('error', 'Could not save state: ' + e.message); }
   }
@@ -84,6 +83,41 @@ class Brain extends EventEmitter {
     if (this.log.length > 300) this.log.shift();
     this.emit('event', e);
     return e;
+  }
+
+  /** Merge another mind's state into this one. Nothing already known is lost. */
+  absorb(state, { source = 'import' } = {}) {
+    if (!state || typeof state !== 'object' || !state.memory) throw new Error('not a mind: expected {memory, evolution, skills}');
+    const before = summary(this.current());
+    const merged = mergeMinds(this.current(), state);
+    this.evolution = new Evolution(merged.evolution);
+    this.memory = new Memory(this.evolution.genome, merged.memory);
+    this.skills = new Skills(merged.skills);
+    this.born = merged.born; this.interactions = merged.interactions; this.lessonsLearned = merged.lessonsLearned; this.unknowns = merged.unknowns;
+    const after = summary(merged);
+    this.event('learn', `Absorbed a mind from ${source}: facts ${before.facts}→${after.facts}, concepts ${before.concepts}→${after.concepts}, generation ${before.generation}→${after.generation}.`);
+    this.saveNow();
+    return { before, after };
+  }
+
+  /** Absorb a seed file (e.g. mind/state.json from git) once per distinct version. */
+  absorbSeed(file) {
+    try {
+      if (!fs.existsSync(file)) return null;
+      const text = fs.readFileSync(file, 'utf8');
+      const key = T.hash(text);
+      if (this.absorbedSeeds.includes(key)) return null;
+      const r = this.absorb(JSON.parse(text), { source: path.basename(path.dirname(file)) + '/' + path.basename(file) });
+      this.absorbedSeeds.push(key); this.absorbedSeeds = this.absorbedSeeds.slice(-50); this.saveNow();
+      return r;
+    } catch (e) { this.event('error', 'Could not absorb seed: ' + e.message); return null; }
+  }
+
+  /** The full state as it would be saved. */
+  current() {
+    return { version: VERSION, born: this.born, interactions: this.interactions, lessonsLearned: this.lessonsLearned,
+      unknowns: this.unknowns.slice(-200), log: this.log.slice(-100), absorbedSeeds: this.absorbedSeeds,
+      evolution: this.evolution.dump(), memory: this.memory.dump(), skills: this.skills.dump() };
   }
 
   // ---------- Teaching ----------
@@ -345,6 +379,22 @@ class Brain extends EventEmitter {
       this.save();
       return s;
     } catch (e) { this.event('error', `Rejected synthesized skill: ${e.message}`); return null; }
+  }
+
+  /** One self-directed upbringing round: self-quiz with self-reward, sleep, evolve. Used by hosts that train on their own. */
+  async upbringing({ generations = 5 } = {}) {
+    let hit = 0, total = 0;
+    const saved = this.pendingQuestion; this.pendingQuestion = null;
+    for (const f of this.memory.facts.slice(0, 150)) {
+      const r = await this.respond(`what is ${f.s}?`); total++;
+      if (r.text && r.text.toLowerCase().includes(f.o.toLowerCase().slice(0, 12))) { hit++; this.memory.reward(0.02); }
+      this.pendingQuestion = null;
+    }
+    this.pendingQuestion = saved;
+    const sleep = await this.sleep();
+    const evo = this.evolve(generations);
+    this.event('evolve', `Upbringing round: self-quiz ${hit}/${total}, generation ${evo ? evo.generation : this.evolution.generation}.`);
+    return { quiz: { hit, total }, sleep, evolution: evo };
   }
 
   /** Background heartbeat: decay, occasional sleep and evolution. */

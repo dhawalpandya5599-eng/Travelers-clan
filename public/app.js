@@ -52,6 +52,16 @@
     if (r.faq && r.faq.length) addMsg('atlas', 'Most asked topics in that chat: ' + r.faq.map(f => `${f.topic} (${f.count})`).join(', '));
     $('wa-text').value = '';
   });
+  $('mind-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    busy(true);
+    try {
+      const state = JSON.parse(await file.text());
+      const r = await api('POST', '/api/import/mind', { state, source: file.name });
+      addMsg('atlas', r.error ? 'Could not merge that file: ' + r.error : `Merged ${file.name}: facts ${r.before.facts} → ${r.after.facts}, concepts ${r.before.concepts} → ${r.after.concepts}, generation ${r.before.generation} → ${r.after.generation}. Nothing was lost.`);
+    } catch (err) { addMsg('atlas', 'That file is not a mind export: ' + err.message); }
+    e.target.value = ''; busy(false); refresh();
+  });
   async function action(btn, fn) { btn.disabled = true; busy(true); try { await fn(); } finally { btn.disabled = false; busy(false); refresh(); } }
   function busy(b) { $('pulse').classList.toggle('busy', b); }
 

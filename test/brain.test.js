@@ -120,3 +120,23 @@ test('sleep detects contradictions and dreams stale facts', async () => {
   assert.deepStrictEqual(r.contradictions[0].options.sort(), ['24000', '26000']);
   assert.ok(r.dreamed >= 2);
 });
+
+test('merge: two minds combine without losing either', async () => {
+  const { mergeMinds, summary } = require('../core/merge');
+  const a = new Brain({ dataDir: tmp() }); a.evolution.genome.curiosity = 0;
+  const b = new Brain({ dataDir: tmp() }); b.evolution.genome.curiosity = 0;
+  await a.respond('Manali is in Himachal Pradesh'); await a.respond('Goa is a beach state');
+  await b.respond('Manali is in Himachal Pradesh'); await b.respond('Spiti is a cold desert');
+  a.evolve(1); b.evolve(2);
+  a.saveNow(); b.saveNow();
+  const merged = mergeMinds(JSON.parse(fs.readFileSync(a.file, 'utf8')), JSON.parse(fs.readFileSync(b.file, 'utf8')));
+  const s = summary(merged);
+  assert.strictEqual(merged.memory.facts.filter(f => f.s === 'manali').length, 1);
+  assert.ok(merged.memory.facts.some(f => f.s === 'goa') && merged.memory.facts.some(f => f.s === 'spiti'));
+  assert.strictEqual(s.generation, 2);
+  assert.strictEqual(merged.evolution.history.length, 3);
+  const dir = tmp(); fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify(merged));
+  const c = new Brain({ dataDir: dir }); c.evolution.genome.curiosity = 0;
+  assert.match((await c.respond('Where is Spiti?')).text, /cold desert/i);
+  assert.match((await c.respond('What is Goa?')).text, /beach state/i);
+});

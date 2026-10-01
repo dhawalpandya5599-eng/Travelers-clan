@@ -49,6 +49,19 @@ app.use('/admin/atlas', atlas({ dataDir: __dirname + '/data/atlas', express }));
 
 Put those lines after your admin authentication middleware so only admins reach `/admin/atlas`. The folder `data/atlas` must survive deploys (keep it out of the build output or point `dataDir` at a persistent path). The first boot seeds from `atlas/mind/state.json`, the mind trained by the parent. No new npm dependencies.
 
+## The growing loop (nothing is ever lost)
+
+Every copy of ATLAS keeps learning, and copies **merge** instead of overwrite. A merge is a union: all facts, memories, synapses, skills and the fittest genome from both sides survive.
+
+| Where it runs | How it learns | How its learning is kept |
+|---|---|---|
+| Cloud routine (nightly) | new lesson, train, interview | commits `mind/state.json`, republishes the link |
+| Local server (`npm start`) | conversation, daily self-upbringing | saves `data/state.json`; absorbs any newer `mind/state.json` after `git pull`; `npm run sync:push` folds local learning back into the repo |
+| Browser page | conversation, mentor | browser storage; **Export mind** → **Merge a mind** on any other copy |
+| Inside travelersclan.in | admin conversations | `data/atlas/state.json`; seeds from and merges with `atlas/mind/state.json` |
+
+When cloud credits run out, run the local server: it continues from the last committed mind, keeps training itself daily, and `npm run sync:push` publishes what it learned so the cloud, the website and the browser page pick it up next time.
+
 ## Upbringing (how the parent trains it)
 
 `mind/state.json` is the trained mind, versioned in git. A training round is:

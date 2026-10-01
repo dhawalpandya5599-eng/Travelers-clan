@@ -14,7 +14,17 @@ const PORT = +(process.env.PORT || 3000);
 const PUBLIC = path.join(__dirname, 'public');
 const brain = new Brain({ dataDir: process.env.ATLAS_DATA || path.join(__dirname, 'data') });
 const studied = brain.studyCurriculum(path.join(__dirname, 'curriculum'));
+// Absorb the mind shipped in the repo (trained elsewhere) once per version: git pull = smarter, never dumber.
+const SEED = path.join(__dirname, 'mind', 'state.json');
+const absorbed = brain.absorbSeed(SEED);
+if (absorbed) console.log(`ATLAS absorbed mind/state.json: facts ${absorbed.before.facts}→${absorbed.after.facts}, generation ${absorbed.before.generation}→${absorbed.after.generation}.`);
+// Snapshot the live mind back into the repo folder so it can be committed and shared (ATLAS_SNAPSHOT=0 disables).
+function snapshot() {
+  if (process.env.ATLAS_SNAPSHOT === '0') return;
+  try { fs.mkdirSync(path.dirname(SEED), { recursive: true }); brain.saveNow(); fs.copyFileSync(brain.file, SEED); brain.absorbedSeeds.push(require('./core/text').hash(fs.readFileSync(SEED, 'utf8'))); } catch (e) { console.error('snapshot failed:', e.message); }
+}
 if (studied) console.log(`ATLAS studied ${studied} new curriculum sentences.`);
+let lastUpbringing = Date.now();
 
 // Heartbeat: a minute of wall-clock = a minute of brain time. Sleep every ~30 interactions or 20 min; evolve every hour.
 let lastSleep = Date.now(), lastEvolve = Date.now(), sinceSleep = 0;
@@ -22,6 +32,8 @@ setInterval(async () => {
   brain.tick(1 / 60);
   if (sinceSleep >= 30 || Date.now() - lastSleep > 20 * 60e3) { sinceSleep = 0; lastSleep = Date.now(); await brain.sleep(); }
   if (Date.now() - lastEvolve > 60 * 60e3) { lastEvolve = Date.now(); brain.evolve(1); }
+  // The growing loop: once a day the local server raises itself and snapshots the result (ATLAS_UPBRINGING_HOURS to tune).
+  if (Date.now() - lastUpbringing > (+process.env.ATLAS_UPBRINGING_HOURS || 24) * 3600e3) { lastUpbringing = Date.now(); await brain.upbringing({ generations: 5 }); snapshot(); }
 }, 60e3).unref();
 
 const clients = new Set();
@@ -52,6 +64,9 @@ const routes = {
   'POST /api/feedback': async (q, body) => { brain.feedback(!!body.good, body.note || ''); return { ok: true, dopamine: brain.memory.dopamine }; },
   'POST /api/teach': async (q, body) => ({ facts: brain.teach(String(body.text || ''), { source: body.source || 'chief' }) }),
   'POST /api/import/whatsapp': async (q, body) => importWhatsApp(brain, String(body.text || ''), { staff: Array.isArray(body.staff) ? body.staff : String(body.staff || '').split(',').map(x => x.trim()).filter(Boolean) }),
+  'POST /api/import/mind': async (q, body) => brain.absorb(body.state || body, { source: body.source || 'upload' }),
+  'POST /api/upbringing': async (q, body) => { const r = await brain.upbringing({ generations: Math.min(50, +body.generations || 5) }); snapshot(); return r; },
+  'POST /api/snapshot': async () => { snapshot(); return { ok: true, file: SEED }; },
   'POST /api/sleep': async () => brain.sleep(),
   'POST /api/evolve': async (q, body) => brain.evolve(Math.min(50, Math.max(1, +body.generations || 1))),
   'POST /api/grow': async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError },

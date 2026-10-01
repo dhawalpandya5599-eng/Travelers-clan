@@ -23,12 +23,14 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   if (!fs.existsSync(stateFile) && fs.existsSync(seedFrom)) { fs.mkdirSync(dataDir, { recursive: true }); fs.copyFileSync(seedFrom, stateFile); }
   const brain = new Brain({ dataDir });
   brain.studyCurriculum(path.join(ROOT, 'curriculum'));
+  brain.absorbSeed(seedFrom); // a newer trained mind in the folder is merged in, never replacing local learning
 
-  let sinceSleep = 0, lastSleep = Date.now(), lastEvolve = Date.now();
+  let sinceSleep = 0, lastSleep = Date.now(), lastEvolve = Date.now(), lastUp = Date.now();
   setInterval(async () => {
     brain.tick(1 / 60);
     if (sinceSleep >= 30 || Date.now() - lastSleep > 20 * 60e3) { sinceSleep = 0; lastSleep = Date.now(); await brain.sleep(); }
     if (Date.now() - lastEvolve > 60 * 60e3) { lastEvolve = Date.now(); brain.evolve(1); }
+    if (Date.now() - lastUp > 24 * 3600e3) { lastUp = Date.now(); await brain.upbringing({ generations: 5 }); }
   }, 60e3).unref();
 
   const router = express.Router();
@@ -45,6 +47,8 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/feedback', wrap(req => { brain.feedback(!!req.body.good, req.body.note || ''); return { ok: true, dopamine: brain.memory.dopamine }; }));
   router.post('/api/teach', wrap(req => ({ facts: brain.teach(String(req.body.text || ''), { source: req.body.source || 'admin' }) })));
   router.post('/api/import/whatsapp', wrap(req => importWhatsApp(brain, String(req.body.text || ''), { staff: String(req.body.staff || '').split(',').map(s => s.trim()).filter(Boolean) })));
+  router.post('/api/import/mind', wrap(req => brain.absorb(req.body.state || req.body, { source: req.body.source || 'upload' })));
+  router.post('/api/upbringing', wrap(req => brain.upbringing({ generations: Math.min(50, +req.body.generations || 5) })));
   router.post('/api/sleep', wrap(() => brain.sleep()));
   router.post('/api/evolve', wrap(req => brain.evolve(Math.min(50, Math.max(1, +req.body.generations || 1)))));
   router.post('/api/grow', wrap(async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError }));
