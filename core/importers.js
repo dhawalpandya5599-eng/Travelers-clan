@@ -89,7 +89,7 @@ function adsLesson(rows, { period = 'the last 90 days', currency = 'INR' } = {})
     const best = priced[0], worst = priced[priced.length - 1];
     const bn = best.name.replace(/\[.*?\]\s*/g, '').trim(), wn = worst.name.replace(/\[.*?\]\s*/g, '').trim();
     out.push(`The cheapest leads come from ${bn} campaign.`);
-    out.push(`${wn} campaign costs ${(+worst.costPerResult / +best.costPerResult).toFixed(1)} times more per lead than ${bn} campaign.`);
+    out.push(`${wn} campaign is ${(+worst.costPerResult / +best.costPerResult).toFixed(1)} times dearer per lead than ${bn} campaign.`);
     out.push(`Budget should move from ${wn} campaign to ${bn} campaign.`);
   }
   for (const r of live) { if (+r.frequency > 3) out.push(`${r.name} campaign is fatigued because its frequency is above three.`); if (r.ctr != null && +r.ctr < 1) out.push(`${r.name.replace(/\[.*?\]\s*/g, '').replace(/https?:\S+/g, 'WhatsApp link').trim()} campaign needs a new creative because its click rate is under one percent.`); }

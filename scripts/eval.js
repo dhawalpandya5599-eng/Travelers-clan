@@ -109,6 +109,17 @@ const CASES = [
   { journeys: true, q: 'next step:\nlead: ok lets do it. how do we pay', expect: /Stage: advance.*Do: send payment link now/i, kind: 'funnel' },
   { journeys: true, q: 'why do we lose leads?', expect: /lost mostly because/i, kind: 'funnel' },
   { journeys: true, q: 'What is the best action when they object?', expect: /answer with proof|call/i, kind: 'funnel' },
+  // --- playbooks taught by the teacher ---
+  { q: 'What should the safety objection be answered with?', expect: /trip leader|doctor|reviews/i, kind: 'playbook' },
+  { q: 'How much is the advance?', expect: /twenty five percent/i, kind: 'playbook' },
+  { q: 'What does cancellation within seven days of departure refund?', expect: /nothing/i, kind: 'playbook' },
+  { q: 'Does Nepal need a visa for Indian citizens?', expect: /no|needs no visa/i, kind: 'playbook' },
+  { q: 'How many people does an Innova seat?', expect: /six/i, kind: 'playbook' },
+  { q: 'When is Diwali week?', expect: /biggest domestic travel week/i, kind: 'playbook' },
+  { q: 'What is the follow up schedule?', expect: /24 hours, 3 days and 7 days/i, kind: 'playbook' },
+  { q: 'When should the trip WhatsApp group be created?', expect: /seven days before departure/i, kind: 'playbook' },
+  { q: 'Which is the main channel for travelers under thirty five?', expect: /instagram/i, kind: 'playbook' },
+  { q: 'Is a discount the first answer to a price objection?', expect: /no/i, notExpect: /^yes/i, kind: 'playbook' },
   // --- council of agents ---
   { q: 'council: lead: family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10\nclan: 32000 per person\nlead: is it safe for kids? veg food?', expect: /Verdict: WARN[\s\S]*(unanswered|Draft reply does not answer)/i, kind: 'council' },
   { q: 'plan: 2 of us, Ladakh in January, 4 days, budget 20k per person', expect: /off season[\s\S]*too short|minimum/i, kind: 'council' },

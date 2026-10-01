@@ -18,6 +18,19 @@ const PREDICATES = [
   [/^(.{2,60}?)\s+(?:usually\s+|often\s+|mostly\s+)?(?:travels?|visits?|goes?)\s+in\s+(.{2,120})$/i, 'travels in'],
   [/^(.{2,60}?)\s+(?:pays?|paid)\s+(?:in|with|by)\s+(.{2,120})$/i, 'pays in'],
   [/^(.{2,60}?)\s+(?:comes?|came)\s+from\s+(.{2,120})$/i, 'comes from'],
+  [/^(.{2,60}?)\s+(?:peaks?|opens?)\s+in\s+(.{2,120})$/i, 'peaks in'],
+  [/^(.{2,60}?)\s+(?:converts?|performs?|works?)\s+(better|worse|twice|more|less)\s+(.{2,120})$/i, 'converts'],
+  [/^(.{2,60}?)\s+(?:outperforms?|beats?)\s+(.{2,120})$/i, 'outperforms'],
+  [/^(.{2,60}?)\s+(?:refunds?)\s+(.{2,120})$/i, 'refunds'],
+  [/^(.{2,60}?)\s+(?:spent|spends?)\s+(.{2,120})$/i, 'spent'],
+  [/^(.{2,60}?)\s+(?:excludes?|leaves? out)\s+(.{2,120})$/i, 'excludes'],
+  [/^(.{2,60}?)\s+(?:doubles?|halves?|protects?|perform best|performs best)\s*(.{0,120})$/i, 'affects'],
+  [/^(.{2,60}?)\s+(?:pays?)\s+(\d.{1,80}|[a-z]+ percent.{0,60})$/i, 'pays'],
+  [/^(.{2,60}?)\s+(?:allows?|permits?|gives?|grants?)\s+(.{2,120})$/i, 'allows'],
+  [/^(.{2,60}?)\s+(?:seats?|fits?|holds?)\s+(.{2,120})$/i, 'seats'],
+  [/^(.{2,60}?)\s+(?:filters?|removes?|reduces?)\s+(.{2,120})$/i, 'filters'],
+  [/^(.{2,60}?)\s+(?:drives?|creates?|builds?|refers?|sends?|brings?|triggers?)\s+(.{2,120})$/i, 'drives'],
+  [/^(.{2,60}?)\s+(?:travels?)\s+(free|with|without)\s+(.{2,120})$/i, 'travels'],
   [/^(.{2,60}?)\s+(?:does not|doesn't|do not|don't|did not|didn't)\s+(?:have|include|contain|offer|cover|provide)\s+(.{2,120})$/i, 'has not'],
   [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(?:located\s+)?in\s+(.{2,120})$/i, 'is in not'],
   [/^(.{2,60}?)\s+(?:is not|isn't|are not|aren't)\s+(.{2,120})$/i, 'is not'],
@@ -64,7 +77,7 @@ function extractFacts(text) {
     for (const [re, p] of PREDICATES) {
       const m = s0.match(re);
       if (!m) continue;
-      const s = cleanSubject(m[1]).toLowerCase(); const o = cleanObject(m[2]);
+      const s = cleanSubject(m[1]).toLowerCase(); const o = cleanObject(m[3] != null ? m[2] + ' ' + m[3] : m[2]);
       if (!s || !o || PRONOUN.test(s) || s.split(' ').length > 8) continue;
       if (/^(not|no|never)\b/i.test(o)) { out.push({ s, p: p + ' not', o: o.replace(/^(not|no|never)\s*/i, '') }); break; }
       // "X is a village in Parvati valley" → X is a village; X is in Parvati valley
@@ -96,7 +109,7 @@ const WHO = [
   [/^(?:who|which\s+\w+)\s+(?:needs?|requires?)\s+(.+?)\??$/i, /^needs$/, 0.2],
   [/^(?:what|which)\s+(?:raises|increases|improves|boosts)\s+(.+?)\??$/i, /^raises$/, 0.3],
   [/^(?:what|which)\s+(?:lowers|reduces|decreases|hurts)\s+(.+?)\??$/i, /^lowers$/, 0.3],
-  [/^(?:who|which\s+\w+|what)\s+(?:is|are)\s+(?:a|an|the)?\s*(.+?)\??$/i, /^(is a|is)$/],
+  [/^(?:who|which(?:\s+\w+)?|what)\s+(?:is|are)\s+(?:a|an|the)?\s*(.+?)\??$/i, /^(is a|is)$/],
   [/^(?:who|which\s+\w+)\s+(?:has|have)\s+(.+?)\??$/i, /^has$/],
   [/^(?:who|which\s+\w+)\s+(?:likes?|loves?)\s+(.+?)\??$/i, /^likes$/],
   [/^(?:who|which\s+\w+)\s+(?:offers?|sells?)\s+(.+?)\??$/i, /^offers$/],
@@ -106,14 +119,15 @@ const Q = [
   [/^(?:which|what)\s+(state|country|city|region|valley|district)\s+(?:is|are)\s+(?:the\s+)?(.+?)\s+in\??$/i, 'where-kind'],
   [/^(?:what|who)\s+(?:is|are|was|were)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'define'],
   [/^(?:where)\s+(?:is|are|was|were|do|does)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:located|based|from))?\??$/i, 'where'],
-  [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:usually\s+|often\s+)?(?:start|begin|happen|leave|travel|go|visit))?\??$/i, 'when'],
+  [/^(?:when)\s+(?:is|are|was|were|do|does|did|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:usually\s+|often\s+)?(?:start|begin|happen|leave|travel|go|visit|peak|open|sell out))?\??$/i, 'when'],
   [/^(?:what|which currency)\s+(?:do|does|did)\s+(?:a|an|the)?\s*(.+?)\s+pay\s+(?:in|with)\??$/i, 'pay'],
   [/^(?:how much)\s+(?:is|are|does|do|did|was|were)\s+(?:a|an|the)?\s*(.+?)(?:\s+cost(?:\s+per\s+[\w ]+)?)?\??$/i, 'cost'],
   [/^(?:where)\s+(?:do|does|did)\s+(?:a|an|the)?\s*(.+?)\s+come\s+from\??$/i, 'from'],
   [/^(?:how long)\s+(?:is|are|does|do|will)\s+(?:a|an|the)?\s*(.+?)(?:\s+(?:take|last))?\??$/i, 'when'],
   [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:worry|fear|hesitate)\s+(?:about|over)\??$/i, 'worry'],
   [/^(?:what|which)\s+tone\s+(?:should|do|does)\s+(?:we\s+use\s+(?:for|with)\s+)?(?:a|an|the)?\s*(.+?)(?:\s+be\s+spoken\s+to\s+in)?\??$/i, 'tone'],
-  [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:offer|provide|sell|have|do|like|need|want)\??$/i, 'what-does'],
+  [/^(?:what|which)\s+(?:does|do|did)\s+(?:a|an|the)?\s*(.+?)\s+(?:offer|provide|sell|have|do|like|need|want|refund|allow|give|seat|filter|drive|outperform)\??$/i, 'what-does'],
+  [/^(?:how many (?:people|persons|travelers|seats))\s+(?:does|do|can)\s+(?:a|an|the)?\s*(.+?)\s+(?:seat|fit|hold|carry)\??$/i, 'seats'],
   [/^(?:tell me about|describe|explain|what do you know about|what about)\s+(?:a|an|the)?\s*(.+?)\??$/i, 'define'],
   [/^(?:do you (?:know|remember))\s+(?:about\s+|what\s+|who\s+)?(.+?)\??$/i, 'define'],
   [/^(?:why)\s+(.+?)\??$/i, 'why'],
@@ -127,8 +141,9 @@ const costOf = (memory, subject) => { const f = memory.factsAbout(subject).find(
 const PRONOUN_Q = /^(it|its|he|she|they|them|him|her|his|their|that|this|the trip|the lead)$/i;
 
 function parseQuestion(text) {
-  const t = text.trim();
+  const t = text.trim().replace(/^(?:and|so|also|but|then|ok|okay)[,\s]+(?=\w)/i, '');
   let m;
+  if ((m = t.match(/^how many (?:people|persons|travelers|travellers|seats|pax)\s+(?:does|do|can)\s+(?:a|an|the)?\s*(.+?)\s+(?:seat|fit|hold|carry)\??$/i))) return { kind: 'seats', subject: cleanSubject(m[1]).toLowerCase(), raw: t };
   if ((m = t.match(/^how many\s+(.+?)\s+(?:do we have|are there|have we got|do i have)\??$/i)) || (m = t.match(/^how many\s+(.+?)\??$/i))) return { kind: 'count', subject: cleanSubject(m[1]).toLowerCase(), raw: t };
   if ((m = t.match(/^which\s+(?:is|one is)\s+(cheaper|more expensive|costlier|longer|shorter)\s*,?\s+(?:the\s+)?(.+?)\s+or\s+(?:the\s+)?(.+?)\??$/i))) return { kind: 'compare', cmp: m[1].toLowerCase(), a: cleanSubject(m[2]).toLowerCase(), b: cleanSubject(m[3]).toLowerCase(), subject: m[2], raw: t };
   if ((m = t.match(/^which\s+(\w+)\s+(?:is|costs)\s+(?:the\s+)?(cheapest|cheaper|most expensive|more expensive|costliest|longest|shortest)\??$/i))) return { kind: 'compare-all', group: m[1].toLowerCase(), cmp: m[2].toLowerCase(), subject: m[1], raw: t };
@@ -148,7 +163,7 @@ function parseQuestion(text) {
   for (const [re, kind] of Q) {
     const m = t.match(re);
     if (m && kind === 'where-kind') return { kind: 'where', subject: cleanSubject(m[2]).toLowerCase(), wantKind: m[1].toLowerCase(), raw: t };
-    if (m && kind === 'what-does') { const verb = (t.match(/\s(offer|provide|sell|have|do|like|need|want)\??$/i) || [])[1]; return { kind, subject: cleanSubject(m[1]).replace(/\?$/, '').trim().toLowerCase(), verb: verb && verb.toLowerCase(), raw: t }; }
+    if (m && kind === 'what-does') { const verb = (t.match(/\s(offer|provide|sell|have|do|like|need|want|refund|allow|give|seat|filter|drive|outperform)\??$/i) || [])[1]; return { kind, subject: cleanSubject(m[1]).replace(/\?$/, '').trim().toLowerCase(), verb: verb && verb.toLowerCase(), raw: t }; }
     if (m) return { kind, subject: cleanSubject(m[1]).replace(/\?$/, '').trim().toLowerCase(), raw: t };
   }
   if (T.isQuestion(t)) return { kind: 'open', subject: T.tokens(t).join(' '), raw: t };
@@ -167,7 +182,7 @@ function detectIdentity(text) {
   return m ? m[1].trim() : null;
 }
 
-const PRED_PHRASE = { 'comes from': 'come from', raises: 'raises', lowers: 'lowers', 'travels in': 'usually travel in', 'pays in': 'pay in', 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
+const PRED_PHRASE = { spent: 'spent', excludes: 'excludes', affects: 'affects', pays: 'pays', 'peaks in': 'peaks in', converts: 'converts', outperforms: 'outperforms', refunds: 'refunds', allows: 'allows', seats: 'seats', filters: 'filters', drives: 'drives', travels: 'travels', 'comes from': 'come from', raises: 'raises', lowers: 'lowers', 'travels in': 'usually travel in', 'pays in': 'pay in', 'worries about': 'worries about', 'is convinced by': 'is convinced by', 'tone': 'should be spoken to in a tone that is', 'is a': 'is a', 'is': 'is', 'is in': 'is in', 'is at': 'is at', 'has': 'has', 'costs': 'costs',
   'likes': 'likes', 'needs': 'needs', 'means': 'means', 'offers': 'offers', 'goes to': 'goes to', 'takes': 'takes',
   'starts': 'starts', 'should': 'should', 'is called': 'is called' };
 
@@ -271,14 +286,14 @@ function answer(question, memory, skills, recalled) {
     }
   }
   const byKind = {
-    where: f => /^is (in|at)$/.test(f.p), when: f => /^(starts|takes|travels in)$/.test(f.p), cost: f => f.p === 'costs',
+    where: f => /^is (in|at)$/.test(f.p), when: f => /^(starts|takes|travels in|peaks in)$/.test(f.p), cost: f => f.p === 'costs',
     'what-does': f => /^(offers|has|likes|needs|goes to)$/.test(f.p), how: f => f.p === 'should',
-    worry: f => f.p === 'worries about', tone: f => f.p === 'tone', pay: f => f.p === 'pays in', from: f => f.p === 'comes from',
+    worry: f => f.p === 'worries about', tone: f => f.p === 'tone', pay: f => f.p === 'pays in', from: f => f.p === 'comes from', seats: f => f.p === 'seats',
   };
   let chosen = facts;
-  const VERB_PRED = { offer: /^offers$/, provide: /^offers$/, sell: /^offers$/, have: /^has$/, like: /^likes$/, need: /^needs$/, want: /^(needs|likes)$/ };
+  const VERB_PRED = { offer: /^offers$/, provide: /^offers$/, sell: /^offers$/, have: /^has$/, like: /^likes$/, need: /^needs$/, want: /^(needs|likes)$/, refund: /^refunds$/, allow: /^allows$/, give: /^allows$/, seat: /^seats$/, filter: /^filters$/, drive: /^drives$/, outperform: /^outperforms$/ };
   if (question.verb && VERB_PRED[question.verb]) { const narrowed = facts.filter(f => VERB_PRED[question.verb].test(f.p)); if (narrowed.length) chosen = narrowed; }
-  else if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; }
+  else if (byKind[question.kind]) { const narrowed = facts.filter(byKind[question.kind]); if (narrowed.length) chosen = narrowed; else if (question.kind === 'cost') { const numeric = facts.filter(f => /\d|percent|lakh|thousand|rupee|inr|usd|free/i.test(f.o)); if (numeric.length) chosen = numeric; } }
   chosen = chosen.filter(f => f.wrong < 2);
   // Prefer the facts whose wording matches the question's extra words ("per form lead", "in July").
   const extra = new Set(T.tokens(question.raw).filter(t => !T.tokens(matched).includes(t)));
