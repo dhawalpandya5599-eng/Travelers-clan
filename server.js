@@ -75,6 +75,20 @@ const routes = {
   'POST /api/sleep': async () => brain.sleep(),
   'POST /api/evolve': async (q, body) => brain.evolve(Math.min(50, Math.max(1, +body.generations || 1))),
   'POST /api/grow': async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError },
+  'GET /api/growth': async () => brain.growth.overview(),
+  'POST /api/growth/profile': async (q, body) => brain.growth.setProfile(body || {}),
+  'POST /api/growth/settings': async (q, body) => { Object.assign(brain.growth.state.settings, body || {}); brain.growth.save(); return brain.growth.state.settings; },
+  'GET /api/growth/gbp': async () => ({ ...brain.growth.gbpAudit(), posts: await brain.growth.gbpPosts() }),
+  'POST /api/growth/review': async (q, body) => brain.growth.reviewReply(String(body.text || ''), +body.stars || 5, body.name || ''),
+  'POST /api/growth/chat': async (q, body) => brain.growth.chat({ id: body.id, name: body.name, text: String(body.text || body.message || ''), source: body.source || 'web' }),
+  'GET /api/growth/leads': async () => brain.growth.state.leads.slice().sort((a, b) => a.next - b.next),
+  'POST /api/growth/leads': async (q, body) => body.id && brain.growth.state.leads.some(l => l.id === body.id) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {}),
+  'GET /api/growth/today': async () => brain.growth.today(),
+  'GET /api/growth/campaigns': async () => ({ campaigns: brain.growth.campaigns(), ...(await brain.growth.broadcasts()) }),
+  'GET /api/growth/roi': async (q) => brain.growth.roi({ adSpend: +q.get('adSpend') || 0 }),
+  'POST /atlas-chat/chat': async (q, body) => brain.growth.chat({ id: String(body.id || '').slice(0, 40), name: String(body.name || '').slice(0, 60), text: String(body.text || '').slice(0, 1000), source: 'web' }),
+  'GET /atlas-chat/profile': async () => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(3) }; },
+  'GET /api/growth/thread': async (q) => brain.growth.thread(q.get('id') || ''),
   'POST /api/reset': async (q, body) => {
     if (body.confirm !== 'RESET') return { ok: false, reason: 'send {"confirm":"RESET"}' };
     try { fs.unlinkSync(brain.file); } catch { /* none */ }

@@ -418,6 +418,7 @@ class Brain extends EventEmitter {
   }
 
   /** The council of agents (lazy, so core modules stay independent). */
+  get growth() { if (!this._growth) { const { Growth } = require('./growth'); this._growth = new Growth(this); } return this._growth; }
   get council() { if (!this._council) { const { Council } = require('./council'); this._council = new Council(this); } return this._council; }
 
   /** Learn the funnel policy from end-to-end journeys (synthetic or real) and keep the findings as facts. */

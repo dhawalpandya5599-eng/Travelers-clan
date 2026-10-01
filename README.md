@@ -152,3 +152,19 @@ Everything persists in `data/state.json`. Export the whole mind from the UI.
 | `GET /api/snapshot` · `/api/graph` · `/api/facts` · `/api/export` | | State for the UI |
 | `GET /api/events` | | Server-Sent Events stream of cognitive activity |
 | `POST /api/reset` | `{confirm:"RESET"}` | Rebirth |
+
+## Grow tab: our own Google-profile, WhatsApp and marketing agents (free)
+
+The paid "AI agents for local business" products sell three things. ATLAS now has all three inside the admin panel, no subscription:
+
+| Agent | What it does | Where |
+|---|---|---|
+| Google profile | Audit score with the 10 things that matter, 20 local keywords, this week's posts, review replies (angry reviews are flagged "call them first") | Grow → Google profile |
+| WhatsApp chat | Answers in seconds in English or Hinglish, grounded on your real trips (date, price, seats, total for the group, advance), keeps a lead sheet, hands booking/payment/complaints to a human | Grow → WhatsApp agent, website widget, `scripts/whatsapp.js` |
+| Marketing | Indian festival/season campaign calendar with start dates, broadcast drafts per segment (past travellers, warm leads, referral, review ask, organisers), 5-touch follow-up sequence, ROI from the lead sheet | Grow → Today, Marketing & ROI |
+
+Setup once in **Grow → Setup**: phone number, city, and your upcoming trips with fixed dates, prices and seats. Then open **Today** every morning, send what it drafted, press Done.
+
+- **Website widget** on travelersclan.in: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. With the Express integration mount it publicly: `app.use('/atlas-chat', atlas.widget)`.
+- **Real WhatsApp number, free**: `npm install @whiskeysockets/baileys qrcode-terminal && node scripts/whatsapp.js`, scan the QR from WhatsApp Business → Linked devices. Replies are drafted by default; flip "Auto-send" in the Grow tab to send them automatically. Money and complaint messages always wait for you.
+- **Open-source model**: install [Ollama](https://ollama.com), run `ollama pull llama3.2` (or `qwen2.5:7b` for better Hindi), start ATLAS; every post, reply and broadcast gets polished in the customer's own language. Nothing breaks without it.

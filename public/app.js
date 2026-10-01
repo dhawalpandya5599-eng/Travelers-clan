@@ -227,4 +227,56 @@
   refresh();
   setInterval(refresh, 15000);
   window.addEventListener('resize', () => refresh());
+
+  // ---------- Grow tab ----------
+  const G = {};
+  const copyBtn = (text) => `<button class="copy" data-copy="${esc(text)}">Copy</button>`;
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-copy]'); if (b) { navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1200); } });
+  document.querySelectorAll('.sub').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.sub').forEach(x => x.classList.toggle('active', x === b)); document.querySelectorAll('.sub-page').forEach(p => p.classList.toggle('active', p.id === 'sub-' + b.dataset.sub)); loadSub(b.dataset.sub); }));
+  const tripRow = (t = {}) => { const tr = document.createElement('tr'); tr.innerHTML = `<td><input class="t-name" value="${esc(t.name)}" placeholder="Goa"></td><td><input class="t-date" type="date" value="${esc(t.date)}"></td><td><input class="t-days" type="number" value="${t.days || ''}" style="width:60px"></td><td><input class="t-price" type="number" value="${t.price || ''}" style="width:90px"></td><td><input class="t-seats" type="number" value="${t.seats || ''}" style="width:60px"></td><td><input class="t-booked" type="number" value="${t.booked || ''}" style="width:60px"></td><td><button class="t-del">×</button></td>`; tr.querySelector('.t-del').onclick = () => tr.remove(); return tr; };
+  $('btn-trip-add').onclick = () => $('trips').querySelector('tbody').appendChild(tripRow());
+  function readTrips() { return [...$('trips').querySelectorAll('tbody tr')].map(tr => ({ name: tr.querySelector('.t-name').value, date: tr.querySelector('.t-date').value, days: tr.querySelector('.t-days').value, price: tr.querySelector('.t-price').value, seats: tr.querySelector('.t-seats').value, booked: tr.querySelector('.t-booked').value })); }
+  function fillProfile(P) { for (const k of ['name', 'city', 'phone', 'email', 'website', 'instagram', 'hours', 'usp']) $('p-' + k).value = P[k] || ''; $('p-languages').value = (P.languages || []).join(', '); const tb = $('trips').querySelector('tbody'); tb.innerHTML = ''; (P.trips || []).forEach(t => tb.appendChild(tripRow(t))); if (!P.trips || !P.trips.length) tb.appendChild(tripRow()); }
+  $('btn-profile').onclick = () => action($('btn-profile'), async () => { const body = { trips: readTrips() }; for (const k of ['name', 'city', 'phone', 'email', 'website', 'instagram', 'hours', 'usp', 'languages']) body[k] = $('p-' + k).value; const P = await api('POST', '/api/growth/profile', body); $('profile-result').textContent = P.error || `saved · ${(P.trips || []).length} trips · the mind learned the facts`; loadGrow(); });
+  async function loadGrow() {
+    try { G.ov = await api('GET', '/api/growth'); } catch (e) { return; }
+    const ov = G.ov; if (!ov || ov.error) return;
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#sub-setup')) {} else fillProfile(ov.profile);
+    $('s-auto').checked = !!(ov.settings && ov.settings.autoReply);
+    $('wa-link').innerHTML = ov.waLink ? `<a href="${esc(ov.waLink)}" target="_blank">${esc(ov.waLink)}</a> ${copyBtn(ov.waLink)}` : 'Add the WhatsApp number in Setup to get the link.';
+    if (ov.waLink) { $('wa-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(ov.waLink); $('wa-qr').hidden = false; }
+    $('widget-snippet').textContent = `<script src="${location.origin}${BASE ? BASE.replace(/\/admin\/atlas$/, '') : ''}/atlas-chat/widget.js" data-base="/atlas-chat"><\/script>`;
+    const sub = document.querySelector('.sub.active'); loadSub(sub ? sub.dataset.sub : 'today');
+  }
+  async function loadSub(name) {
+    if (name === 'today') {
+      const t = await api('GET', '/api/growth/today'); if (t.error) return;
+      $('today-list').innerHTML = t.due.length ? t.due.map(d => `<div class="agent"><h4>${esc(d.lead.name || d.lead.id)} · ${esc(d.lead.trip || 'no trip yet')} · ${esc(d.lead.stage)} <span class="v">${esc(d.step.name)}</span></h4><div class="draft">${esc(d.message)}${copyBtn(d.message)}</div><div class="meta">${esc(d.step.rule)}</div><div class="actions"><button data-done="${esc(d.lead.id)}">Done, sent</button><select data-stage="${esc(d.lead.id)}"><option value="">change stage…</option>${['qualified', 'quoted', 'objection', 'advance', 'balance', 'travelled', 'reviewed', 'lost'].map(s => `<option>${s}</option>`).join('')}</select><input data-value="${esc(d.lead.id)}" type="number" placeholder="booking value ₹" style="max-width:140px"></div></div>`).join('') : '<div class="empty">Nothing due right now. Good: go post a reel.</div>';
+      $('today-alerts').innerHTML = t.alerts.map(a => `<li class="bad">${esc(a)}</li>`).join('') || '<li>No seat alerts.</li>';
+      $('today-counts').innerHTML = Object.entries(t.counts).map(([k, v]) => `<span>${esc(k)} <b>${v}</b></span>`).join('') || '<span>no leads yet</span>';
+      $('today-list').querySelectorAll('[data-done]').forEach(b => b.onclick = () => api('POST', '/api/growth/leads', { id: b.dataset.done, done: true }).then(() => loadSub('today')));
+      $('today-list').querySelectorAll('[data-stage]').forEach(sel => sel.onchange = () => { const v = $('today-list').querySelector(`[data-value="${sel.dataset.stage}"]`); api('POST', '/api/growth/leads', { id: sel.dataset.stage, stage: sel.value, value: v && v.value ? +v.value : undefined }).then(() => loadSub('today')); });
+      const leads = await api('GET', '/api/growth/leads');
+      $('lead-list').innerHTML = (leads || []).slice(0, 100).map(l => `<li>${esc(l.name || l.id)} · ${esc(l.trip || '–')} · ${esc(l.stage)}<span>${esc(l.source)} · next ${new Date(l.next).toLocaleDateString()}</span></li>`).join('') || '<li>No leads yet.</li>';
+    } else if (name === 'gbp') {
+      const g = await api('GET', '/api/growth/gbp'); if (g.error) return;
+      $('gbp-score').textContent = `${g.score}/100`;
+      $('gbp-audit').innerHTML = g.items.map(i => `<li class="${i.ok ? 'ok' : 'bad'}" title="${esc(i.why)}">${esc(i.what)}</li>`).join('');
+      $('gbp-keywords').innerHTML = g.keywords.map(k => `<span>${esc(k)}</span>`).join('');
+      $('gbp-posts').innerHTML = g.posts.map(p => `<div class="agent"><h4>${esc(p.title)} <span class="v">${esc(p.type)}</span></h4><div class="draft">${esc(p.body)}${copyBtn(p.title + '\n' + p.body)}</div><div class="meta">Button: ${esc(p.cta)} → ${esc(p.link)}</div></div>`).join('');
+    } else if (name === 'mkt') {
+      const m = await api('GET', '/api/growth/campaigns'); if (m.error && !m.campaigns) { $('mkt-drafts').innerHTML = `<div class="empty">${esc(m.error)}</div>`; }
+      $('mkt-cal').innerHTML = (m.campaigns || []).map(c => `<li class="${c.status === 'run now' ? 'bad' : ''}">${esc(c.name)} (${esc(c.date)}): ${esc(c.pitch)}${c.trip ? ' → ' + esc(c.trip) : ''}<span>${c.status === 'run now' ? 'RUN NOW' : 'start ' + esc(c.startBy)}</span></li>`).join('');
+      if (m.drafts) { $('mkt-drafts').innerHTML = m.drafts.map(d => `<div class="agent"><h4>${esc(d.segment)} <span class="v">${esc(d.when)}</span></h4><div class="draft">${esc(d.text)}${copyBtn(d.text)}</div></div>`).join(''); $('mkt-rules').innerHTML = (m.rules || []).map(r => `<li>${esc(r)}</li>`).join(''); }
+      roi();
+    }
+  }
+  async function roi() { const r = await api('GET', '/api/growth/roi?adSpend=' + (+$('roi-spend').value || 0)); if (r.error) return; $('roi-out').innerHTML = [['leads', r.leads], ['booked', r.booked], ['conversion', Math.round(r.conversion * 100) + '%'], ['revenue', '₹' + r.revenue.toLocaleString('en-IN')], ['cost per lead', r.costPerLead == null ? '–' : '₹' + r.costPerLead], ['return on ad spend', r.roas == null ? '–' : r.roas + '×'], ['replies handled', r.repliesHandled], ['touches to book', r.medianTouchesToBook == null ? '–' : r.medianTouchesToBook]].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join('') + Object.entries(r.bySource).map(([k, v]) => `<span>${esc(k)}: ${v.leads} leads <b>${v.booked} booked</b></span>`).join(''); }
+  $('btn-roi').onclick = roi;
+  $('btn-lead').onclick = () => action($('btn-lead'), async () => { await api('POST', '/api/growth/leads', { name: $('lead-name').value, phone: $('lead-phone').value, trip: $('lead-trip').value, source: $('lead-source').value || 'manual', next: new Date().toISOString() }); ['lead-name', 'lead-phone', 'lead-trip'].forEach(i => $(i).value = ''); loadSub('today'); });
+  $('btn-review-reply').onclick = () => action($('btn-review-reply'), async () => { const r = await api('POST', '/api/growth/review', { text: $('rev-text').value, stars: +$('rev-stars').value, name: $('rev-name').value }); $('rev-out').innerHTML = `<div class="agent ${r.escalate ? '' : 'reply'}"><h4>Reply <span class="v ${r.escalate ? 'block' : 'ok'}">${r.escalate ? 'call them first' : 'post it'}</span></h4><div class="draft">${esc(r.reply)}${copyBtn(r.reply)}</div></div>`; });
+  $('s-auto').onchange = () => api('POST', '/api/growth/settings', { autoReply: $('s-auto').checked });
+  const waId = 'test-' + Math.random().toString(36).slice(2, 8);
+  $('wa-form').addEventListener('submit', async (e) => { e.preventDefault(); const t = $('wa-input').value.trim(); if (!t) return; $('wa-input').value = ''; const m = $('wa-messages'); const add = (c, x, meta) => { const d = document.createElement('div'); d.className = 'msg ' + c; d.textContent = x; if (meta) { const s = document.createElement('span'); s.className = 'meta'; s.textContent = meta; d.appendChild(s); } m.appendChild(d); m.scrollTop = m.scrollHeight; }; add('user', t); busy(true); const r = await api('POST', '/api/growth/chat', { id: waId, text: t, source: 'test' }); busy(false); add('atlas', r.reply || r.error || '…', `stage ${r.stage} · ${r.language}${r.handoff ? ' · HANDOFF to human' : ''}${r.issues && r.issues.length ? ' · critic: ' + r.issues[0] : ''}`); });
+  loadGrow();
 })();

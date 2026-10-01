@@ -202,3 +202,26 @@ test('open-source model backend: understanding, polishing, critique and learning
     assert.ok(b.memory.factsAbout('spiti trip').some(f => f.p === 'costs'));
   } finally { delete process.env.OPENAI_BASE_URL; delete process.env.OPENAI_MODEL; srv.close(); delete require.cache[require.resolve('../core/mentor')]; delete require.cache[require.resolve('../core/brain')]; }
 });
+
+test('growth engine: grounded WhatsApp replies, handoff, follow-ups, campaigns, ROI', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-growth-'));
+  const b = new Brain({ dataDir: dir, autosave: false });
+  const g = b.growth;
+  g.setProfile({ city: 'Ahmedabad', phone: '9876543210', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }] });
+  assert.ok(g.gbpAudit().score >= 50);
+  assert.ok(g.keywords().some(k => /ahmedabad/i.test(k)));
+  const r1 = await g.chat({ id: '919999900001', text: 'hi, 4 of us want goa in december, budget 15k each' });
+  assert.match(r1.reply, /14,500/); assert.match(r1.reply, /58,000/); assert.equal(r1.handoff, false);
+  const r2 = await g.chat({ id: '919999900001', text: 'ok how do I pay the advance?' });
+  assert.equal(r2.handoff, true); assert.equal(r2.send, false);
+  const r3 = await g.chat({ id: '919999900002', text: 'bhai goa ka kitna hoga 2 log ke liye' });
+  assert.equal(r3.language, 'hinglish'); assert.match(r3.reply, /29,000/);
+  g.state.leads[0].next = Date.now() - 1;
+  const t = await g.today(); assert.equal(t.due.length, 1); assert.ok(t.due[0].message.length > 20);
+  assert.ok(g.campaigns().length >= 3);
+  const bc = await g.broadcasts(); assert.ok(bc.drafts.every(d => /\{name\}/.test(d.text)));
+  g.updateLead('919999900001', { stage: 'advance', value: 58000 });
+  const roi = g.roi({ adSpend: 5000 }); assert.equal(roi.booked, 1); assert.equal(roi.roas, 11.6);
+  const rr = await g.reviewReply('worst trip ever, bus broke down', 1, 'Amit'); assert.equal(rr.escalate, true); assert.match(rr.reply, /9876543210/);
+  assert.match((await b.respond('what is the phone number of travelers clan')).text, /9876543210/);
+});

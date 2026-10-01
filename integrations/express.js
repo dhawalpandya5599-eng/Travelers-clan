@@ -55,6 +55,19 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/sleep', wrap(() => brain.sleep()));
   router.post('/api/evolve', wrap(req => brain.evolve(Math.min(50, Math.max(1, +req.body.generations || 1)))));
   router.post('/api/grow', wrap(async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError }));
+  router.get('/api/growth', wrap(() => brain.growth.overview()));
+  router.post('/api/growth/profile', wrap(req => brain.growth.setProfile(req.body || {})));
+  router.post('/api/growth/settings', wrap(req => { Object.assign(brain.growth.state.settings, req.body || {}); brain.growth.save(); return brain.growth.state.settings; }));
+  router.get('/api/growth/gbp', wrap(async () => ({ ...brain.growth.gbpAudit(), posts: await brain.growth.gbpPosts() })));
+  router.post('/api/growth/review', wrap(req => brain.growth.reviewReply(String(req.body.text || ''), +req.body.stars || 5, req.body.name || '')));
+  router.post('/api/growth/chat', wrap(req => brain.growth.chat({ id: req.body.id, name: req.body.name, text: String(req.body.text || req.body.message || ''), source: req.body.source || 'web' })));
+  router.get('/api/growth/leads', wrap(() => brain.growth.state.leads.slice().sort((a, b) => a.next - b.next)));
+  router.post('/api/growth/leads', wrap(req => req.body.id && brain.growth.state.leads.some(l => l.id === req.body.id) ? brain.growth.updateLead(req.body.id, req.body) : brain.growth.addLead(req.body || {})));
+  router.get('/api/growth/today', wrap(() => brain.growth.today()));
+  router.get('/api/growth/campaigns', wrap(async () => ({ campaigns: brain.growth.campaigns(), ...(await brain.growth.broadcasts()) })));
+  router.get('/api/growth/roi', wrap(req => brain.growth.roi({ adSpend: +req.query.adSpend || 0 })));
+  router.get('/api/growth/thread', wrap(req => brain.growth.thread(req.query.id || '')));
+  // Public chat widget (no admin auth): mount `atlas.widget` on your site, e.g. app.use('/atlas-chat', atlas.widget)
   router.get('/api/events', (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
     res.write(`data: ${JSON.stringify({ t: Date.now(), kind: 'system', text: 'Connected to the mind of ATLAS.' })}\n\n`);
@@ -73,5 +86,12 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   for (const f of ['style.css', 'app.js']) router.get('/' + f, (req, res) => res.type(MIME[path.extname(f)]).send(fs.readFileSync(path.join(ROOT, 'public', f), 'utf8')));
 
   router.brain = brain;
+  // Public widget router: mount WITHOUT admin auth, e.g. app.use('/atlas-chat', atlas.widget).
+  const pub = express.Router();
+  pub.use(express.json({ limit: '64kb' }));
+  pub.get('/widget.js', (req, res) => { res.type('text/javascript'); res.send(fs.readFileSync(path.join(ROOT, 'public', 'widget.js'), 'utf8')); });
+  pub.post('/chat', wrap(req => brain.growth.chat({ id: String(req.body.id || '').slice(0, 40), name: String(req.body.name || '').slice(0, 60), text: String(req.body.text || '').slice(0, 1000), source: 'web' })));
+  pub.get('/profile', wrap(() => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(3) }; }));
+  router.widget = pub;
   return router;
 };

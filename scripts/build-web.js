@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'importers', 'brain'];
+const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'growth', 'importers', 'brain'];
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
@@ -138,6 +138,17 @@ const glue = `
           case 'POST /api/upbringing': return brain.upbringing({ generations: Math.min(50, +body.generations || 5) });
           case 'POST /api/sleep': return brain.sleep();
           case 'POST /api/evolve': return brain.evolve(Math.min(50, Math.max(1, +body.generations || 1)));
+          case 'GET /api/growth': return brain.growth.overview();
+          case 'POST /api/growth/profile': return brain.growth.setProfile(body || {});
+          case 'POST /api/growth/settings': Object.assign(brain.growth.state.settings, body || {}); brain.growth.save(); return brain.growth.state.settings;
+          case 'GET /api/growth/gbp': return brain.growth.gbpPosts().then(function (posts) { var a = brain.growth.gbpAudit(); a.posts = posts; return a; });
+          case 'POST /api/growth/review': return brain.growth.reviewReply(String(body.text || ''), +body.stars || 5, body.name || '');
+          case 'POST /api/growth/chat': return brain.growth.chat({ id: body.id, name: body.name, text: String(body.text || ''), source: body.source || 'web' });
+          case 'GET /api/growth/leads': return brain.growth.state.leads.slice().sort(function (a, b) { return a.next - b.next; });
+          case 'POST /api/growth/leads': return body.id && brain.growth.state.leads.some(function (l) { return l.id === body.id; }) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {});
+          case 'GET /api/growth/today': return brain.growth.today();
+          case 'GET /api/growth/campaigns': return brain.growth.broadcasts().then(function (b) { b.campaigns = brain.growth.campaigns(); return b; });
+          case 'GET /api/growth/roi': return brain.growth.roi({ adSpend: +u.searchParams.get('adSpend') || 0 });
           case 'POST /api/grow': return brain.growSkill().then(function (s) { return s || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : brain.mentor.lastError }; });
           default: throw new Error('not found: ' + key);
         }

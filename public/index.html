@@ -14,7 +14,8 @@
     <h1>ATLAS <small>Travelers Clan's learning mind</small></h1>
   </div>
   <nav class="tabs" id="tabs">
-    <button class="tab active" data-tab="leads">Leads</button>
+    <button class="tab active" data-tab="grow">Grow</button>
+    <button class="tab" data-tab="leads">Leads</button>
     <button class="tab" data-tab="plans">Trip plans</button>
     <button class="tab" data-tab="ask">Ask &amp; teach</button>
     <button class="tab" data-tab="mind">Inside the mind</button>
@@ -27,8 +28,106 @@
 </header>
 
 <main>
+  <!-- GROW -->
+  <section class="page active" id="page-grow">
+    <div class="intro">
+      <h2>Grow: Google profile, WhatsApp, marketing</h2>
+      <p>Our own version of the paid "AI agents for local business" tools, free and inside our site. Fill the setup once. Then every day open <b>Today</b>, send what it drafted, and mark it done. It runs on rules offline and uses an open-source model (Ollama) or Claude when one is connected.</p>
+    </div>
+    <div class="subtabs" id="grow-tabs"><button class="sub active" data-sub="today">Today</button><button class="sub" data-sub="setup">Setup</button><button class="sub" data-sub="gbp">Google profile</button><button class="sub" data-sub="wa">WhatsApp agent</button><button class="sub" data-sub="mkt">Marketing &amp; ROI</button></div>
+
+    <div class="sub-page active" id="sub-today">
+      <div class="work">
+        <div class="col">
+          <h3>Follow-ups due now <span class="hint">copy, send on WhatsApp, press Done</span></h3>
+          <div id="today-list" class="council-out"><div class="empty">Nothing due. Add leads in the WhatsApp agent tab or let the widget collect them.</div></div>
+        </div>
+        <div class="col">
+          <h3>Alerts</h3><ul id="today-alerts" class="facts"></ul>
+          <h3>Pipeline</h3><div id="today-counts" class="genome"></div>
+          <h3>Add a lead by hand</h3>
+          <div class="actions"><input id="lead-name" placeholder="Name"><input id="lead-phone" placeholder="Phone"><input id="lead-trip" placeholder="Trip"><input id="lead-source" placeholder="Source (instagram, referral, walk-in)"><button id="btn-lead">Add</button></div>
+          <h3>All leads</h3><ul id="lead-list" class="facts"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-page" id="sub-setup">
+      <div class="work">
+        <div class="col">
+          <h3>Business</h3>
+          <div class="grid2">
+            <label>Company name<input id="p-name"></label><label>City<input id="p-city" placeholder="e.g. Ahmedabad"></label>
+            <label>WhatsApp Business number<input id="p-phone" placeholder="10 digits"></label><label>Email<input id="p-email"></label>
+            <label>Website<input id="p-website"></label><label>Instagram<input id="p-instagram" placeholder="@handle"></label>
+            <label>Hours<input id="p-hours"></label><label>Languages<input id="p-languages" placeholder="English, Hindi, Gujarati"></label>
+          </div>
+          <label>What makes us different (one line)<input id="p-usp"></label>
+          <div class="actions"><button class="primary" id="btn-profile">Save setup</button><span id="profile-result" class="hint"></span></div>
+        </div>
+        <div class="col">
+          <h3>Upcoming trips <span class="hint">fixed dates sell; "starting at" does not</span></h3>
+          <table class="trips" id="trips"><thead><tr><th>Trip</th><th>Date</th><th>Days</th><th>Price/person</th><th>Seats</th><th>Booked</th><th></th></tr></thead><tbody></tbody></table>
+          <div class="actions"><button id="btn-trip-add">+ Add trip</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-page" id="sub-gbp">
+      <div class="work">
+        <div class="col">
+          <h3>Profile audit <span class="hint" id="gbp-score"></span></h3><ul id="gbp-audit" class="facts"></ul>
+          <h3>Keywords to use in the profile, posts and website</h3><div id="gbp-keywords" class="chips"></div>
+        </div>
+        <div class="col">
+          <h3>This week's posts <span class="hint">paste into Google Business Profile → Add update</span></h3>
+          <div id="gbp-posts" class="council-out"></div>
+          <h3>Reply to a review</h3>
+          <textarea id="rev-text" placeholder="Paste the review"></textarea>
+          <div class="actions"><input id="rev-name" placeholder="Reviewer name"><input id="rev-stars" type="number" min="1" max="5" value="5" style="max-width:80px"><button id="btn-review-reply">Draft reply</button></div>
+          <div id="rev-out" class="council-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-page" id="sub-wa">
+      <div class="work">
+        <div class="col">
+          <h3>Test the agent <span class="hint">write as a customer would</span></h3>
+          <div class="chatcol"><div class="messages" id="wa-messages"></div><form id="wa-form" class="composer"><input id="wa-input" autocomplete="off" placeholder="bhai manali ka kitna hoga 2 log ke liye"><button type="submit" class="primary">Send</button></form></div>
+          <h3>Settings</h3>
+          <label><input type="checkbox" id="s-auto"> Auto-send replies on WhatsApp (off = it drafts, you send). Booking and payment messages always go to a human.</label>
+        </div>
+        <div class="col">
+          <h3>Your WhatsApp link and QR</h3>
+          <div id="wa-link" class="hint"></div><img id="wa-qr" alt="" width="160" height="160" hidden>
+          <h3>Website chat widget <span class="hint">one line on travelersclan.in</span></h3>
+          <pre class="code" id="widget-snippet"></pre>
+          <h3>Connect the real WhatsApp number (free)</h3>
+          <p class="hint">On your PC, in the site folder: <code>npm install @whiskeysockets/baileys qrcode-terminal</code>, then <code>node scripts/whatsapp.js</code>, scan the QR with WhatsApp Business → Linked devices. Incoming messages reach this agent; replies are drafted here or sent automatically if the switch above is on.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-page" id="sub-mkt">
+      <div class="work">
+        <div class="col">
+          <h3>Campaign calendar <span class="hint">start each one on the date shown</span></h3><ul id="mkt-cal" class="facts"></ul>
+          <h3>ROI from the lead sheet</h3>
+          <div class="actions"><input id="roi-spend" type="number" placeholder="Ad spend this month (₹)"><button id="btn-roi">Compute</button></div>
+          <div id="roi-out" class="genome"></div>
+        </div>
+        <div class="col">
+          <h3>Broadcast drafts <span class="hint">one list per segment in WhatsApp Business</span></h3>
+          <div id="mkt-drafts" class="council-out"></div>
+          <ul id="mkt-rules" class="facts"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- LEADS -->
-  <section class="page active" id="page-leads">
+  <section class="page" id="page-leads">
     <div class="intro">
       <h2>Handle a lead</h2>
       <p>Paste the customer's messages (WhatsApp, Instagram, email). ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team then checks the plan, the tone, the risks, and lists what to fix.</p>
