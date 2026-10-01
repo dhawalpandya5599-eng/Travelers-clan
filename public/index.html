@@ -11,83 +11,130 @@
 <header class="top">
   <div class="brand">
     <span class="pulse" id="pulse"></span>
-    <h1>ATLAS <small>the mind of the Travelers Clan</small></h1>
+    <h1>ATLAS <small>Travelers Clan's learning mind</small></h1>
   </div>
-  <div class="vitals" id="vitals">
-    <div class="vital"><span class="k">generation</span><b id="v-gen">–</b></div>
-    <div class="vital"><span class="k">fitness</span><b id="v-fit">–</b></div>
-    <div class="vital"><span class="k">facts</span><b id="v-facts">–</b></div>
-    <div class="vital"><span class="k">concepts</span><b id="v-concepts">–</b></div>
-    <div class="vital"><span class="k">synapses</span><b id="v-syn">–</b></div>
-    <div class="vital"><span class="k">memories</span><b id="v-ep">–</b></div>
-    <div class="vital"><span class="k">approval</span><b id="v-appr">–</b></div>
-    <div class="vital"><span class="k">mentor</span><b id="v-mentor">–</b></div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="leads">Leads</button>
+    <button class="tab" data-tab="plans">Trip plans</button>
+    <button class="tab" data-tab="ask">Ask &amp; teach</button>
+    <button class="tab" data-tab="mind">Inside the mind</button>
+  </nav>
+  <div class="vitals" id="vitals" title="How much it knows and how far it has evolved">
+    <div class="vital"><span class="k">facts it knows</span><b id="v-facts">–</b></div>
+    <div class="vital"><span class="k">version</span><b id="v-gen">–</b></div>
+    <div class="vital"><span class="k">language model</span><b id="v-mentor">–</b></div>
   </div>
 </header>
 
-<main class="grid">
-  <section class="panel chat">
-    <h2>Dialogue <span class="hint">teach · ask · correct · reward</span></h2>
-    <div class="messages" id="messages"></div>
-    <form id="chat-form" class="composer">
-      <input id="chat-input" autocomplete="off" placeholder='Try: "Goa is a beach state" · "What is Goa?" · "20% off 5000" · "No, Goa is..."'>
-      <button type="submit">Send</button>
-    </form>
-    <div class="feedback">
-      <button id="fb-up" title="Reward the last answer">👍 good</button>
-      <button id="fb-down" title="Punish the last answer">👎 wrong</button>
-      <span id="dopamine" class="dopamine"><i></i><label>dopamine</label></span>
+<main>
+  <!-- LEADS -->
+  <section class="page active" id="page-leads">
+    <div class="intro">
+      <h2>Handle a lead</h2>
+      <p>Paste the customer's messages (WhatsApp, Instagram, email). ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team then checks the plan, the tone, the risks, and lists what to fix.</p>
+    </div>
+    <div class="work">
+      <div class="col">
+        <label for="council-text">Customer conversation <span class="hint">one message per line; start our replies with <code>clan:</code></span></label>
+        <textarea id="council-text" placeholder="lead: hi, 4 of us want Goa in December, budget 15k each
+clan: Perfect, December works. Sending the plan within the hour.
+lead: 15,500 per person? hmm any hidden costs?"></textarea>
+        <div class="actions">
+          <input id="council-name" placeholder="Customer's first name (optional)">
+          <button class="primary" id="btn-council">Analyse &amp; draft reply</button>
+          <span id="council-verdict" class="hint"></span>
+        </div>
+        <div class="examples hint">Try: <a href="#" data-fill="lead: namaste, planning ladakh for my parents aged 65 and 68 in january, 5 days, budget 25k per person, knee issues
+clan: 28000 per person
+lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href="#" data-fill="lead: we are 12 college students, cheapest manali trip in oct after exams, budget 8k max">college group</a> · <a href="#" data-fill="lead: Hello, we are visiting India from London in December with 6 family members and would like a Rajasthan tour. Premium hotels and an invoice please.">NRI family</a></div>
+      </div>
+      <div class="col">
+        <div id="council-out" class="council-out"><div class="empty">Results appear here: the reply to send, the plan, the price, and every issue found.</div></div>
+      </div>
     </div>
   </section>
 
-  <section class="panel brain">
-    <h2>Semantic cortex <span class="hint">concepts &amp; Hebbian synapses · node glow = activation</span></h2>
-    <canvas id="graph"></canvas>
-    <div class="wm" id="wm"></div>
-  </section>
-
-  <section class="panel evolution">
-    <h2>Evolution <span class="hint">fitness per generation</span></h2>
-    <canvas id="evo" height="140"></canvas>
-    <div class="genome" id="genome"></div>
-    <div class="actions">
-      <button id="btn-sleep">💤 Sleep (consolidate)</button>
-      <button id="btn-evolve">🧬 Evolve ×5</button>
-      <button id="btn-grow">🌱 Grow skill</button>
-      <a class="btn" id="btn-export" href="/api/export" download="atlas-mind.json">⬇ Export mind</a>
-      <label class="btn" for="mind-file">⬆ Merge a mind</label>
-      <button id="btn-openmodel" hidden title="Runs an open-source model in this browser (about 0.7 GB download, needs WebGPU). Not available inside claude.ai.">🧠 Load open model</button><input id="mind-file" type="file" accept="application/json,.json" hidden>
+  <!-- PLANS -->
+  <section class="page" id="page-plans">
+    <div class="intro">
+      <h2>Check a trip plan</h2>
+      <p>Describe the trip in one line. Operations checks the season, the days, the altitude, the budget and the permits, builds a day-by-day plan with a price, and the Critic lists every loophole with a fix.</p>
+    </div>
+    <div class="work">
+      <div class="col">
+        <label for="plan-text">Trip requirements</label>
+        <textarea id="plan-text" placeholder="family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10, veg food"></textarea>
+        <div class="actions"><button class="primary" id="btn-review">Check this plan</button><span id="plan-verdict" class="hint"></span></div>
+        <div class="examples hint">Try: <a href="#" data-fill-plan="6 friends, Spiti in August, 9 days, budget 35k per person, want a trek">Spiti in August</a> · <a href="#" data-fill-plan="2 of us, Ladakh in January, 4 days, budget 20k per person">Ladakh in January</a> · <a href="#" data-fill-plan="honeymoon couple, Bali in July, 6 days, budget 80k per person, private villa">Bali honeymoon</a></div>
+        <h3>World &amp; risk news <span class="hint">paste headlines, one per line; ATLAS keeps them and warns on affected trips</span></h3>
+        <textarea id="news-text" placeholder="Cyclone warning for Andaman islands, ferries suspended
+Thailand extends visa free entry for Indian travellers"></textarea>
+        <div class="actions"><button id="btn-news">Add news</button><span id="news-result" class="hint"></span></div>
+      </div>
+      <div class="col">
+        <div id="plan-out" class="council-out"><div class="empty">The day-by-day plan, price, season check, risks and fixes appear here.</div></div>
+      </div>
     </div>
   </section>
 
-  <section class="panel teach">
-    <h2>Curriculum <span class="hint">paste lessons; one fact per sentence works best</span></h2>
-    <textarea id="teach-text" placeholder="Travelers Clan runs a Ladakh trip in June. The Ladakh trip costs 24000 per person. The advance is 5000."></textarea>
-    <div class="actions"><button id="btn-teach">📚 Teach</button><span id="teach-result" class="hint"></span></div>
-    <details class="import">
-      <summary>Import a WhatsApp chat export</summary>
-      <input id="wa-staff" placeholder="Clan staff names in the chat, comma separated (their messages become facts)">
-      <textarea id="wa-text" placeholder="Paste the exported chat .txt here"></textarea>
-      <div class="actions"><button id="btn-wa">💬 Import</button><span id="wa-result" class="hint"></span></div>
-    </details>
-    <h3>Questions for the chief</h3>
-    <ul id="asks" class="facts"></ul>
-    <h3>Strongest facts</h3>
-    <ul id="facts" class="facts"></ul>
-    <h3>Skills</h3>
-    <ul id="skills" class="skills"></ul>
+  <!-- ASK & TEACH -->
+  <section class="page" id="page-ask">
+    <div class="intro">
+      <h2>Ask it anything, teach it anything</h2>
+      <p>Type a question and it answers from what it knows. Type a fact and it remembers it forever. If it is wrong, say "No, …" and it corrects itself. Use 👍 👎 to reward answers.</p>
+    </div>
+    <div class="work">
+      <div class="col chatcol">
+        <div class="messages" id="messages"></div>
+        <form id="chat-form" class="composer">
+          <input id="chat-input" autocomplete="off" placeholder='"How much is the advance?" · "The Goa trip costs 14000" · "No, the Goa trip costs 15000" · "score this lead: …"'>
+          <button type="submit" class="primary">Send</button>
+        </form>
+        <div class="feedback">
+          <button id="fb-up" title="Reward the last answer">👍 good answer</button>
+          <button id="fb-down" title="Punish the last answer">👎 wrong</button>
+          <span id="dopamine" class="dopamine"><i></i><label>mood</label></span>
+        </div>
+      </div>
+      <div class="col">
+        <h3>Teach many facts at once <span class="hint">one fact per sentence</span></h3>
+        <textarea id="teach-text" placeholder="Travelers Clan runs a Ladakh trip in June. The Ladakh trip costs 24000 per person. The advance is 5000."></textarea>
+        <div class="actions"><button id="btn-teach">Teach</button><span id="teach-result" class="hint"></span></div>
+        <details class="import">
+          <summary>Learn from a WhatsApp chat export</summary>
+          <input id="wa-staff" placeholder="Our staff names in the chat, comma separated (their messages become facts)">
+          <textarea id="wa-text" placeholder="Paste the exported chat .txt here"></textarea>
+          <div class="actions"><button id="btn-wa">Import chat</button><span id="wa-result" class="hint"></span></div>
+        </details>
+        <h3>Questions it has for you</h3>
+        <ul id="asks" class="facts"></ul>
+        <h3>Things it knows best</h3>
+        <ul id="facts" class="facts"></ul>
+      </div>
+    </div>
   </section>
 
-  <section class="panel council">
-    <h2>Council <span class="hint">sales · operations · experience · news · critic</span></h2>
-    <textarea id="council-text" placeholder="Paste a lead conversation (prefix lines with lead: / clan:) or a plan: 'family of 4, Ladakh in January, 5 days, budget 25k pp, parents aged 65'"></textarea>
-    <div class="actions"><button id="btn-council">🏛 Run council</button><button id="btn-review">🔍 Critic only</button><span id="council-verdict" class="hint"></span></div>
-    <div id="council-out" class="council-out"></div>
-  </section>
-
-  <section class="panel activity">
-    <h2>Neural activity <span class="hint">live cognitive events</span></h2>
-    <ul id="log" class="log"></ul>
+  <!-- MIND -->
+  <section class="page" id="page-mind">
+    <div class="intro">
+      <h2>Inside the mind</h2>
+      <p>How it works under the hood. The map shows what it knows and how ideas connect; brighter dots are what it is thinking about now. It "sleeps" to turn memories into facts and "evolves" to tune how it learns. You never need this tab to use ATLAS.</p>
+    </div>
+    <div class="work mindgrid">
+      <div class="panel brain"><h4>Knowledge map <span class="hint">click a dot to ask about it</span></h4><canvas id="graph"></canvas><div class="wm" id="wm"></div></div>
+      <div class="panel"><h4>Learning progress <span class="hint">score per version</span></h4><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>
+        <div class="actions">
+          <button id="btn-sleep" title="Turn recent memories into facts">Sleep</button>
+          <button id="btn-evolve" title="Tune how it learns, 5 rounds">Evolve</button>
+          <button id="btn-grow" title="Ask the language model to write a new skill">Grow skill</button>
+          <a class="btn" id="btn-export" href="/api/export" download="atlas-mind.json">Export mind</a>
+          <label class="btn" for="mind-file">Merge a mind</label><input id="mind-file" type="file" accept="application/json,.json" hidden>
+          <button id="btn-openmodel" hidden title="Runs an open-source model in this browser (about 0.7 GB download, needs WebGPU). Not available inside claude.ai.">Load open model</button>
+        </div>
+        <h4>Skills</h4><ul id="skills" class="skills"></ul>
+      </div>
+      <div class="panel"><h4>What it is doing right now</h4><ul id="log" class="log"></ul></div>
+    </div>
   </section>
 </main>
 <script src="/app.js"></script>

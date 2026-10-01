@@ -10,6 +10,13 @@
   };
   const fmt = (n, d = 3) => (n == null ? '–' : typeof n === 'number' ? +n.toFixed(d) : n);
 
+  // ---------- Tabs ----------
+  const showTab = (name) => { document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name)); document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name)); try { localStorage.setItem('atlas-tab', name); } catch (e) {} if (name === 'mind') setTimeout(() => window.dispatchEvent(new Event('resize')), 50); };
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+  try { const t = localStorage.getItem('atlas-tab'); if (t && document.getElementById('page-' + t)) showTab(t); } catch (e) {}
+  document.querySelectorAll('[data-fill]').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); $('council-text').value = a.dataset.fill; }));
+  document.querySelectorAll('[data-fill-plan]').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); $('plan-text').value = a.dataset.fillPlan; }));
+
   // ---------- Chat ----------
   const messages = $('messages');
   function addMsg(role, text, meta) {
@@ -63,16 +70,23 @@
     e.target.value = ''; busy(false); refresh();
   });
   const AGENT_NAMES = { sales: 'Sales', operations: 'Operations', cx: 'Customer experience', news: 'News & risk', critic: 'Critic', marketing: 'Marketing', tester: 'Tester & teacher' };
-  function renderCouncil(r) {
-    $('council-verdict').textContent = `verdict ${r.verdict} · taught ${r.taught} fact(s)`;
-    $('council-out').innerHTML = Object.values(r.agents).map(a => {
+  const VERDICT_WORDS = { ok: 'Looks good', warn: 'Fix a few things first', block: 'Do not send yet' };
+  function renderCouncil(r, outId, verdictId) {
+    $(verdictId).textContent = `${VERDICT_WORDS[r.verdict] || r.verdict} · it learned ${r.taught} new fact(s) from this`;
+    const order = ['sales', 'operations', 'cx', 'news', 'critic', 'marketing', 'tester', 'dialogue'];
+    const agents = order.map(k => r.agents[k]).filter(Boolean);
+    const sales = r.agents.sales;
+    const replyCard = sales && sales.output.draft ? `<div class="agent reply"><h4>Reply to send<button class="copy" data-copy="${esc(sales.output.draft)}">Copy</button></h4><div class="draft">${esc(sales.output.draft)}</div><div class="hint" style="margin-top:6px">${esc(sales.output.cohort || 'Unknown customer type')} · stage: ${esc(sales.output.stage)} · next: ${esc(String(sales.output.nextAction).replace(/_/g, ' '))} (${esc(sales.output.evidence)})${sales.output.polishedBy ? ' · polished by ' + esc(sales.output.polishedBy) : ''}</div></div>` : '';
+    $(outId).innerHTML = replyCard + agents.map(a => {
       const o = a.output || {};
-      const extra = a.agent === 'sales' && o.draft ? `<div class="draft">${esc(o.draft)}</div>` : a.agent === 'operations' && o.itinerary ? `<div class="itin">${o.itinerary.map(x => `D${x.day} ${esc(x.plan)}`).join('<br>')}<br>~${o.perPerson} pp · ${esc(o.season)}</div>` : '';
-      return `<div class="agent"><h4>${AGENT_NAMES[a.agent] || a.agent}<span class="v ${a.verdict}">${a.verdict}</span></h4>${a.findings.length ? '<ul>' + a.findings.map(f => `<li>${esc(f)}</li>`).join('') + '</ul>' : '<div class="hint">no issues</div>'}${a.suggestions.length ? '<ul>' + a.suggestions.map(f => `<li class="fix">→ ${esc(f)}</li>`).join('') + '</ul>' : ''}${extra}</div>`;
+      const extra = a.agent === 'operations' && o.itinerary ? `<div class="itin">${o.itinerary.map(x => `Day ${x.day}: ${esc(x.plan)}`).join('<br>')}<br><b>About ${o.perPerson} per person${o.total ? `, ${o.total} for the group` : ''} · ${esc(o.season)}</b></div>` : a.agent === 'sales' ? `<div class="hint">${o.score ? esc(o.score) : ''}</div>` : '';
+      return `<div class="agent"><h4>${AGENT_NAMES[a.agent] || a.agent}<span class="v ${a.verdict}">${esc(VERDICT_WORDS[a.verdict] || a.verdict)}</span></h4>${a.findings.length ? '<ul>' + a.findings.map(f => `<li>${esc(f)}</li>`).join('') + '</ul>' : '<div class="hint">No issues found.</div>'}${a.suggestions.length ? '<ul>' + a.suggestions.map(f => `<li class="fix">Fix: ${esc(f)}</li>`).join('') + '</ul>' : ''}${extra}</div>`;
     }).join('');
+    $(outId).querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => { const t = b.dataset.copy; (navigator.clipboard && navigator.clipboard.writeText(t) || Promise.reject()).then(() => { b.textContent = 'Copied'; }).catch(() => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); b.textContent = 'Copied'; } catch (e) {} ta.remove(); }); }));
   }
-  $('btn-council').onclick = () => action($('btn-council'), async () => { const text = $('council-text').value.trim(); if (!text) return; const r = await api('POST', '/api/council', { conversation: text }); if (r.error) { $('council-verdict').textContent = r.error; return; } renderCouncil(r); });
-  $('btn-review').onclick = () => action($('btn-review'), async () => { const text = $('council-text').value.trim(); if (!text) return; const r = await api('POST', '/api/council/review', { text }); if (r.error) { $('council-verdict').textContent = r.error; return; } renderCouncil(r); });
+  $('btn-council').onclick = () => action($('btn-council'), async () => { const text = $('council-text').value.trim(); if (!text) return; const r = await api('POST', '/api/council', { conversation: text, name: $('council-name').value.trim() }); if (r.error) { $('council-verdict').textContent = r.error; return; } renderCouncil(r, 'council-out', 'council-verdict'); });
+  $('btn-review').onclick = () => action($('btn-review'), async () => { const text = $('plan-text').value.trim(); if (!text) return; const r = await api('POST', '/api/council/review', { text }); if (r.error) { $('plan-verdict').textContent = r.error; return; } renderCouncil(r, 'plan-out', 'plan-verdict'); });
+  $('btn-news').onclick = () => action($('btn-news'), async () => { const text = $('news-text').value.trim(); if (!text) return; const r = await api('POST', '/api/news', { text }); $('news-result').textContent = r.error || (r.added && r.added.length ? `Kept ${r.added.length}: ${r.added.map(i => `${i.where} (${i.severity} ${i.kind})`).join(', ')}` : 'No place recognised in those lines.'); if (!r.error) $('news-text').value = ''; });
   async function action(btn, fn) { btn.disabled = true; busy(true); try { await fn(); } finally { btn.disabled = false; busy(false); refresh(); } }
   function busy(b) { $('pulse').classList.toggle('busy', b); }
 
@@ -80,13 +94,8 @@
   async function refresh() {
     const s = await api('GET', '/api/snapshot');
     $('v-gen').textContent = s.generation;
-    $('v-fit').textContent = fmt(s.fitness);
     $('v-facts').textContent = s.memory.facts;
-    $('v-concepts').textContent = s.memory.concepts;
-    $('v-syn').textContent = s.memory.synapses;
-    $('v-ep').textContent = s.memory.episodes;
-    $('v-appr').textContent = Math.round(s.approval * 100) + '%';
-    $('v-mentor').textContent = s.mentor.enabled ? 'online' : 'offline';
+    $('v-mentor').textContent = s.mentor.enabled ? (s.mentor.model || 'on') : 'rules only';
     $('v-mentor').title = s.mentor.enabled ? s.mentor.model : (s.mentor.lastError || '');
     $('dopamine').style.setProperty('--d', s.memory.dopamine);
     $('wm').innerHTML = '<span class="label">working memory</span>' + (s.memory.workingMemory.map(w => `<span title="activation ${w.activation}">${esc(w.id)}</span>`).join('') || '<span class="label">∅</span>');
@@ -94,7 +103,7 @@
     const asks = [...(s.contradictions || []).map(c => `<li>Which is right? <b>${esc(c.s)} ${esc(c.p)}</b> ${c.options.map(esc).join(' <i>or</i> ')}<span>contradiction</span></li>`),
       ...s.unknowns.slice(-5).reverse().map(u => `<li>${esc(u.q)}<span>unanswered</span></li>`)];
     $('asks').innerHTML = asks.join('') || '<li class="hint">Nothing pending. Ask me something hard.</li>';
-    $('facts').innerHTML = s.topFacts.map(f => `<li>${esc(f.text)}<span>${f.confidence} · ${esc(f.source)}</span></li>`).join('') || '<li class="hint">Nothing learned yet. Teach me.</li>';
+    $('facts').innerHTML = s.topFacts.map(f => `<li>${esc(f.text)}<span>${esc(f.source)}</span></li>`).join('') || '<li class="hint">Nothing learned yet. Teach me.</li>';
     $('skills').innerHTML = s.skills.map(k => `<li class="${k.learned ? 'learned' : ''}" title="${esc(k.description)}">${esc(k.name)} ${k.wins || k.losses ? `+${k.wins}/−${k.losses}` : ''}</li>`).join('');
     if (!logSeeded) { logSeeded = true; for (const e of s.log) pushLog(e); }
     drawEvo(s.history);
@@ -213,7 +222,7 @@
   if (LOCAL && LOCAL.loadOpenModel) { const bm = $('btn-openmodel'); bm.hidden = false; bm.onclick = async () => { bm.disabled = true; bm.textContent = 'Loading model…'; try { const m = await LOCAL.loadOpenModel(t => { bm.textContent = t.slice(0, 40); }); bm.textContent = '✓ ' + m; addMsg('atlas', 'Open-source model loaded in this browser. I now understand free-form messages and polish replies with it.'); refresh(); } catch (e) { bm.textContent = '🧠 Load open model'; bm.disabled = false; addMsg('atlas', 'Could not load the open model here: ' + (e.message || e) + '. It works when this page is served from your website or opened as a local file with WebGPU.'); } }; }
   if (LOCAL) { const ex = document.getElementById('btn-export'); if (ex) { ex.addEventListener('click', (e) => { e.preventDefault(); LOCAL.exportMind(); }); } }
   // ---------- Boot ----------
-  addMsg('atlas', 'I am ATLAS. I was born knowing nothing. Teach me about the clan, ask me questions, correct me when I am wrong, and reward good answers. I sleep to consolidate and evolve to improve.');
+  addMsg('atlas', 'Hi, I am ATLAS. Ask me anything about the clan, our trips, prices, policies or customers. Tell me a fact and I will remember it. If I am wrong, start your message with "No," and I will correct myself.');
   connect();
   refresh();
   setInterval(refresh, 15000);
