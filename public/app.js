@@ -42,6 +42,13 @@
     const r = await api('POST', '/api/teach', { text });
     $('teach-result').textContent = `extracted ${r.facts} fact(s)`; $('teach-text').value = '';
   });
+  $('btn-wa').onclick = () => action($('btn-wa'), async () => {
+    const text = $('wa-text').value.trim(); if (!text) return;
+    const r = await api('POST', '/api/import/whatsapp', { text, staff: $('wa-staff').value });
+    $('wa-result').textContent = r.error || `${r.messages} messages from ${r.people.length} people · ${r.facts} facts · ${r.questions} questions`;
+    if (r.faq && r.faq.length) addMsg('atlas', 'Most asked topics in that chat: ' + r.faq.map(f => `${f.topic} (${f.count})`).join(', '));
+    $('wa-text').value = '';
+  });
   async function action(btn, fn) { btn.disabled = true; busy(true); try { await fn(); } finally { btn.disabled = false; busy(false); refresh(); } }
   function busy(b) { $('pulse').classList.toggle('busy', b); }
 

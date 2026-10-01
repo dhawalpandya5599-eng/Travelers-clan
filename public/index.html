@@ -62,6 +62,12 @@
     <h2>Curriculum <span class="hint">paste lessons; one fact per sentence works best</span></h2>
     <textarea id="teach-text" placeholder="Travelers Clan runs a Ladakh trip in June. The Ladakh trip costs 24000 per person. The advance is 5000."></textarea>
     <div class="actions"><button id="btn-teach">📚 Teach</button><span id="teach-result" class="hint"></span></div>
+    <details class="import">
+      <summary>Import a WhatsApp chat export</summary>
+      <input id="wa-staff" placeholder="Clan staff names in the chat, comma separated (their messages become facts)">
+      <textarea id="wa-text" placeholder="Paste the exported chat .txt here"></textarea>
+      <div class="actions"><button id="btn-wa">💬 Import</button><span id="wa-result" class="hint"></span></div>
+    </details>
     <h3>Strongest facts</h3>
     <ul id="facts" class="facts"></ul>
     <h3>Skills</h3>

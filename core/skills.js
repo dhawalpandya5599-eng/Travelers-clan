@@ -84,6 +84,29 @@ class Skills {
   }
 
   registerBuiltins() {
+    // Lead gate: scores a lead message the way the clan triages WhatsApp enquiries.
+    this.register({
+      name: 'lead-gate', description: 'Scores a lead message as real or junk (date, destination, budget, group, intent).',
+      match: (input) => { const m = input.match(/^(?:score|rate|qualify|is this (?:a )?(?:real|junk|good) lead)[: ]+(?:this )?(?:lead|message|enquiry)?[: ]*(.{6,})$/i); return m ? m[1] : null; },
+      run: (msg) => {
+        const t = msg.toLowerCase();
+        const signals = [
+          ['date', /\b(\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*|next (?:week|month)|this weekend|in (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*|\d{1,2}\/\d{1,2})\b/, 2],
+          ['destination', /\b(goa|ladakh|manali|spiti|kashmir|kerala|rishikesh|meghalaya|bali|thailand|dubai|vietnam|himachal|rajasthan|andaman|sikkim|bhutan|nepal|europe|trip to \w+)\b/, 2],
+          ['budget', /\b(budget|rs\.?|₹|inr|\d{2,3}k|\d{4,6})\b/, 2],
+          ['group size', /\b(\d{1,2}\s*(?:people|pax|persons|friends|adults|members|of us)|couple|solo|family)\b/, 1],
+          ['intent', /\b(book|confirm|advance|pay|itinerary|plan|interested|want to go|looking for)\b/, 1],
+          ['contact', /\b(call me|whatsapp|number|email)\b/, 1],
+        ];
+        const hits = signals.filter(([, re]) => re.test(t));
+        const score = hits.reduce((a, [, , w]) => a + w, 0);
+        const junk = /\b(just asking|price\?+$|rate\?+$|free|collab|influencer|job|vacancy|loan|crypto)\b/.test(t) && score < 3;
+        const verdict = junk ? 'JUNK' : score >= 5 ? 'HOT' : score >= 3 ? 'WARM' : 'COLD';
+        const missing = signals.filter(([n]) => !hits.some(([h]) => h === n)).slice(0, 3).map(([n]) => n);
+        const next = verdict === 'HOT' ? 'Reply within 10 minutes with the itinerary and advance link.' : verdict === 'WARM' ? `Reply fast and ask for: ${missing.join(', ')}.` : verdict === 'COLD' ? `Qualify first: ask for ${missing.join(', ')}.` : 'Send one polite reply, do not chase.';
+        return `Lead score ${score}/9 → ${verdict}. Signals: ${hits.map(h => h[0]).join(', ') || 'none'}. ${next}`;
+      },
+    });
     // Arithmetic: safe evaluator for + - * / ^ % and parentheses.
     this.register({
       name: 'arithmetic', description: 'Evaluates arithmetic expressions.',

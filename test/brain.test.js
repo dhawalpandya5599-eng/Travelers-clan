@@ -93,3 +93,20 @@ test('brain.evolve runs the self-test on real memory', async () => {
   assert.strictEqual(e.generation, 2);
   assert.ok(e.best > 0 && e.best <= 1);
 });
+
+test('importer: WhatsApp export becomes episodes and facts', () => {
+  const { importWhatsApp } = require('../core/importers');
+  const b = new Brain({ dataDir: tmp() });
+  const chat = '12/03/24, 10:15 pm - Riya: Hi, is the Ladakh trip in June?\n12/03/24, 10:16 pm - Dhawal: The Ladakh trip starts on 10 June. The advance is 5000.\n12/03/24, 10:17 pm - Riya: <Media omitted>\n';
+  const r = importWhatsApp(b, chat, { staff: ['Dhawal'] });
+  assert.strictEqual(r.messages, 2);
+  assert.ok(r.facts >= 1);
+  assert.strictEqual(r.questions, 1);
+  assert.ok(b.memory.factsAbout('advance').length >= 1);
+});
+
+test('skills: lead gate scores hot and cold leads', () => {
+  const s = new Skills();
+  assert.match(s.tryAll('score this lead: 4 friends, ladakh in june, budget 25k each, want to book').output, /HOT/);
+  assert.match(s.tryAll('score lead: price?').output, /COLD|JUNK/);
+});

@@ -23,6 +23,19 @@ export ANTHROPIC_API_KEY=sk-ant-...
 npm start
 ```
 
+## Where to run it
+
+ATLAS is a single Node.js process with no build step and no database (its mind is one JSON file).
+
+| Option | Steps |
+|---|---|
+| **Your laptop** (fastest) | Install Node 18+, then `git clone`, `cd Travelers-clan`, `npm start`, open http://localhost:3000 |
+| **Render** (free tier, always-on URL) | New → Blueprint → point at this repo; `render.yaml` sets everything, including a 1 GB disk so the mind survives restarts. Add `ANTHROPIC_API_KEY` in the dashboard to switch the mentor on. |
+| **Railway / Fly / any Docker host** | `docker build -t atlas . && docker run -p 3000:3000 -v atlas-data:/data atlas` |
+| **Hostinger Node.js hosting** | Upload the repo, start command `node server.js`, set env `ATLAS_DATA` to a persistent folder |
+
+Keep `ATLAS_DATA` on a persistent disk: that folder is ATLAS's memory.
+
 ## How the brain works
 
 | Region (neuroscience) | Module | What it does |
@@ -33,7 +46,7 @@ npm start
 | Sleep / consolidation | `Memory.consolidate` | Replays salient episodes into semantic facts, prunes weak synapses, merges duplicates |
 | Dopamine (reward) | `Memory.reward` | 👍/👎 feedback potentiates or depresses the synapses that just fired (reward-modulated plasticity) |
 | Language areas | `core/learning.js` | Triple extraction (`X is in Y`, `X offers Y`, …), question parsing, answer composition with confidence, corrections ("no, X is Y") |
-| Basal ganglia (procedural memory) | `core/skills.js` | Built-in skills (arithmetic, percentages, per-person split, dates, unit conversion) plus **learned skills**: sandboxed JS admitted only if its tests pass |
+| Basal ganglia (procedural memory) | `core/skills.js` | Built-in skills (arithmetic, percentages, per-person split, dates, unit conversion, **lead gate** scoring) plus **learned skills**: sandboxed JS admitted only if its tests pass |
 | Genome / evolution | `core/evolution.js` | Learning rate, decay, consolidation threshold, curiosity, working-memory size … tuned by an evolutionary loop whose fitness is recall on held-out facts + human approval |
 | The parent | `core/mentor.js` | Claude answers when ATLAS is unsure (and ATLAS memorises the answer), reflects on conversations into lessons, and writes new skills |
 | Executive loop | `core/brain.js` | perceive → recall → reason → act → learn, plus curiosity questions, sleep and evolution |
@@ -45,6 +58,7 @@ npm start
 - **Corrections** unlearn and relearn: `No, the Ladakh trip costs 26000.`
 - **Rewards** shape plasticity: press 👍 or 👎 after an answer.
 - **Curiosity**: ATLAS asks about entities it keeps noticing; answer and it learns.
+- **WhatsApp**: paste an exported chat; staff messages become facts, lead questions become training signal, and ATLAS reports the most-asked topics. Try `score this lead: <message>`.
 - **Curriculum**: drop `.md`/`.txt` lesson files into `curriculum/`; they are studied once on boot.
 - **Sleep** every ~30 messages or 20 minutes; **evolve** hourly, or on demand from the UI.
 
@@ -57,6 +71,7 @@ Everything persists in `data/state.json`. Export the whole mind from the UI.
 | `POST /api/chat` | `{message}` | Talk to ATLAS |
 | `POST /api/feedback` | `{good: true/false}` | Reward or punish the last answer |
 | `POST /api/teach` | `{text}` | Bulk lesson |
+| `POST /api/import/whatsapp` | `{text, staff}` | Learn from an exported chat |
 | `POST /api/sleep` | | Consolidate now |
 | `POST /api/evolve` | `{generations}` | Run evolution now |
 | `POST /api/grow` | | Ask the mentor to synthesize a skill for recurring unanswered questions |

@@ -8,6 +8,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { Brain } = require('./core/brain');
+const { importWhatsApp } = require('./core/importers');
 
 const PORT = +(process.env.PORT || 3000);
 const PUBLIC = path.join(__dirname, 'public');
@@ -50,6 +51,7 @@ const routes = {
   'POST /api/chat': async (q, body) => { sinceSleep++; return brain.respond(body.message, { user: body.user || 'chief' }); },
   'POST /api/feedback': async (q, body) => { brain.feedback(!!body.good, body.note || ''); return { ok: true, dopamine: brain.memory.dopamine }; },
   'POST /api/teach': async (q, body) => ({ facts: brain.teach(String(body.text || ''), { source: body.source || 'chief' }) }),
+  'POST /api/import/whatsapp': async (q, body) => importWhatsApp(brain, String(body.text || ''), { staff: Array.isArray(body.staff) ? body.staff : String(body.staff || '').split(',').map(x => x.trim()).filter(Boolean) }),
   'POST /api/sleep': async () => brain.sleep(),
   'POST /api/evolve': async (q, body) => brain.evolve(Math.min(50, Math.max(1, +body.generations || 1))),
   'POST /api/grow': async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError },

@@ -73,3 +73,9 @@ textarea { margin: 10px 14px 0; min-height: 80px; resize: vertical; background: 
   .chat, .brain, .evolution, .teach, .activity { grid-column: 1; grid-row: auto; }
   .chat { min-height: 420px; } .brain { min-height: 420px; } .activity { min-height: 260px; }
 }
+
+.import { margin: 8px 14px 0; border: 1px dashed var(--line); border-radius: 8px; padding: 6px 10px; }
+.import summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.import input, .import textarea { width: 100%; margin: 8px 0 0; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font: inherit; }
+.import textarea { min-height: 70px; }
+.import .actions { padding: 8px 0 4px; }

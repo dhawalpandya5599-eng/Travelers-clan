@@ -1,0 +1,17 @@
+# One-click deploy on Render (free tier works): https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: atlas-travelers-clan
+    runtime: node
+    plan: free
+    buildCommand: "echo no build needed"
+    startCommand: "node server.js"
+    envVars:
+      - key: ATLAS_DATA
+        value: /var/data
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    disk:
+      name: atlas-mind
+      mountPath: /var/data
+      sizeGB: 1
