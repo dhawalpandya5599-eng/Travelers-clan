@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'importers', 'brain'];
+const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'importers', 'brain'];
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
@@ -117,6 +117,9 @@ const glue = `
           case 'POST /api/feedback': brain.feedback(!!body.good, body.note || ''); return { ok: true, dopamine: brain.memory.dopamine };
           case 'POST /api/teach': return { facts: brain.teach(String(body.text || ''), { source: body.source || 'chief' }) };
           case 'POST /api/import/whatsapp': return importWhatsApp(brain, String(body.text || ''), { staff: String(body.staff || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean) });
+          case 'POST /api/council': return brain.council.handle({ conversation: String(body.conversation || body.message || ''), name: body.name || '' });
+          case 'POST /api/council/review': return brain.council.review({ message: String(body.text || body.message || '') });
+          case 'POST /api/news': { var added = brain.risk.ingest(String(body.text || ''), 'chief'); return { added: added }; }
           case 'POST /api/import/mind': return brain.absorb(body.state || body, { source: body.source || 'upload' });
           case 'POST /api/upbringing': return brain.upbringing({ generations: Math.min(50, +body.generations || 5) });
           case 'POST /api/sleep': return brain.sleep();

@@ -65,6 +65,22 @@ Every copy of ATLAS keeps learning, and copies **merge** instead of overwrite. A
 
 When cloud credits run out, run the local server: it continues from the last committed mind, keeps training itself daily, and `npm run sync:push` publishes what it learned so the cloud, the website and the browser page pick it up next time.
 
+## The council of agents
+
+Seven specialists, one duty each, all teaching the mind after every run:
+
+| Agent | Duty |
+|---|---|
+| Sales | cohort, funnel stage, next action with evidence, drafted reply |
+| Operations | feasibility (season, altitude, days, budget), routing, timing, permits, emotional fit, day-by-day itinerary |
+| Customer Experience | tone for the cohort, unanswered questions, negative signals, touchpoints |
+| News and risk desk | dated advisories (weather, security, political, visa, transport, health) and their impact; feed it headlines with `news: ...` |
+| Critic | gaps, unsatisfactory answers, itinerary loopholes (acclimatisation, buffer, pace, budget, permits, weather clauses), fixes |
+| Marketing | acquisition cost by campaign, budget shifts, creative refresh, seasonal calendar, hooks per cohort |
+| Tester and teacher | probes the mind, lists weak answers and contradictions, teaches missing destination, permit and risk facts |
+
+In chat: `council: <conversation>`, `plan: <requirements>`, `critic: <plan or conversation>`, `news: <headlines>`. API: `POST /api/council`, `/api/council/review`, `/api/council/ask`, `/api/news`. The dashboard's Council panel shows every agent's verdict, findings and fixes.
+
 ## The exam
 
 `npm run exam` runs a fixed 54-question exam (recall, teaching, corrections, inference, yes/no, context, comparison, counting, arithmetic over facts, negation, typos, honesty, aggregation). Every change to the mind's code is measured against it; the nightly routine refuses to commit a round that lowers the score.

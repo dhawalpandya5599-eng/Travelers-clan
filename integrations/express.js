@@ -47,6 +47,9 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/feedback', wrap(req => { brain.feedback(!!req.body.good, req.body.note || ''); return { ok: true, dopamine: brain.memory.dopamine }; }));
   router.post('/api/teach', wrap(req => ({ facts: brain.teach(String(req.body.text || ''), { source: req.body.source || 'admin' }) })));
   router.post('/api/import/whatsapp', wrap(req => importWhatsApp(brain, String(req.body.text || ''), { staff: String(req.body.staff || '').split(',').map(s => s.trim()).filter(Boolean) })));
+  router.post('/api/council', wrap(req => brain.council.handle({ conversation: String(req.body.conversation || req.body.message || ''), name: req.body.name || '' })));
+  router.post('/api/council/review', wrap(req => brain.council.review({ message: String(req.body.text || req.body.message || '') })));
+  router.post('/api/news', wrap(req => { const added = brain.risk.ingest(String(req.body.text || ''), 'admin'); for (const i of added) brain.teach(`${i.where} has a ${i.severity} travel risk: ${i.headline}.`, { source: 'news', importance: 0.8 }); return { added }; }));
   router.post('/api/import/mind', wrap(req => brain.absorb(req.body.state || req.body, { source: req.body.source || 'upload' })));
   router.post('/api/upbringing', wrap(req => brain.upbringing({ generations: Math.min(50, +req.body.generations || 5) })));
   router.post('/api/sleep', wrap(() => brain.sleep()));

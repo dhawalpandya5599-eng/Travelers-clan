@@ -140,3 +140,27 @@ test('merge: two minds combine without losing either', async () => {
   assert.match((await c.respond('Where is Spiti?')).text, /cold desert/i);
   assert.match((await c.respond('What is Goa?')).text, /beach state/i);
 });
+
+test('council: critic blocks an off-season, over-budget senior plan and proposes fixes', async () => {
+  const b = new Brain({ dataDir: tmp() }); b.evolution.genome.curiosity = 0;
+  const r = await b.council.handle({ conversation: 'lead: planning ladakh for my parents aged 65 in january, 5 days, budget 25k per person\nclan: 28000 per person\nlead: hmm is it safe for them?' });
+  assert.strictEqual(r.verdict, 'block');
+  assert.ok(r.agents.operations.findings.some(f => /off season/i.test(f)));
+  assert.ok(r.agents.operations.findings.some(f => /too short|minimum/i.test(f)));
+  assert.ok(r.agents.cx.findings.some(f => /unanswered|anxious|negative/i.test(f)));
+  assert.ok(r.agents.critic.findings.length >= 2);
+  assert.ok(r.fixes.length >= 3);
+  assert.ok(r.taught >= 1, 'agents teach the mind');
+});
+
+test('council: a good plan passes and the news desk learns headlines', async () => {
+  const b = new Brain({ dataDir: tmp() }); b.evolution.genome.curiosity = 0;
+  const r = await b.council.review({ message: '4 friends, Goa in December, 4 days, budget 15k per person, want nightlife' });
+  assert.notStrictEqual(r.verdict, 'block');
+  assert.strictEqual(r.agents.operations.output.season, 'in season');
+  assert.strictEqual(r.agents.operations.output.itinerary.length, 4);
+  const added = b.risk.ingest('Cyclone warning for Goa coast, beaches closed this week');
+  assert.strictEqual(added.length, 1);
+  const r2 = await b.council.review({ message: '4 friends, Goa in December, 4 days, budget 15k per person' });
+  assert.strictEqual(r2.agents.news.verdict, 'block');
+});

@@ -109,6 +109,11 @@ const CASES = [
   { journeys: true, q: 'next step:\nlead: ok lets do it. how do we pay', expect: /Stage: advance.*Do: send payment link now/i, kind: 'funnel' },
   { journeys: true, q: 'why do we lose leads?', expect: /lost mostly because/i, kind: 'funnel' },
   { journeys: true, q: 'What is the best action when they object?', expect: /answer with proof|call/i, kind: 'funnel' },
+  // --- council of agents ---
+  { q: 'council: lead: family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10\nclan: 32000 per person\nlead: is it safe for kids? veg food?', expect: /Verdict: WARN[\s\S]*(unanswered|Draft reply does not answer)/i, kind: 'council' },
+  { q: 'plan: 2 of us, Ladakh in January, 4 days, budget 20k per person', expect: /off season[\s\S]*too short|minimum/i, kind: 'council' },
+  { q: 'ops: 6 friends, Spiti in August, 9 days, budget 35k per person', expect: /in season[\s\S]*Itinerary: D1/i, kind: 'council' },
+  { q: 'news: Curfew imposed in Srinagar after unrest, tourists advised to avoid Kashmir', expect: /Logged 1 advisory.*Kashmir \[high/i, kind: 'council' },
   { journeys: true, q: 'What is the most common reason a lead is lost?', expect: /no reply|ghosted|slow|price|objection|decide|quiet/i, kind: 'funnel' },
 ];
 

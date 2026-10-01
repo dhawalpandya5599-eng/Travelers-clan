@@ -76,6 +76,10 @@ function mergeMinds(base, other) {
   const addMaps = (a, b) => { const o = JSON.parse(JSON.stringify(a || {})); for (const [t, m] of Object.entries(b || {})) { o[t] = o[t] || {}; for (const [k, v] of Object.entries(m)) o[t][k] = (o[t][k] || 0) + v; } return o; };
   out.funnel = { stats, losses: addMaps(bf2.losses, of2.losses), drop: addMaps(bf2.drop, of2.drop), n: (bf2.n || 0) + (of2.n || 0) };
 
+  // Risk desk: union of advisories.
+  const br = base.risk || { items: [], updated: null }, orr = other.risk || { items: [], updated: null };
+  const seenH = new Set(); out.risk = { items: [...(br.items || []), ...(orr.items || [])].filter(i => !seenH.has(i.headline) && seenH.add(i.headline)), updated: [br.updated, orr.updated].filter(Boolean).sort().pop() || null };
+
   // Evolution: fittest genome, longest lineage.
   const be = base.evolution || {}, oe = other.evolution || {};
   const bf = (be.history || []).slice(-1)[0]?.best ?? -1, of = (oe.history || []).slice(-1)[0]?.best ?? -1;

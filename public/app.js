@@ -62,6 +62,17 @@
     } catch (err) { addMsg('atlas', 'That file is not a mind export: ' + err.message); }
     e.target.value = ''; busy(false); refresh();
   });
+  const AGENT_NAMES = { sales: 'Sales', operations: 'Operations', cx: 'Customer experience', news: 'News & risk', critic: 'Critic', marketing: 'Marketing', tester: 'Tester & teacher' };
+  function renderCouncil(r) {
+    $('council-verdict').textContent = `verdict ${r.verdict} · taught ${r.taught} fact(s)`;
+    $('council-out').innerHTML = Object.values(r.agents).map(a => {
+      const o = a.output || {};
+      const extra = a.agent === 'sales' && o.draft ? `<div class="draft">${esc(o.draft)}</div>` : a.agent === 'operations' && o.itinerary ? `<div class="itin">${o.itinerary.map(x => `D${x.day} ${esc(x.plan)}`).join('<br>')}<br>~${o.perPerson} pp · ${esc(o.season)}</div>` : '';
+      return `<div class="agent"><h4>${AGENT_NAMES[a.agent] || a.agent}<span class="v ${a.verdict}">${a.verdict}</span></h4>${a.findings.length ? '<ul>' + a.findings.map(f => `<li>${esc(f)}</li>`).join('') + '</ul>' : '<div class="hint">no issues</div>'}${a.suggestions.length ? '<ul>' + a.suggestions.map(f => `<li class="fix">→ ${esc(f)}</li>`).join('') + '</ul>' : ''}${extra}</div>`;
+    }).join('');
+  }
+  $('btn-council').onclick = () => action($('btn-council'), async () => { const text = $('council-text').value.trim(); if (!text) return; const r = await api('POST', '/api/council', { conversation: text }); if (r.error) { $('council-verdict').textContent = r.error; return; } renderCouncil(r); });
+  $('btn-review').onclick = () => action($('btn-review'), async () => { const text = $('council-text').value.trim(); if (!text) return; const r = await api('POST', '/api/council/review', { text }); if (r.error) { $('council-verdict').textContent = r.error; return; } renderCouncil(r); });
   async function action(btn, fn) { btn.disabled = true; busy(true); try { await fn(); } finally { btn.disabled = false; busy(false); refresh(); } }
   function busy(b) { $('pulse').classList.toggle('busy', b); }
 

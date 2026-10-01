@@ -93,6 +93,27 @@ class Skills {
 
   registerBuiltins() {
     this.register({
+      name: 'council', description: 'Runs the lead or plan through Sales, Operations, Customer Experience, the news desk and the Critic.',
+      match: (input) => { const m = input.match(/^(?:council|review|critic|check(?: this)?(?: plan| itinerary| lead)?|ops|operations|plan)[: ]+([\s\S]{6,})$/i); return m ? { mode: input.match(/^(\w+)/)[1].toLowerCase(), text: m[1] } : null; },
+      run: ({ mode, text }, input, ctx) => {
+        const brain = ctx && ctx.brain; if (!brain) return 'Council unavailable.';
+        // Synchronous facade: agents other than the tester are synchronous, so run them directly.
+        const { AGENTS, parseRequirements } = require('./agents');
+        const c = brain.council; const cc = c.ctx(); const task = { conversation: text, message: text }; const out = {};
+        if (mode === 'ops' || mode === 'operations' || mode === 'plan') { out.operations = AGENTS.operations.run(task, cc); out.news = AGENTS.news.run({ ...task, requirements: parseRequirements(text) }, cc); out.critic = AGENTS.critic.run(task, cc, out); }
+        else if (mode === 'critic' || mode === 'review' || mode === 'check') { out.operations = AGENTS.operations.run(task, cc); out.cx = AGENTS.cx.run(task, cc); out.sales = AGENTS.sales.run(task, cc); out.news = AGENTS.news.run({ ...task, requirements: parseRequirements(text) }, cc); out.critic = AGENTS.critic.run(task, cc, out); }
+        else { out.sales = AGENTS.sales.run(task, cc); out.operations = AGENTS.operations.run(task, cc); out.cx = AGENTS.cx.run(task, cc); out.news = AGENTS.news.run({ ...task, requirements: parseRequirements(text) }, cc); out.critic = AGENTS.critic.run(task, cc, out); }
+        const r = c.finish(out, mode);
+        const it = out.operations && out.operations.output.itinerary ? '\nItinerary: ' + out.operations.output.itinerary.map(x => `D${x.day} ${x.plan}`).join(' · ') : '';
+        return r.summary + it;
+      },
+    });
+    this.register({
+      name: 'news-ingest', description: 'Feeds the news desk with headlines (one per line) and reports what changed.',
+      match: (input) => { const m = input.match(/^(?:news|headlines?|advisory|advisories)[: ]+([\s\S]{15,})$/i); return m ? m[1] : null; },
+      run: (text, input, ctx) => { const brain = ctx && ctx.brain; if (!brain) return 'News desk unavailable.'; const added = brain.risk.ingest(text, 'chief'); for (const i of added) brain.teach(`${i.where} has a ${i.severity} travel risk: ${i.headline}.`, { source: 'news', importance: 0.8 }); brain.save(); return added.length ? `Logged ${added.length} advisory(ies): ${added.map(i => `${i.where} [${i.severity} ${i.kind}]`).join(', ')}.` : 'No new advisories with a recognisable place.'; },
+    });
+    this.register({
       name: 'next-step', description: 'Reads a conversation, detects the funnel stage and the customer type, and says exactly what to do next, with a draft.',
       match: (input) => { const m = input.match(/^(?:next step|what next|what should (?:i|we) do next|next action|advise)(?:\s+for)?[: ]+([\s\S]{6,})$/i); return m ? m[1] : null; },
       run: (convo, input, ctx) => {

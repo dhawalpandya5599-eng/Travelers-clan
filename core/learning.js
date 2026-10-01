@@ -68,7 +68,7 @@ function extractFacts(text) {
       if (!s || !o || PRONOUN.test(s) || s.split(' ').length > 8) continue;
       if (/^(not|no|never)\b/i.test(o)) { out.push({ s, p: p + ' not', o: o.replace(/^(not|no|never)\s*/i, '') }); break; }
       // "X is a village in Parvati valley" → X is a village; X is in Parvati valley
-      const loc = p === 'is a' && o.match(/^(.{2,40}?)\s+(?:in|at|near|of)\s+(.{2,80})$/i);
+      const loc = p === 'is a' && o.match(/^([a-z][a-z' -]{1,30}?)\s+(?:in|at|near)\s+(.{2,80})$/i) && !/\b(who|that|which|with)\b/i.test(o) ? o.match(/^([a-z][a-z' -]{1,30}?)\s+(?:in|at|near)\s+(.{2,80})$/i) : null;
       if (loc) { out.push({ s, p, o: loc[1] }); out.push({ s, p: /\bat\b/.test(o) ? 'is at' : 'is in', o: loc[2] }); break; }
       out.push({ s, p, o });
       break; // first matching grammar wins per sentence

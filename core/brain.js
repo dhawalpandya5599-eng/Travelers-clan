@@ -19,6 +19,7 @@ const { Mentor } = require('./mentor');
 const { mergeMinds, summary } = require('./merge');
 const { Conversion } = require('./conversion');
 const { Funnel } = require('./funnel');
+const { RiskDesk } = require('./risk');
 
 const VERSION = '0.1.0';
 
@@ -41,7 +42,8 @@ class Brain extends EventEmitter {
     this.skills = new Skills();
     this.conversion = new Conversion();
     this.funnel = new Funnel();
-    this.skills.context = { conversion: this.conversion, funnel: this.funnel };
+    this.risk = new RiskDesk();
+    this.skills.context = { conversion: this.conversion, funnel: this.funnel, brain: this };
     this.autosave = autosave;
     this.lastResponse = null;
     this.lastSubject = null;         // discourse focus for pronouns and fragments
@@ -59,7 +61,8 @@ class Brain extends EventEmitter {
       this.skills = new Skills(s.skills);
       this.conversion = new Conversion(s.conversion);
       this.funnel = new Funnel(s.funnel);
-      this.skills.context = { conversion: this.conversion, funnel: this.funnel };
+      this.risk = new RiskDesk(s.risk);
+      this.skills.context = { conversion: this.conversion, funnel: this.funnel, brain: this };
       this.born = s.born || this.born;
       this.interactions = s.interactions || 0;
       this.lessonsLearned = s.lessonsLearned || 0;
@@ -104,7 +107,8 @@ class Brain extends EventEmitter {
     this.skills = new Skills(merged.skills);
     this.conversion = new Conversion(merged.conversion);
     this.funnel = new Funnel(merged.funnel);
-    this.skills.context = { conversion: this.conversion, funnel: this.funnel };
+    this.risk = new RiskDesk(merged.risk);
+    this.skills.context = { conversion: this.conversion, funnel: this.funnel, brain: this };
     this.born = merged.born; this.interactions = merged.interactions; this.lessonsLearned = merged.lessonsLearned; this.unknowns = merged.unknowns;
     const after = summary(merged);
     this.event('learn', `Absorbed a mind from ${source}: facts ${before.facts}→${after.facts}, concepts ${before.concepts}→${after.concepts}, generation ${before.generation}→${after.generation}.`);
@@ -129,7 +133,7 @@ class Brain extends EventEmitter {
   current() {
     return { version: VERSION, born: this.born, interactions: this.interactions, lessonsLearned: this.lessonsLearned,
       unknowns: this.unknowns.slice(-200), log: this.log.slice(-100), absorbedSeeds: this.absorbedSeeds,
-      evolution: this.evolution.dump(), memory: this.memory.dump(), skills: this.skills.dump(), conversion: this.conversion.dump(), funnel: this.funnel.dump() };
+      evolution: this.evolution.dump(), memory: this.memory.dump(), skills: this.skills.dump(), conversion: this.conversion.dump(), funnel: this.funnel.dump(), risk: this.risk.dump() };
   }
 
   // ---------- Teaching ----------
@@ -405,6 +409,9 @@ class Brain extends EventEmitter {
     return n;
   }
 
+  /** The council of agents (lazy, so core modules stay independent). */
+  get council() { if (!this._council) { const { Council } = require('./council'); this._council = new Council(this); } return this._council; }
+
   /** Learn the funnel policy from end-to-end journeys (synthetic or real) and keep the findings as facts. */
   learnJourneys(journeys, { source = 'journeys' } = {}) {
     this.funnel.train(journeys);
@@ -440,10 +447,11 @@ class Brain extends EventEmitter {
       this.pendingQuestion = null;
     }
     this.pendingQuestion = saved;
+    const exam = await this.council.ask('tester', { message: 'routine examination' });
     const sleep = await this.sleep();
     const evo = this.evolve(generations);
     this.event('evolve', `Upbringing round: self-quiz ${hit}/${total}, generation ${evo ? evo.generation : this.evolution.generation}.`);
-    return { quiz: { hit, total }, sleep, evolution: evo };
+    return { quiz: { hit, total }, exam: exam.agents.tester.output, sleep, evolution: evo };
   }
 
   /** Background heartbeat: decay, occasional sleep and evolution. */
