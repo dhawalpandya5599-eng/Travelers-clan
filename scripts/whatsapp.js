@@ -34,7 +34,7 @@ async function start() {
   sock.ev.on('creds.update', saveCreds);
   sock.ev.on('connection.update', (u) => {
     if (u.qr) { try { require('qrcode-terminal').generate(u.qr, { small: true }); } catch { console.log('QR:', u.qr); } console.log('Scan with WhatsApp Business → Linked devices.'); }
-    if (u.connection === 'open') console.log('Connected. ATLAS at', ATLAS_URL);
+    if (u.connection === 'open') { console.log('Connected. ATLAS at', ATLAS_URL); startDigest(sock); }
     if (u.connection === 'close') { const code = u.lastDisconnect && u.lastDisconnect.error && u.lastDisconnect.error.output && u.lastDisconnect.error.output.statusCode; if (code !== DisconnectReason.loggedOut) { console.log('Reconnecting…'); start(); } else console.log('Logged out. Delete', AUTH_DIR, 'and scan again.'); }
   });
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
@@ -52,5 +52,20 @@ async function start() {
       } catch (e) { console.error('ATLAS unreachable:', e.message); }
     }
   });
+}
+/** 9:00 IST every day: the day's work, sent to this number itself (or WA_DIGEST_TO=91XXXXXXXXXX). */
+let digestTimer = null, lastDigestDay = '';
+function startDigest(sock) {
+  if (digestTimer) return;
+  digestTimer = setInterval(async () => {
+    const ist = new Date(Date.now() + 5.5 * 3600e3); const day = ist.toISOString().slice(0, 10);
+    if (ist.getUTCHours() !== 9 || lastDigestDay === day) return;
+    lastDigestDay = day;
+    try {
+      const d = await atlas('GET', '/api/growth/digest');
+      const to = (process.env.WA_DIGEST_TO || (sock.user && sock.user.id || '').replace(/:.*@/, '@').replace(/@.*/, '')).replace(/\D/g, '');
+      if (to && d.text) { await sock.sendMessage(to + '@s.whatsapp.net', { text: d.text }); console.log('Digest sent to', to); }
+    } catch (e) { console.error('digest failed:', e.message); }
+  }, 60e3);
 }
 start();

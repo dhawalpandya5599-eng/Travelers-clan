@@ -4,7 +4,9 @@
   "description": "ATLAS: a self-learning, self-evolving cognitive agent for the Travelers Clan, with a live brain visualizer.",
   "main": "server.js",
   "type": "commonjs",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
@@ -15,7 +17,9 @@
     "synth": "node scripts/synth-customers.js && node scripts/synth-journeys.js",
     "sync": "node scripts/sync.js",
     "sync:push": "node scripts/sync.js --commit",
-    "evolve": "node scripts/train.js --generations 20"
+    "evolve": "node scripts/train.js --generations 20",
+    "stress": "node scripts/stress.js",
+    "whatsapp": "node scripts/whatsapp.js"
   },
   "license": "MIT",
   "private": true

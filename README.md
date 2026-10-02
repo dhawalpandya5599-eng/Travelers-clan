@@ -168,3 +168,10 @@ Setup once in **Grow → Setup**: phone number, city, and your upcoming trips wi
 - **Website widget** on travelersclan.in: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. With the Express integration mount it publicly: `app.use('/atlas-chat', atlas.widget)`.
 - **Real WhatsApp number, free**: `npm install @whiskeysockets/baileys qrcode-terminal && node scripts/whatsapp.js`, scan the QR from WhatsApp Business → Linked devices. Replies are drafted by default; flip "Auto-send" in the Grow tab to send them automatically. Money and complaint messages always wait for you.
 - **Open-source model**: install [Ollama](https://ollama.com), run `ollama pull llama3.2` (or `qwen2.5:7b` for better Hindi), start ATLAS; every post, reply and broadcast gets polished in the customer's own language. Nothing breaks without it.
+
+### Testing the WhatsApp agent
+
+- `npm run exam` includes 18 WhatsApp conversations in English, Hinglish, Hindi and Gujarati script.
+- `npm run stress` throws 200 synthetic customers at the agent (FAQ-heavy, bargainers, ghosts, group-size changers, script switchers, direct bookers, angry, thinkers) and reports every weak reply by category: empty, repeated, over-long, unanswered, wrong language, silent handoff. The weaknesses are taught to the mind as critic lessons and saved to `synth/stress-report.json`.
+- Seats: a "hold" through the agent reserves seats for 24 hours. Mark the lead **advance** (or enter a booking value) when the money arrives and the hold becomes a booking; mark **lost** to release it.
+- Daily digest: with `scripts/whatsapp.js` connected, your own number receives the day's follow-ups, seat alerts and the campaign to run at 9:00 IST (`WA_DIGEST_TO=91XXXXXXXXXX` to send it elsewhere).

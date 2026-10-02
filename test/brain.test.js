@@ -213,14 +213,16 @@ test('growth engine: grounded WhatsApp replies, handoff, follow-ups, campaigns, 
   const r1 = await g.chat({ id: '919999900001', text: 'hi, 4 of us want goa in december, budget 15k each' });
   assert.match(r1.reply, /14,500/); assert.match(r1.reply, /58,000/); assert.equal(r1.handoff, false);
   const r2 = await g.chat({ id: '919999900001', text: 'ok how do I pay the advance?' });
-  assert.equal(r2.handoff, true); assert.equal(r2.send, false);
+  assert.equal(r2.handoff, true); assert.equal(r2.send, false); assert.equal(r2.stage, 'hold');
+  assert.equal(g.seatsLeft(g.profile.trips[0]), 3); // 16 - 9 - 4 held
+  g.updateLead('919999900001', { stage: 'advance', value: 58000 }); assert.equal(g.profile.trips[0].booked, 13); assert.equal(g.seatsLeft(g.profile.trips[0]), 3);
+  const { latinise, snapToHours } = require('../core/growth'); assert.match(latinise('ગોવા ૪ લોકો કિંમત'), /goa 4 log price/); const snapped = new Date(snapToHours(Date.UTC(2026, 0, 1, 21, 0)) + 5.5 * 3600e3); assert.equal(snapped.getUTCHours(), 10);
   const r3 = await g.chat({ id: '919999900002', text: 'bhai goa ka kitna hoga 2 log ke liye' });
   assert.equal(r3.language, 'hinglish'); assert.match(r3.reply, /29,000/);
   g.state.leads[0].next = Date.now() - 1;
   const t = await g.today(); assert.equal(t.due.length, 1); assert.ok(t.due[0].message.length > 20);
   assert.ok(g.campaigns().length >= 3);
   const bc = await g.broadcasts(); assert.ok(bc.drafts.every(d => /\{name\}/.test(d.text)));
-  g.updateLead('919999900001', { stage: 'advance', value: 58000 });
   const roi = g.roi({ adSpend: 5000 }); assert.equal(roi.booked, 1); assert.equal(roi.roas, 11.6);
   const rr = await g.reviewReply('worst trip ever, bus broke down', 1, 'Amit'); assert.equal(rr.escalate, true); assert.match(rr.reply, /9876543210/);
   assert.match((await b.respond('what is the phone number of travelers clan')).text, /9876543210/);

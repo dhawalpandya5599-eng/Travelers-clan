@@ -19,7 +19,7 @@ const { parseRequirements } = require('./agents');
 const { detectStage } = require('./funnel');
 
 const DAY = 86400e3;
-const STAGES = ['new', 'qualified', 'quoted', 'objection', 'advance', 'balance', 'travelled', 'reviewed', 'lost'];
+const STAGES = ['new', 'qualified', 'quoted', 'objection', 'hold', 'advance', 'balance', 'travelled', 'reviewed', 'lost'];
 /** Indian retail calendar: when people decide to travel. Month is 1-12; `lead` is how many days before to start campaigns. */
 const CALENDAR = [
   { name: 'Republic Day long weekend', month: 1, day: 26, lead: 25, pitch: '3-day escape, no leave needed' },
@@ -42,35 +42,77 @@ const SEQUENCE = [
   { day: 21, name: 'next batch', rule: 'no pressure: share the next departure that fits them' },
 ];
 
+/** Never schedule a message at 2am: snap to 10:00–20:00 IST. */
+function snapToHours(ts) { const ist = new Date(ts + 5.5 * 3600e3); const h = ist.getUTCHours(); if (h >= 10 && h < 20) return ts; const d = new Date(ist); if (h >= 20) d.setUTCDate(d.getUTCDate() + 1); d.setUTCHours(10, 0, 0, 0); return d.getTime() - 5.5 * 3600e3; }
 const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const money = (n) => '₹' + Math.round(+n || 0).toLocaleString('en-IN');
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-const isHinglish = (t) => /\b(hai|kya|kitna|kitne|bhai|bhaiya|didi|batao|chahiye|karna|karenge|nahi|haan|ji|kab|kaise|paise|rupay|mein|ka|ki|ke|ho|hoga|hogi|milega|plz|pls)\b/i.test(t);
+const GUJ = /[\u0A80-\u0AFF]/, DEV = /[\u0900-\u097F]/;
+/** The fifty words that matter, Gujarati and Hindi script → the Latin tokens the rules understand. */
+const XLIT = { 'કિંમત': 'price', 'ભાવ': 'price', 'કેટલા': 'kitna', 'કેટલું': 'kitna', 'કેટલી': 'kitni', 'કેન્સલ': 'cancel', 'રદ': 'cancel', 'સુરક્ષિત': 'safe', 'સેફ': 'safe', 'જમવાનું': 'food', 'ખાવાનું': 'food', 'શાકાહારી': 'veg', 'જૈન': 'jain', 'પિકઅપ': 'pickup', 'ક્યાંથી': 'kahan se', 'ક્યાં': 'kahan', 'બુક': 'book', 'બુકિંગ': 'booking', 'હા': 'haan', 'ઓકે': 'ok', 'તારીખ': 'date', 'સીટ': 'seat', 'સીટો': 'seats', 'સમાવેશ': 'included', 'પૈસા': 'paise', 'ચુકવણી': 'payment', 'એડવાન્સ': 'advance', 'રિફંડ': 'refund', 'હોટેલ': 'hotel', 'રૂમ': 'room', 'લોકો': 'log', 'જણ': 'log', 'મોંઘું': 'mehenga', 'ડિસ્કાઉન્ટ': 'discount', 'ગોવા': 'goa', 'મનાલી': 'manali', 'લદ્દાખ': 'ladakh', 'કેરળ': 'kerala', 'કચ્છ': 'kutch', 'ડિસેમ્બર': 'december', 'જાન્યુઆરી': 'january', 'નવેમ્બર': 'november', 'ઓક્ટોબર': 'october', 'દિવસ': 'days', 'પ્લાન': 'plan', 'વિગત': 'details', 'આભાર': 'thanks', 'નમસ્તે': 'namaste', 'કરો': 'karo', 'કરી': 'kar', 'આપો': 'do', 'મોકલો': 'bhejo', 'કહો': 'batao', 'છોકરીઓ': 'girls', 'મહિલા': 'women',
+  'कीमत': 'price', 'दाम': 'price', 'कितना': 'kitna', 'कितने': 'kitne', 'कितनी': 'kitni', 'रद्द': 'cancel', 'कैंसिल': 'cancel', 'कैंसल': 'cancel', 'सुरक्षित': 'safe', 'सेफ': 'safe', 'खाना': 'khana', 'शाकाहारी': 'veg', 'जैन': 'jain', 'पिकअप': 'pickup', 'कहाँ': 'kahan', 'कहां': 'kahan', 'से': 'se', 'बुक': 'book', 'बुकिंग': 'booking', 'हाँ': 'haan', 'हां': 'haan', 'ठीक': 'theek', 'तारीख': 'date', 'सीट': 'seat', 'सीटें': 'seats', 'शामिल': 'included', 'पैसे': 'paise', 'भुगतान': 'payment', 'एडवांस': 'advance', 'रिफंड': 'refund', 'होटल': 'hotel', 'रूम': 'room', 'लोग': 'log', 'लोगों': 'log', 'महंगा': 'mehenga', 'डिस्काउंट': 'discount', 'गोवा': 'goa', 'मनाली': 'manali', 'लद्दाख': 'ladakh', 'केरल': 'kerala', 'कच्छ': 'kutch', 'दिसंबर': 'december', 'जनवरी': 'january', 'नवंबर': 'november', 'अक्टूबर': 'october', 'दिन': 'days', 'प्लान': 'plan', 'जानकारी': 'details', 'धन्यवाद': 'thanks', 'नमस्ते': 'namaste', 'करो': 'karo', 'कर': 'kar', 'दो': 'do', 'भेजो': 'bhejo', 'बताओ': 'batao', 'चाहिए': 'chahiye', 'लड़कियां': 'girls', 'लड़कियों': 'girls', 'महिला': 'women', 'के': 'ke', 'लिए': 'liye', 'का': 'ka', 'है': 'hai', 'क्या': 'kya', 'हम': 'hum', 'मैं': 'main', 'और': 'aur', 'नहीं': 'nahi' };
+const DIGITS = { '०': '0', '१': '1', '२': '2', '३': '3', '४': '4', '५': '5', '६': '6', '७': '7', '८': '8', '९': '9', '૦': '0', '૧': '1', '૨': '2', '૩': '3', '૪': '4', '૫': '5', '૬': '6', '૭': '7', '૮': '8', '૯': '9' };
+function latinise(text) {
+  let t = String(text || '').replace(/[०-९૦-૯]/g, d => DIGITS[d]);
+  if (!GUJ.test(t) && !DEV.test(t)) return t;
+  t = t.replace(/[\u0A80-\u0AFF\u0900-\u097F]+/g, w => XLIT[w] || XLIT[w.replace(/[ોેાીુૂંઃ]$/u, '')] || ' ');
+  return t.replace(/\s+/g, ' ').trim();
+}
+const scriptOf = (t) => GUJ.test(t) ? 'gujarati' : DEV.test(t) ? 'hindi' : null;
+const isHinglish = (t) => !!scriptOf(t) || /\b(hai|kya|kitna|kitne|bhai|bhaiya|didi|batao|chahiye|karna|karenge|nahi|haan|ji|kab|kaise|paise|rupay|mein|ka|ki|ke|ho|hoga|hogi|milega|plz|pls)\b/i.test(t);
 
 class Growth {
   constructor(brain, { dataDir } = {}) {
     this.brain = brain;
     this.file = path.join(dataDir || brain.dataDir, 'growth.json');
-    this.state = { profile: { name: 'Travelers Clan', city: '', phone: '', website: 'https://travelersclan.in', instagram: '', email: '', hours: '9am–9pm, 7 days', languages: ['English', 'Hindi'], usp: 'small group trips with a trip captain, fixed dates, no hidden costs', trips: [], policies: { included: 'travel from the start city, stay (sharing basis), breakfast and dinner, all sightseeing in the plan, a trip captain who travels with the group', excluded: 'lunches, personal shopping, entry tickets not in the plan, anything marked optional', payment: 'advance by UPI or bank transfer to hold the seat, balance 7 days before departure, GST invoice on request', cancellation: 'advance is transferable to any other batch within 6 months; cancellation 15+ days before departure refunds everything except the advance; under 15 days no refund because hotels and transport are already paid', pickup: 'we start from the city centre at a fixed point and time shared in the trip WhatsApp group 3 days before', safety: 'a trip captain travels with every group, we keep an emergency contact for every traveller, women travellers are roomed with women only, and we have run every batch with women travelling solo', food: 'vegetarian and Jain options on every meal, tell us allergies at booking', age: 'most travellers are 20 to 40; families and parents are welcome on the relaxed batches' } }, leads: [], threads: {}, log: [], settings: { autoReply: false, handoffKeywords: ['pay', 'payment', 'book', 'advance', 'upi', 'account', 'refund', 'cancel', 'complaint', 'angry', 'legal'] } };
-    try { if (fs.existsSync(this.file)) Object.assign(this.state, JSON.parse(fs.readFileSync(this.file, 'utf8'))); } catch (e) { /* fresh */ }
+    this.state = { profile: { name: 'Travelers Clan', city: '', phone: '', website: 'https://travelersclan.in', instagram: '', email: '', hours: '9am–9pm, 7 days', languages: ['English', 'Hindi'], usp: 'small group trips with a trip captain, fixed dates, no hidden costs', trips: [], policies: { included: 'travel from the start city, stay (sharing basis), breakfast and dinner, all sightseeing in the plan, a trip captain who travels with the group', excluded: 'lunches, personal shopping, entry tickets not in the plan, anything marked optional', payment: 'advance by UPI or bank transfer to hold the seat, balance 7 days before departure, GST invoice on request', cancellation: 'advance is transferable to any other batch within 6 months; cancellation 15+ days before departure refunds everything except the advance; under 15 days no refund because hotels and transport are already paid', pickup: 'we start from the city centre at a fixed point and time shared in the trip WhatsApp group 3 days before', safety: 'a trip captain travels with every group, we keep an emergency contact for every traveller, women travellers are roomed with women only, and we have run every batch with women travelling solo', food: 'vegetarian and Jain options on every meal, tell us allergies at booking', age: 'most travellers are 20 to 40; families and parents are welcome on the relaxed batches' }, policiesHi: { included: 'start city se travel, stay (sharing), breakfast aur dinner, plan ki saari sightseeing, aur ek trip captain jo group ke saath chalta hai', excluded: 'lunch, personal shopping, plan ke bahar ki entry tickets, aur jo optional likha hai', payment: 'seat hold ke liye UPI ya bank transfer se advance, balance departure se 7 din pehle, GST invoice maangne par', cancellation: 'advance 6 mahine ke andar kisi bhi batch mein transfer ho sakta hai; departure se 15+ din pehle cancel karo to advance chhod ke sab refund; 15 din ke andar refund nahi kyunki hotel aur transport pay ho chuke hote hain', pickup: 'city centre ke ek fixed point se nikalte hain, point aur time trip WhatsApp group mein 3 din pehle share hota hai', safety: 'har group ke saath trip captain hota hai, har traveller ka emergency contact rakhte hain, ladkiyon ki rooming ladkiyon ke saath hi hoti hai, aur har batch mein solo ladkiyan travel kar chuki hain', food: 'har meal mein veg aur Jain option, allergy booking par bata do', age: 'zyada traveller 20 se 40 ke hain; relaxed batches mein family aur parents welcome hain' } }, leads: [], threads: {}, log: [], settings: { autoReply: false, handoffKeywords: ['pay', 'payment', 'book', 'advance', 'upi', 'account', 'refund', 'cancel', 'complaint', 'angry', 'legal'] } };
+    try { if (fs.existsSync(this.file)) { Object.assign(this.state, JSON.parse(fs.readFileSync(this.file, 'utf8'))); this._mtime = fs.statSync(this.file).mtimeMs; } } catch (e) { /* fresh */ }
   }
-  save() { try { fs.mkdirSync(path.dirname(this.file), { recursive: true }); fs.writeFileSync(this.file, JSON.stringify(this.state)); } catch (e) { /* read-only fs is fine */ } }
+  /** Another writer (the WhatsApp connector, a second tab) may have saved since we loaded: merge, never overwrite. */
+  save() {
+    try {
+      fs.mkdirSync(path.dirname(this.file), { recursive: true });
+      let st; try { st = fs.statSync(this.file).mtimeMs; } catch { st = 0; }
+      if (st && st !== this._mtime) { try { this.mergeFrom(JSON.parse(fs.readFileSync(this.file, 'utf8'))); } catch { /* corrupt file: ours wins */ } }
+      fs.writeFileSync(this.file, JSON.stringify(this.state)); this._mtime = fs.statSync(this.file).mtimeMs;
+    } catch (e) { /* read-only fs is fine */ }
+  }
+  mergeFrom(other) {
+    if (!other || typeof other !== 'object') return;
+    for (const o of other.leads || []) { const m = this.state.leads.find(l => l.id === o.id); if (!m) this.state.leads.push(o); else if ((o.updated || 0) > (m.updated || 0)) Object.assign(m, o, { touches: Math.max(m.touches || 0, o.touches || 0) }); else m.touches = Math.max(m.touches || 0, o.touches || 0); }
+    for (const [id, th] of Object.entries(other.threads || {})) { const m = this.state.threads[id]; if (!m) { this.state.threads[id] = th; continue; } const seen = new Set(m.messages.map(x => x.t + '|' + x.role)); for (const x of th.messages || []) if (!seen.has(x.t + '|' + x.role)) m.messages.push(x); m.messages.sort((a, b) => a.t - b.t); m.said = Object.assign({}, th.said, m.said); }
+    const seenLog = new Set(this.state.log.map(x => x.t + '|' + x.id)); for (const x of other.log || []) if (!seenLog.has(x.t + '|' + x.id)) this.state.log.push(x);
+    this.state.log.sort((a, b) => a.t - b.t);
+    if (other.profile && (other.profile.updated || 0) > (this.state.profile.updated || 0)) this.state.profile = other.profile;
+  }
   get profile() { return this.state.profile; }
   setProfile(p) {
     const P = this.state.profile;
     for (const k of ['name', 'city', 'phone', 'website', 'instagram', 'email', 'hours', 'usp', 'upi']) if (p[k] != null) P[k] = String(p[k]).trim();
-    if (p.policies && typeof p.policies === 'object') { P.policies = P.policies || {}; for (const [k, v] of Object.entries(p.policies)) if (v != null) P.policies[k] = String(v).trim(); }
+    if (p.policies && typeof p.policies === 'object') { P.policies = P.policies || {}; P.policiesHi = P.policiesHi || {}; for (const [k, v] of Object.entries(p.policies)) if (v != null && String(v).trim() !== P.policies[k]) { P.policies[k] = String(v).trim(); delete P.policiesHi[k]; } }
+    if (p.policiesHi && typeof p.policiesHi === 'object') for (const [k, v] of Object.entries(p.policiesHi)) if (v != null) P.policiesHi[k] = String(v).trim();
+    this.translatePolicies();
     if (p.languages) P.languages = Array.isArray(p.languages) ? p.languages : String(p.languages).split(',').map(s => s.trim()).filter(Boolean);
     if (Array.isArray(p.trips)) P.trips = p.trips.map(t => ({ name: String(t.name || '').trim(), date: t.date || '', days: +t.days || 0, price: +t.price || 0, seats: +t.seats || 0, booked: +t.booked || 0, from: t.from || P.city })).filter(t => t.name);
+    P.updated = Date.now();
     this.save();
     this.brain.teach(this.profileFacts().join(' '), { source: 'growth', importance: 0.9 });
     return P;
+  }
+  /** Any policy you changed loses its Hinglish twin; an open model writes it once and it is saved, never translated live. */
+  async translatePolicies() {
+    const llm = this.llm(); const P = this.profile; if (!llm) return;
+    P.policiesHi = P.policiesHi || {};
+    for (const [k, v] of Object.entries(P.policies || {})) if (!P.policiesHi[k]) { const out = await llm.ask('Rewrite this travel-company policy in natural Hinglish (Hindi words in Latin script, English numbers and nouns), same facts, one sentence, no emojis.', v, { maxTokens: 120 }); if (out) P.policiesHi[k] = out.trim(); }
+    this.save();
   }
   /** The profile as teachable sentences so the mind answers "what is the phone number" correctly. */
   profileFacts() {
     const P = this.profile; const f = [];
     if (P.phone) f.push(`${P.name} phone number is ${P.phone}.`);
     if (P.city) f.push(`${P.name} is based in ${P.city}.`);
+    for (const [k, v] of Object.entries(P.policies || {})) f.push(`The ${k === 'included' ? 'inclusions' : k === 'excluded' ? 'exclusions' : k} policy is ${v.replace(/[.;]+$/, '').replace(/;/g, ',')}.`);
+    if (P.upi) f.push(`${P.name} UPI id is ${P.upi}.`);
     for (const t of P.trips) { if (t.price) f.push(`The ${t.name} trip costs ${t.price} per person.`); if (t.date) f.push(`The ${t.name} trip departs on ${t.date}.`); if (t.seats) f.push(`The ${t.name} trip has ${Math.max(0, t.seats - t.booked)} seats left.`); }
     return f;
   }
@@ -104,7 +146,7 @@ class Growth {
   async gbpPosts() {
     const P = this.profile; const posts = [];
     for (const t of this.upcoming(3)) {
-      const left = Math.max(0, t.seats - t.booked);
+      const left = this.seatsLeft(t);
       posts.push({ type: 'offer', title: `${t.name} · ${t.date ? fmtDate(t.date) : 'dates on request'} · ${money(t.price)} per person`, body: `${t.days ? t.days + ' days' : 'Fixed departure'} from ${t.from || P.city}. Stay, travel, meals and a trip captain included. No hidden costs.${left ? ` ${left} of ${t.seats} seats left.` : ''} WhatsApp ${P.phone || 'us'} to hold a seat.`, cta: 'Book', link: this.waLink(`Hi, I want to know about ${t.name} on ${t.date}`) || P.website });
     }
     posts.push({ type: 'update', title: `How a ${P.name} trip works`, body: `Pick a date, pay a small advance, and we handle the rest: transport, stay, food, and a captain who travels with you. Small groups, real people, ${P.usp}.`, cta: 'Learn more', link: P.website });
@@ -134,29 +176,56 @@ class Growth {
     if (name && !l.name) l.name = name;
     return l;
   }
-  /** What the customer wants from this message. Order matters: an action (pay, cancel) beats a question about it. */
+  /** What the customer wants. Every intent is scored; negation cancels objections; the open model breaks ties. */
+  static get INTENTS() {
+    return [
+      ['escalate', 3, /\b(i want to cancel|cancel my|cancel our|refund my|want (a |my )?refund|money back|complaint|cheated|fraud|legal|consumer court|worst|pathetic|angry|scam)\b/],
+      ['book', 3, /\b(paid|payment done|transferred|sent the advance|screenshot|upi id|account number|bank details|how (do|to|can) (i |we )?pay|where (do|to) (i |we )?pay|payment link|pay now|hold (my|our|the|\d+)( seats?)?|book (it|us|me|now|\d+|kar(o|do))|confirm (my|our|the) (seats?|booking)|yes hold|haan hold|pay kaise|hold kar(o|do)|^hold$)\b/],
+      ['book', 2, /^\s*(ok|okay|yes|haan|ha|sure|great)?[\s,]*(book|booking|hold|book karo|hold karo|book kar do|confirm)\b[\s!.]*$/],
+      ['faq:hidden', 2, /\b(hidden|extra (cost|charge)s?|anything extra|all[- ]inclusive|total cost|any other charges|chhupa|chupa)\b/],
+      ['faq:included', 2, /\b(included?|includes|inclusions|what (do|will) (i|we) get|covers?|kya kya milega|kya include|included hai)\b/],
+      ['faq:excluded', 1.5, /\b(not included|exclu\w*|lunch)\b/],
+      ['faq:cancellation', 2, /\b(cancel\w*|refund\w*|postpone|reschedule|transfer\w*)\b/],
+      ['faq:pickup', 2, /\b(pickup|pick up|pick-up|boarding|start(ing)? point|where (do|will) we (meet|start)|departure point|kahan se|kaha se)\b/],
+      ['faq:safety', 2, /\b(safe\w*|security|girls?|women|ladies|female|solo girl|alone|akeli|akela)\b/],
+      ['faq:food', 2, /\b(veg\w*|jain|food|meals?|khana|non-?veg|allerg\w*)\b/],
+      ['faq:age', 2, /\b(kids?|children|bachch\w*|parents|senior|elderly|family)\b.*\?|\b(age|kids?|children|parents|senior|years old|family|bachch\w*)\b.*\b(allow|ok|fine|suitable|can|join|come|aa sakte)\b|\b(allow|ok|fine|suitable|can|join|come)\b.*\b(age|kids?|children|parents|senior|family)\b/],
+      ['faq:payment', 1.5, /\b(payment|advance|instal\w*|emi|gst|invoice|pay)\b/],
+      ['faq:stay', 1.5, /\b(stay|hotel|rooms?|sharing|accommodation|resort|camp)\b/],
+      ['details', 1.5, /\b(itinerary|plan|details?|schedule|day ?wise|day by day|brochure|pdf|more info|batao|bhejo|jankari)\b/],
+      ['price', 1.5, /\b(price|cost|rate|kitna|kitne|kitni|how much|budget|charges|per person|pp|bhav|daam)\b/],
+      ['affirm', 2.5, /^\s*(ok|okay|k|yes|yeah|ya|haan|ha|sure|great|fine|cool|done|alright|theek|thik|hmm|okk+|yess+)\b[\s!.]*$/],
+      ['objection:price', 2, /\b(expensive|costly|too much|mehenga|mehnga|mehengi|discount|cheaper|negotiate|kam karo|best price|bahut zyada)\b/],
+      ['objection:delay', 2, /\b(think|later|will tell|let you know|discuss|ask (my|the)|baad mein|dekhte|sochke)\b/],
+      ['thanks', 2, /\b(thanks|thank you|thx|shukriya|dhanyavad|aabhar)\b/],
+      ['greet', 1, /^\s*(hi+|hello|hey|namaste|hola|good (morning|evening|afternoon))\b/],
+    ];
+  }
   intent(text) {
-    const t = String(text).toLowerCase();
-    if (/\b(i want to cancel|cancel my|cancel our|refund my|want refund|money back|complaint|cheated|fraud|legal|consumer court|worst|pathetic|angry)\b/.test(t)) return 'escalate';
-    if (/\b(paid|payment done|transferred|sent the advance|screenshot|upi id|account number|bank details|how (do|to) (i |we )?pay|where (do|to) (i |we )?pay|payment link|pay now|hold (my|our|the|\d+) seats?|book (it|us|me|now|\d+)|confirm (my|our|the) (seats?|booking)|yes hold|haan hold|book karo|pay kaise)\b/.test(t)) return 'book';
-    if (/\b(hidden|extra (cost|charge)|anything extra|all inclusive|total cost|any other charges)\b/.test(t)) return 'faq:hidden';
-    if (/\b(included?|includes|inclusions|what (do|will) (i|we) get|covers?|kya kya milega|kya include)\b/.test(t)) return 'faq:included';
-    if (/\b(not included|exclu|extra|lunch)\b/.test(t)) return 'faq:excluded';
-    if (/\b(cancel|refund|postpone|reschedule|transfer)\b/.test(t)) return 'faq:cancellation';
-    if (/\b(pickup|pick up|pick-up|boarding|start(ing)? point|where (do|will) we (meet|start)|departure point|kahan se)\b/.test(t)) return 'faq:pickup';
-    if (/\b(safe|safety|security|girls?|women|ladies|female|solo girl|alone)\b/.test(t)) return 'faq:safety';
-    if (/\b(veg|jain|food|meals?|khana|non-?veg|allerg)\b/.test(t)) return 'faq:food';
-    if (/\b(age|kids?|children|parents|senior|old|years old|family)\b/.test(t) && /\b(allow|ok|fine|suitable|can|join|come)\b/.test(t)) return 'faq:age';
-    if (/\b(payment|advance|instal|emi|gst|invoice|pay)\b/.test(t)) return 'faq:payment';
-    if (/\b(stay|hotel|room|sharing|accommodation|resort|camp)\b/.test(t)) return 'faq:stay';
-    if (/\b(itinerary|plan|details|schedule|day ?wise|day by day|send (me )?(the )?(plan|details|brochure|pdf)|more info|batao|bhejo)\b/.test(t)) return 'details';
-    if (/\b(price|cost|rate|kitna|kitne|how much|budget|charges|per person|pp)\b/.test(t)) return 'price';
-    if (/^\s*(ok|okay|k|yes|yeah|ya|haan|ha|sure|great|fine|cool|done|alright|theek|thik|hmm|okk+|yess+)\b[\s!.]*$/.test(t)) return 'affirm';
-    if (/\b(expensive|costly|too much|mehenga|mehnga|discount|cheaper|less|negotiate|kam karo|best price)\b/.test(t)) return 'objection:price';
-    if (/\b(think|later|will tell|let you know|discuss|ask (my|the)|baad mein|dekhte)\b/.test(t)) return 'objection:delay';
-    if (/\b(thanks|thank you|thx|shukriya|dhanyavad)\b/.test(t)) return 'thanks';
-    if (/^\s*(hi|hello|hey|namaste|hola|good (morning|evening|afternoon))\b/.test(t) && t.length < 40) return 'greet';
-    return 'enquiry';
+    const t = latinise(text).toLowerCase();
+    const scores = {};
+    for (const [name, w, re] of Growth.INTENTS) if (re.test(t)) scores[name] = (scores[name] || 0) + w;
+    // Negation: "not expensive", "no hidden" are not objections or worries; "not too expensive, nice" is a yes.
+    if (/\b(not|nahi|no|nope|isn'?t|never)\s+(too |so |that |very |at all )?(expensive|costly|mehenga|much)\b/.test(t)) delete scores['objection:price'];
+    if (/\b(not|no)\s+(hidden|extra)\b/.test(t) && !/\?/.test(t)) delete scores['faq:hidden'];
+    // A question about cancelling is a FAQ; an action with a first-person verb is an escalation (kept above).
+    if (scores['faq:cancellation'] && scores['escalate'] && /\b(if|what if|agar|kya hoga|policy|refundable|rules?)\b/.test(t) && !/\b(fraud|cheat|scam|complaint|legal|worst|pathetic|angry)\b/.test(t)) delete scores['escalate'];
+    if (scores.greet && t.length > 40) delete scores.greet;
+    if (scores['faq:payment'] && scores.book) delete scores['faq:payment'];
+    if (scores['faq:included'] && scores['faq:hidden']) delete scores['faq:included'];
+    if (scores['faq:excluded'] && (scores['faq:included'] || scores['faq:hidden'])) delete scores['faq:excluded'];
+    if (scores['details'] && scores['price']) delete scores['details'];
+    const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    if (!ranked.length) return { intent: 'enquiry', confidence: 0.5, ambiguous: false, latin: t };
+    const ambiguous = ranked.length > 1 && ranked[0][1] - ranked[1][1] < 0.5;
+    return { intent: ranked[0][0], confidence: ambiguous ? 0.5 : 0.9, ambiguous, alt: ranked[1] ? ranked[1][0] : null, latin: t };
+  }
+  /** Ask the open model to settle an ambiguous or unmatched intent. Only called when a model is present. */
+  async intentLLM(text, guess) {
+    const llm = this.llm(); if (!llm) return guess;
+    const names = Growth.INTENTS.map(i => i[0]).concat('enquiry');
+    const got = await llm.json('You classify a customer WhatsApp message to an Indian travel company into exactly one intent.', `Message: ${text}\nIntents: ${names.join(', ')}\nReturn {"intent": one of the intents}`, { maxTokens: 40 });
+    return got && names.includes(got.intent) ? got.intent : guess;
   }
 
   /** One incoming WhatsApp / web-chat message. Returns the reply, whether a human must take over, and the lead row. */
@@ -164,33 +233,48 @@ class Growth {
     id = String(id || 'web-' + Math.random().toString(36).slice(2, 8));
     const th = this.thread(id); th.said = th.said || {}; th.messages.push({ role: 'lead', text: String(text || ''), t: Date.now() });
     const lead = this.lead(id, name); lead.source = lead.source || source; lead.touches++; lead.updated = Date.now();
-    const transcript = th.messages.slice(-12).map(m => `${m.role === 'lead' ? 'lead' : 'clan'}: ${m.text}`).join('\n');
-    const leadText = th.messages.filter(m => m.role === 'lead').map(m => m.text).join('\n');
+    const transcript = th.messages.slice(-12).map(m => `${m.role === 'lead' ? 'lead' : 'clan'}: ${latinise(m.text)}`).join('\n');
+    const leadText = th.messages.filter(m => m.role === 'lead').map(m => latinise(m.text)).join('\n');
+    const script = scriptOf(text); if (script) lead.language = script; else if (isHinglish(text)) lead.language = 'hinglish'; else if (!lead.language && /[a-z]/i.test(text)) lead.language = 'english';
+    const hi = lead.language && lead.language !== 'english';
     const req = parseRequirements(leadText);
-    if (!req.group) { const m = leadText.match(/\b(\d{1,2})\s*(log|logo|logon|bande|jan|janta|members?)\b/i); if (m) req.group = +m[1]; else if (/\b(hum dono|dono|couple)\b/i.test(leadText)) req.group = 2; }
+    { const all = [...leadText.matchAll(/\b(?:we are|hum|now|ab)\s+(\d{1,2})\b|\b(\d{1,2})\s*(?:people|pax|persons|of us|friends|members|log|logon|jan|janta)\b/gi)]; if (all.length) req.group = +(all[all.length - 1][1] || all[all.length - 1][2]); }
+    if (!req.group) { const m = leadText.match(/\b(\d{1,2})\s*(log|logo|logon|bande|jan|janta|members?)\b/i) || leadText.match(/\bfor\s+(\d{1,2})\b(?!\s*(days?|nights?|k\b|000))/i) || leadText.match(/\b(\d{1,2})\s+(?:of us|pax|ppl|people)\b/i); if (m) req.group = +m[1]; else if (/\b(hum dono|dono|couple)\b/i.test(leadText)) req.group = 2; }
     if (req.destination && !lead.trip) lead.trip = this.matchTrip(req.destination.name) || req.destination.name;
-    const intent = this.intent(text);
+    const scored = this.intent(text);
+    let intent = scored.intent;
+    if ((scored.ambiguous || (intent === 'enquiry' && latinise(text).split(/\s+/).length > 3 && !req.destination)) && this.llm()) intent = await this.intentLLM(text, intent);
+    th.intents = (th.intents || []).concat({ t: Date.now(), text: String(text).slice(0, 120), intent, confidence: scored.confidence }).slice(-30);
     const handoff = intent === 'book' || intent === 'escalate';
-    // The council still reviews every turn: it teaches the mind and its critic flags weak replies.
-    const council = await this.brain.council.handle({ conversation: transcript, name: lead.name });
+    // The council reviews substantive turns only (a new requirement, a question, an objection): it teaches the mind
+    // and its critic flags weak replies. "ok", "thanks", "hi" are not worth a lesson.
+    const substantive = ['enquiry', 'price', 'details', 'objection:price', 'objection:delay', 'escalate'].includes(intent) && latinise(text).split(/\s+/).length >= 3;
+    const council = substantive ? await this.brain.council.handle({ conversation: transcript, name: lead.name }) : { agents: {} };
     const A = council.agents || {}; council.sales = A.sales; council.critic = A.critic; council.cx = A.cx;
     const draft = council.sales && council.sales.output.draft || '';
-    let reply = this.composeGrounded({ text, req, lead, draft, intent, said: th.said, stage: council.sales && council.sales.output.stage });
+    if (intent === 'book') this.hold(this.tripFor(req, lead), id, req.group || 1);
+        // Group size changed mid-chat: re-quote the total once.
+    const prevGroup = th.said.group; if (req.group && req.group !== prevGroup && th.said.price && /\b(now|ab|actually|we are|hum)\b/i.test(latinise(text))) { th.said.price = false; th.said.regroup = true; }
+    if (req.group) th.said.group = req.group;
+    let reply = this.composeGrounded({ text, req, lead, draft, intent, said: th.said, hi, stage: council.sales && council.sales.output.stage });
+    th.said.regroup = false;
+    // Never send the exact same reply twice in one conversation.
+    if (th.messages.some(m => m.role === 'clan' && m.text === reply)) reply = this.vary(reply, hi, intent, lead);
     const stage = detectStage(transcript);
-    if (intent === 'book') lead.stage = 'advance'; else if (intent === 'escalate') lead.stage = lead.stage === 'new' ? 'qualified' : lead.stage;
+    if (intent === 'book') lead.stage = 'hold'; else if (intent === 'escalate') lead.stage = lead.stage === 'new' ? 'qualified' : lead.stage;
     else if (intent.startsWith('objection')) lead.stage = 'objection';
     else if (th.said.price && ['new', 'qualified'].includes(lead.stage)) lead.stage = 'quoted';
     else if (stage && stage !== 'enquiry' && STAGES.includes(stage) && lead.stage === 'new') lead.stage = stage; else if (lead.stage === 'new' && (req.destination || req.month)) lead.stage = 'qualified';
-    lead.next = Date.now() + (handoff ? 2 * 3600e3 : DAY);
+    lead.next = handoff ? Date.now() + 2 * 3600e3 : snapToHours(Date.now() + DAY);
     th.messages.push({ role: 'clan', text: reply, t: Date.now(), auto: this.state.settings.autoReply && !handoff });
     this.state.log.push({ t: Date.now(), id, source, handoff, stage: lead.stage, intent }); if (this.state.log.length > 2000) this.state.log.splice(0, this.state.log.length - 2000);
     this.save();
-    return { id, reply, intent, handoff, send: this.state.settings.autoReply && !handoff, lead, stage: lead.stage, verdict: council.critic && council.critic.verdict, issues: council.critic ? council.critic.findings.slice(0, 3) : [], language: isHinglish(text) ? 'hinglish' : 'english' };
+    return { id, reply, intent, confidence: scored.confidence, script, handoff, send: this.state.settings.autoReply && !handoff, lead, stage: lead.stage, verdict: council.critic && council.critic.verdict, issues: council.critic ? council.critic.findings.slice(0, 3) : [], language: script || (isHinglish(text) ? 'hinglish' : 'english') };
   }
 
   tripFor(req, lead) { return this.profile.trips.find(x => slug(x.name) === slug(lead.trip) || (req.destination && slug(x.name).includes(slug(req.destination.name)))) || null; }
   priceLine(t, n, hi) {
-    const left = Math.max(0, t.seats - t.booked); const adv = this.advance(t);
+    const left = this.seatsLeft(t); const adv = this.advance(t);
     const parts = [`${t.name}: ${t.date ? fmtDate(t.date) + ', ' : ''}${t.days ? t.days + ' days, ' : ''}${money(t.price)} per person${left ? `, ${left} seats left` : ''}.`];
     parts.push(hi ? 'Stay, travel, khana aur trip captain sab included, koi hidden cost nahi.' : 'Stay, travel, meals and a trip captain included, no hidden costs.');
     if (n > 1) parts.push(hi ? `${n} logon ka total ${money(n * t.price)}.` : `For ${n} people the total is ${money(n * t.price)}.`);
@@ -198,17 +282,24 @@ class Growth {
     parts.push(hi ? `${money(adv)} per person advance se seat hold ho jaati hai. Hold karun?` : `A ${money(adv)} per person advance holds the seats. Shall I hold ${n > 1 ? n + ' seats' : 'one'}?`);
     return parts.join(' ');
   }
+  /** Seats left = seats − booked − live holds. A hold lasts 24 h unless the advance is confirmed (stage advance). */
+  seatsLeft(t) { this.releaseHolds(); return Math.max(0, (t.seats || 0) - (t.booked || 0) - (t.holds || []).reduce((n, h) => n + h.n, 0)); }
+  releaseHolds() { const now = Date.now(); for (const t of this.profile.trips) if (t.holds && t.holds.length) t.holds = t.holds.filter(h => h.until > now); }
+  hold(t, leadId, n = 1) { if (!t) return null; t.holds = (t.holds || []).filter(h => h.lead !== leadId); const h = { lead: leadId, n: Math.max(1, +n || 1), until: Date.now() + DAY, t: Date.now() }; t.holds.push(h); this.save(); return h; }
+  /** The advance arrived: a hold becomes booked seats. */
+  confirmHold(leadId) { for (const t of this.profile.trips) { const h = (t.holds || []).find(x => x.lead === leadId); if (h) { t.booked = (t.booked || 0) + h.n; t.holds = t.holds.filter(x => x !== h); this.save(); return { trip: t.name, seats: h.n }; } } return null; }
   advance(t) { return Math.min(5000, Math.round((t.price || 10000) * 0.3 / 500) * 500) || 2000; }
 
   /** The reply: answers the intent from the real trip and the written policies, says the price once, always ends with one next step. */
-  composeGrounded({ text, req, lead, draft, intent, said = {}, stage }) {
-    const P = this.profile; const pol = P.policies || {}; const hi = isHinglish(text); const first = lead.name ? lead.name.split(' ')[0] + ', ' : '';
+  composeGrounded({ text, req, lead, draft, intent, said = {}, stage, hi }) {
+    const P = this.profile; const pol = P.policies || {}; if (hi == null) hi = isHinglish(text); const first = lead.name ? lead.name.split(' ')[0] + ', ' : '';
     const t = this.tripFor(req, lead); const n = req.group || 0;
-    const nextStep = () => { if (!t) return hi ? 'Dates aur kitne log batao, ek ghante mein plan aur price bhejta hoon.' : 'Tell me the dates and how many of you, and I will send the plan and price within the hour.'; if (!said.price) { said.price = true; return this.priceLine(t, n, hi); } if (['advance', 'balance'].includes(lead.stage)) return hi ? 'Aapki seat hold hai; team confirm karegi.' : 'Your seats are on hold; the team will confirm shortly.'; return hi ? `Seat hold karne ke liye bas "hold" likho.` : `To hold ${n > 1 ? n + ' seats' : 'a seat'}, just reply "hold".`; };
-    const ask = (key, fallback) => (pol[key] ? pol[key][0].toUpperCase() + pol[key].slice(1) + '.' : fallback);
+    const nextStep = () => { if (!t) return hi ? 'Dates aur kitne log batao, ek ghante mein plan aur price bhejta hoon.' : 'Tell me the dates and how many of you, and I will send the plan and price within the hour.'; if (!said.price) { said.price = true; return this.priceLine(t, n, hi); } if (['hold', 'advance', 'balance'].includes(lead.stage)) return hi ? 'Aapki seat hold hai; advance aate hi team confirm karegi.' : 'Your seats are on hold; the team confirms as soon as the advance arrives.'; return hi ? `Seat hold karne ke liye bas "hold" likho.` : `To hold ${n > 1 ? n + ' seats' : 'a seat'}, just reply "hold".`; };
+    const polHi = P.policiesHi || {};
+    const ask = (key, fallback) => { const v = (hi && polHi[key]) || pol[key]; return v ? v[0].toUpperCase() + v.slice(1) + '.' : fallback; };
     switch (intent) {
       case 'escalate': return `${first}${hi ? 'Main samajh gaya, aur yeh hamare liye serious hai. Founder khud aapko 24 ghante ke andar call karenge' : 'I hear you, and we take this seriously. The founder will personally call you within 24 hours'}${P.phone ? ` (${P.phone})` : ''}. ${hi ? 'Jo hua, yahan likh dijiye taaki call se pehle sab pata ho.' : 'Please write what happened here so nothing is missed before the call.'}`;
-      case 'book': { said.price = true; const adv = t ? this.advance(t) : 2000; return `${first}${hi ? 'Badhiya!' : 'Great!'} ${t ? (hi ? `${t.name} ke ${n || ''} seat${n > 1 ? 's' : ''} hold kar rahe hain.` : `Holding ${n ? n + ' seats' : 'your seat'} on ${t.name}.`) : ''} ${hi ? `Advance ${money(adv)} per person${P.upi ? ' UPI ' + P.upi + ' par' : ''} bhejkar screenshot yahan bhejo, aur sabke poore naam (ID ke jaisa). Team ${P.name} ka member abhi confirm karega.` : `Send the ${money(adv)} per person advance${P.upi ? ' to UPI ' + P.upi : ''} and the screenshot here, with the full names as on ID. A ${P.name} team member will confirm it personally in a few minutes.`}`.replace(/\s+/g, ' '); }
+      case 'book': { said.price = true; if (/\b(paid|payment done|transferred|screenshot sent|sent the advance|kar diya|bhej diya)\b/i.test(latinise(text))) { said.booked = true; return `${first}${hi ? 'Mil gaya, shukriya! Team abhi check karke confirmation aur trip group ka link bhejegi. Sabke poore naam aur ek emergency contact bhej do.' : 'Received, thank you! The team is checking it now and will send the confirmation and the trip group link. Please send everyone\'s full names and one emergency contact.'}`; } said.booked = true; const adv = t ? this.advance(t) : 2000; return `${first}${hi ? 'Badhiya!' : 'Great!'} ${t ? (hi ? `${t.name} ke ${n || ''} seat${n > 1 ? 's' : ''} hold kar rahe hain.` : `Holding ${n ? n + ' seats' : 'your seat'} on ${t.name}.`) : ''} ${hi ? `Advance ${money(adv)} per person${P.upi ? ' UPI ' + P.upi + ' par' : ''} bhejkar screenshot yahan bhejo, aur sabke poore naam (ID ke jaisa). Team ${P.name} ka member abhi confirm karega.` : `Send the ${money(adv)} per person advance${P.upi ? ' to UPI ' + P.upi : ''} and the screenshot here, with the full names as on ID. A ${P.name} team member will confirm it personally in a few minutes.`}`.replace(/\s+/g, ' '); }
       case 'faq:hidden': return `${first}${hi ? 'Koi hidden cost nahi.' : 'No hidden costs.'} ${ask('included', 'Travel, stay, meals and the captain are included.')} ${hi ? 'Jo included nahi hai:' : 'Not included:'} ${pol.excluded || 'personal expenses'}. ${nextStep()}`;
       case 'faq:included': return `${first}${hi ? 'Included hai:' : 'Included:'} ${pol.included || 'travel, stay, meals, captain'}. ${hi ? 'Included nahi:' : 'Not included:'} ${pol.excluded || 'personal expenses'}. ${nextStep()}`;
       case 'faq:excluded': return `${first}${hi ? 'Included nahi hai:' : 'Not included:'} ${pol.excluded || 'personal expenses'}. ${hi ? 'Baaki sab price mein hai.' : 'Everything else is in the price.'} ${nextStep()}`;
@@ -227,26 +318,36 @@ class Growth {
       case 'thanks': return `${first}${hi ? 'Khushi hui! Koi bhi sawaal ho to yahan message karo.' : 'Happy to help! Message here any time.'}${t && !said.price ? ' ' + nextStep() : ''}`;
       case 'greet': return `${first}${hi ? 'Namaste! Kaunsa trip aur kaunsi dates dekh rahe ho, aur kitne log?' : 'Hi! Which trip and dates are you looking at, and how many of you?'} ${this.nextBatches(hi)}`.trim();
       default: {
-        if (t) { said.price = true; let r = `${first}${this.priceLine(t, n, hi)}`; if (req.budget && req.budget < t.price * 0.9) r += ' ' + (hi ? `Aapka budget ${money(req.budget)} hai; ${money(t.price)} mein sab included hai, alag se kuch nahi lagega.` : `Your budget is ${money(req.budget)}; ${money(t.price)} is all-inclusive, nothing extra on the trip.`); return r; }
-        if (req.destination) return `${first}${hi ? `${req.destination.name} ke liye abhi fixed batch nahi hai, custom plan bana dete hain.` : `We do not have a fixed batch for ${req.destination.name} right now; we can plan it custom.`} ${this.nextBatches(hi, 'Ya fir next batches', 'Or our next batches')} ${nextStep()}`.replace(/\s+/g, ' ');
+        if (t && said.price && !said.regroup) return `${first}${hi ? 'Haan, bilkul.' : 'Yes, of course.'} ${draft && draft.length < 200 ? draft + ' ' : ''}${hi ? 'Aur kuch poochna ho to poochho; seat hold ke liye "hold" likho.' : 'Ask me anything else; reply "hold" when you want the seats held.'}`.replace(/\s+/g, ' ');
+        if (t) { said.price = true; let r = `${first}${said.regroup ? (hi ? `Theek, ${n} log. ` : `Got it, ${n} people. `) : ''}${this.priceLine(t, n, hi)}`; if (req.budget && req.budget < t.price * 0.9) r += ' ' + (hi ? `Aapka budget ${money(req.budget)} hai; ${money(t.price)} mein sab included hai, alag se kuch nahi lagega.` : `Your budget is ${money(req.budget)}; ${money(t.price)} is all-inclusive, nothing extra on the trip.`); return r; }
+        if (req.destination) { const d = req.destination; const days = req.days || d.idealDays || 4; const per = Math.round((d.costPerDay || 3000) * days / 500) * 500; const season = req.month ? DEST.seasonStatus(d, req.month) : null; const seasonLine = season === 'off season' ? (hi ? ` Dhyaan rahe: ${DEST.MONTHS[req.month - 1]} mein ${d.name} off-season hai; best mahine ${d.season.map(m => DEST.MONTHS[m - 1]).join(', ')}.` : ` Note: ${d.name} is off-season in ${DEST.MONTHS[req.month - 1]}; best months are ${d.season.map(m => DEST.MONTHS[m - 1]).join(', ')}.`) : ''; said.price = true; return `${first}${hi ? `${d.name} ka fixed batch abhi nahi hai, par custom plan ban sakta hai: ${days} din, andaaza ${money(per)} per person all-inclusive${n > 1 ? ` (${n} log: ${money(per * n)})` : ''}, final price 1 ghante mein.` : `We do not have a fixed batch for ${d.name} right now, but we can run it custom: ${days} days, estimated ${money(per)} per person all-inclusive${n > 1 ? ` (${money(per * n)} for ${n})` : ''}, exact price within the hour.`}${seasonLine} ${this.nextBatches(hi, 'Ya fir fixed batches', 'Or our fixed batches')} ${hi ? 'Dates batao to plan bhejta hoon.' : 'Send me your dates and I will send the plan.'}`.replace(/\s+/g, ' '); }
         if (draft && stage && !['enquiry', 'qualified'].includes(stage)) return draft;
         return `${first}${hi ? 'Kaunsa trip aur kaunsi dates dekh rahe ho, aur kitne log?' : 'Which trip and dates are you looking at, and how many of you?'} ${this.nextBatches(hi)}`.trim();
       }
     }
   }
+  /** A second phrasing when the same reply would repeat. */
+  vary(reply, hi, intent, lead) {
+    const tail = hi ? ['Jaise maine bataya: ', 'Dobara se: ', 'Short mein: '] : ['As I mentioned: ', 'Once more: ', 'In short: '];
+    const pickT = tail[(lead.touches || 0) % tail.length];
+    const short = reply.length > 160 && !/^(book|escalate)$/.test(intent) ? reply.split(/(?<=[.!?])\s/).slice(0, 2).join(' ') : reply;
+    return pickT + short.charAt(0).toLowerCase() + short.slice(1);
+  }
   nextBatches(hi, hiLabel = 'Next batches', enLabel = 'Next batches') { const next = this.upcoming(3).map(x => `${x.name}${x.date ? ' ' + fmtDate(x.date) : ''}${x.price ? ' ' + money(x.price) : ''}`).join(', '); return next ? `${hi ? hiLabel : enLabel}: ${next}.` : ''; }
   matchTrip(dest) { const t = this.profile.trips.find(x => slug(x.name).includes(slug(dest))); return t ? t.name : ''; }
   isOpen() { const h = new Date().getUTCHours() + 5.5; const hr = ((h % 24) + 24) % 24; return hr >= 9 && hr < 21; }
-  updateLead(id, patch) { const l = this.state.leads.find(x => x.id === id); if (!l) return null; for (const k of ['name', 'phone', 'trip', 'stage', 'value', 'notes', 'source']) if (patch[k] != null) l[k] = k === 'value' ? +patch[k] : String(patch[k]); if (patch.next) l.next = new Date(patch.next).getTime(); if (patch.done) l.next = Date.now() + SEQUENCE[Math.min(SEQUENCE.length - 1, Math.max(1, l.touches))].day * DAY; l.updated = Date.now(); this.save(); return l; }
+  updateLead(id, patch) { const l = this.state.leads.find(x => x.id === id); if (!l) return null; if ((patch.stage && ['advance', 'balance', 'travelled'].includes(patch.stage)) || +patch.value > 0) this.confirmHold(id); if (patch.stage === 'lost') for (const t of this.profile.trips) t.holds = (t.holds || []).filter(h => h.lead !== id); for (const k of ['name', 'phone', 'trip', 'stage', 'value', 'notes', 'source']) if (patch[k] != null) l[k] = k === 'value' ? +patch[k] : String(patch[k]); if (patch.next) l.next = new Date(patch.next).getTime(); if (patch.done) { l.touches = Math.max(l.touches, 1) + 1; l.next = snapToHours(Date.now() + SEQUENCE[Math.min(SEQUENCE.length - 1, l.touches - 1)].day * DAY); } l.updated = Date.now(); this.save(); return l; }
   addLead(row) { const id = String(row.id || row.phone || slug(row.name) + '-' + Date.now().toString(36)); const l = this.lead(id, row.name); return this.updateLead(id, row) || l; }
   /** Today's work: every lead whose follow-up is due, with the message to send, drafted by sequence step and stage. */
   async today() {
     const now = Date.now(); const due = this.state.leads.filter(l => !['lost', 'reviewed'].includes(l.stage) && l.next <= now).sort((a, b) => a.next - b.next);
     const out = [];
     for (const l of due.slice(0, 30)) out.push({ lead: l, step: SEQUENCE[Math.min(SEQUENCE.length - 1, l.touches)], message: this.followUp(l) });
+    this.releaseHolds();
+    const holdAlerts = [].concat(...this.upcoming(5).map(t => (t.holds || []).map(h => `${t.name}: ${h.n} seat${h.n > 1 ? 's' : ''} on hold for ${(this.state.leads.find(l => l.id === h.lead) || {}).name || h.lead}, expires ${new Date(h.until).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}. Mark the lead "advance" once paid.`)));
     const seatAlerts = this.upcoming(5).filter(t => t.seats && t.seats - t.booked <= 3 && t.seats - t.booked > 0).map(t => `${t.name} on ${t.date}: only ${t.seats - t.booked} seat${t.seats - t.booked === 1 ? '' : 's'} left, post it today.`);
     const stale = this.upcoming(5).filter(t => t.date && (new Date(t.date) - now) < 10 * DAY && t.seats && t.booked / t.seats < 0.5).map(t => `${t.name} departs in ${Math.ceil((new Date(t.date) - now) / DAY)} days at ${Math.round(100 * t.booked / t.seats)}% full: decide today, push hard or merge with the next batch.`);
-    return { date: new Date().toISOString().slice(0, 10), due: out, alerts: [...seatAlerts, ...stale], counts: this.counts() };
+    return { date: new Date().toISOString().slice(0, 10), due: out, alerts: [...holdAlerts, ...seatAlerts, ...stale], counts: this.counts() };
   }
   followUp(l) {
     const P = this.profile; const t = this.profile.trips.find(x => slug(x.name) === slug(l.trip)) || this.upcoming(1)[0];
@@ -320,8 +421,21 @@ class Growth {
     const replies = this.state.log.length; const median = (a) => a.length ? a.sort((x, y) => x - y)[Math.floor(a.length / 2)] : null;
     return { leads: L.length, booked: booked.length, conversion: L.length ? +(booked.length / L.length).toFixed(3) : 0, revenue, adSpend, roas: adSpend ? +(revenue / adSpend).toFixed(2) : null, costPerLead: adSpend && L.length ? Math.round(adSpend / L.length) : null, bySource, repliesHandled: replies, medianTouchesToBook: median(booked.map(l => l.touches)), lostReasons: this.counts().lost || 0 };
   }
+  /** The 9am message to your own phone: what to do today, in one screen. */
+  async digest() {
+    const t = await this.today(); const P = this.profile; const lines = [`${P.name} · ${new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}`];
+    for (const a of t.alerts) lines.push('! ' + a);
+    lines.push(`${t.due.length} follow-up${t.due.length === 1 ? '' : 's'} due:`);
+    for (const d of t.due.slice(0, 8)) lines.push(`• ${d.lead.name || d.lead.id} (${d.lead.trip || 'no trip'}, ${d.lead.stage}) → ${d.step.name}`);
+    if (t.due.length > 8) lines.push(`• …and ${t.due.length - 8} more in the Grow tab`);
+    const c = t.counts; lines.push(`Pipeline: ${Object.entries(c).map(([k, v]) => `${v} ${k}`).join(', ') || 'empty'}.`);
+    for (const x of this.upcoming(3)) lines.push(`${x.name} ${x.date ? fmtDate(x.date) : ''}: ${x.booked || 0}/${x.seats || '?'} booked, ${this.seatsLeft(x)} left.`);
+    const camp = this.campaigns().find(x => x.status === 'run now'); if (camp) lines.push(`Campaign to run: ${camp.name} (${camp.pitch}).`);
+    lines.push('Post one reel today. Reply to every message within 2 minutes.');
+    return { text: lines.join('\n'), due: t.due.length, alerts: t.alerts.length };
+  }
   /** Everything the Grow tab needs in one call. */
   async overview() { return { profile: this.profile, upcoming: this.upcoming(), gbp: this.gbpAudit(), campaigns: this.campaigns(), counts: this.counts(), roi: this.roi(), waLink: this.waLink('Hi, I want to know about your upcoming trips'), settings: this.state.settings, mentor: this.brain.mentor.status() }; }
 }
 
-module.exports = { Growth, CALENDAR, SEQUENCE, STAGES };
+module.exports = { Growth, CALENDAR, SEQUENCE, STAGES, latinise, scriptOf, snapToHours };
