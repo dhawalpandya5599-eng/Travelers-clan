@@ -314,6 +314,44 @@ class Skills {
       match: (input) => { if (!/\b(estimate|cost|price|quote|budget)\b/i.test(input) || !/\b(custom|private|estimate|for \d+ days?|\d+ days?)\b/i.test(input)) return null; const d = DEST.find(input); if (!d) return null; const days = +(input.match(/\b(\d{1,2})\s*(?:days?|nights?|d\b)/i) || [])[1] || d.idealDays; const n = +(input.match(/\b(\d{1,2})\s*(?:people|pax|persons|of us|friends|members)\b/i) || [])[1] || 1; return { name: d.name, days, n }; },
       run: ({ name, days, n }) => { const d = DEST.find(name); const per = Math.round(d.costPerDay * days / 500) * 500; const price = Math.round(per / 0.8 / 500) * 500; return `${d.name}, ${days} days: ground cost about ${INR(per)} per person (${INR(d.costPerDay)}/day: stay, meals, local travel${(d.permits || []).length ? ', permits' : ''}). Sell at ${INR(price)} per person for a 20% margin${n > 1 ? `; ${n} people: ${INR(price * n)} (profit ${INR((price - per) * n)})` : ''}. Flights or long-distance transport extra.`; },
     });
+
+    // ---- Knowledge skills: activities, 5W1H, personality, therapy, strategy, pricing, patterns, news, understanding ----
+    const MINDS = require('./minds'); const STRAT = require('./strategy');
+    this.register({
+      name: 'activities', description: 'Things to do at a destination with timings, durations and costs.',
+      match: (input) => { if (!/\b(things to do|what to do|activities|activity|to do in|do there|timings?|how long does|duration)\b/i.test(input)) return null; const d = DEST.find(input); return d ? { name: d.name } : null; },
+      run: ({ name }) => { const a = DEST.activitiesFor(name); if (!a.length) { const d = DEST.find(name); return `${d.name}: ${(d.highlights || []).join(', ')}. Route: ${(d.route || []).join(' → ')}.`; } return `Things to do in ${name}:\n` + a.map(x => `• ${x.name} — starts ${x.start}, ${x.hours} h, ${x.cost ? INR(x.cost) : 'free'}, best ${x.best}, for ${x.who}`).join('\n'); },
+    });
+    this.register({
+      name: '5w1h', description: 'Why, who, where, what, whom, which, how: a full brief for a destination.',
+      match: (input) => { if (!/\b(brief|5w|five w|why who|who what|everything about|tell me (all )?about|overview of)\b/i.test(input)) return null; const d = DEST.find(input); if (!d) return null; return { name: d.name, month: DEST.monthNum((input.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i) || [])[1]), days: +(input.match(/\b(\d{1,2})\s*days?\b/i) || [])[1] || null, n: +(input.match(/\b(\d{1,2})\s*(?:people|pax|of us|friends)\b/i) || [])[1] || null, budget: +(input.match(/budget\s*(?:rs\.?|₹)?\s*(\d[\d,]*)/i) || ['', '0'])[1].replace(/,/g, '') || null }; },
+      run: (a) => { const d = DEST.find(a.name); const w = STRAT.fiveW(d, { month: a.month, days: a.days, n: a.n, budget: a.budget, activities: DEST.activitiesFor(d.name) }); return ['WHAT: ' + w.what, 'WHY: ' + w.why, 'WHO: ' + w.who, 'WHERE: ' + w.where, 'WHEN: ' + w.when, 'WHOM (permits, risks): ' + w.whom, 'WHICH: ' + w.which, 'HOW (money): ' + w.how].join('\n'); },
+    });
+    this.register({
+      name: 'personality', description: 'Reads a message for personality (Big Five, MBTI, DISC, Enneagram, generation, archetype, attachment, money style) and how to handle it.',
+      match: (input) => { const m = input.match(/^(?:personality|profile|read|who is this|what kind of person)\s*[:\-]\s*([\s\S]+)/i); return m ? { text: m[1] } : null; },
+      run: ({ text }) => { const b = MINDS.brief(text); return b.lines.length ? 'Read on this person:\n' + b.lines.map(l => '• ' + l).join('\n') : 'No strong personality cue in that message; ask one open question ("what matters most to you on this trip?") and read the answer.'; },
+    });
+    this.register({
+      name: 'therapy', description: 'Travel as therapy: matches a state of mind to a trip, pace, group and what to do.',
+      match: (input) => { if (!/\b(therapy|heal|healing|feel better|reset|recover|burn ?out|grief|heartbreak|break ?up|anxiety|lonely|confidence|creative block|reconnect|rekindle|retire)\w*/i.test(input)) return null; const d = MINDS.detectAll(input); const keys = d.therapy.length ? d.therapy : (/therapy|heal|reset|recover/i.test(input) ? ['burnout'] : []); return keys.length ? { keys } : null; },
+      run: ({ keys }) => keys.map(k => { const t = MINDS.THERAPY[k]; return `${k.charAt(0).toUpperCase() + k.slice(1)} → needs ${t.needs}.\nTrip: ${t.trip}. Pace: ${t.pace}. Group: ${t.group}.\nDo: ${t.do.join('; ')}. Avoid: ${t.avoid}.`; }).join('\n\n') + '\n\nTravel helps; it is not treatment. If someone is in crisis, the right move is a doctor or a helpline (iCall 9152987821, Vandrevala 1860 2662 345), and we say so kindly.',
+    });
+    this.register({
+      name: 'strategy', description: 'Business techniques for a situation: no leads, low conversion, cancellations, low fill, low margin, bad reviews, seasonality, competition, cash flow, growth.',
+      match: (input) => /\b(strategy|strategies|techniques?|playbook|what should we do about)\b/i.test(input) && !/\b(pricing strategy|price ladder|price strategy)\b/i.test(input) ? { s: input } : null,
+      run: ({ s }) => STRAT.techniques(s).map(x => `${x.situation.toUpperCase()}:\n` + x.moves.map(([n, d]) => `• ${n}: ${d}`).join('\n')).join('\n\n'),
+    });
+    this.register({
+      name: 'pricing-strategy', description: 'Price ladder and pricing rules from cost, competitor, seats and days out.',
+      match: (input) => { if (!/\b(pricing strategy|price ladder|how (should|do) (we|i) price|pricing for|set the price|early bird)\b/i.test(input)) return null; const g = (re) => { const m = input.match(re); return m ? +m[1].replace(/,/g, '') : null; }; return { cost: g(/cost\s*(?:rs\.?|₹)?\s*([\d,]{4,})/i), price: g(/price\s*(?:rs\.?|₹)?\s*([\d,]{4,})/i), competitor: g(/competitor\s*(?:at|rs\.?|₹)?\s*([\d,]{4,})/i), seats: g(/(\d{1,3})\s*seats?/i), booked: g(/(\d{1,3})\s*booked/i) || 0, daysOut: g(/(\d{1,3})\s*days?\s*(?:out|left|to go|before)/i) || 45 }; },
+      run: (a) => { if (!a.cost && !a.price) throw new Error('need cost or price'); const r = STRAT.priceStrategy(a); return `Standard ${INR(r.base)}${a.seats ? `, ${r.fill}% full, ${r.left} left` : ''}.\n` + r.ladder.map(l => `• ${l.tier}: ${INR(l.price)} — ${l.why}`).join('\n') + '\nRules:\n' + r.rules.map(x => '• ' + x).join('\n'); },
+    });
+    this.register({
+      name: 'understand', description: 'Ultimate understanding of one message: intent, emotion, requirements, persona traits, personality, therapy cues, and the one right move.',
+      match: (input) => { const m = input.match(/^(?:understand|analy[sz]e|decode|read deeply)\s*[:\-]\s*([\s\S]+)/i); return m ? { text: m[1] } : null; },
+      run: ({ text }) => { const g = this.ctx && this.ctx.brain ? this.ctx.brain.growth : null; const U = require('./universe'); const { parseRequirements } = require('./agents'); const req = parseRequirements(text); const traits = U.detect(text); const b = MINDS.brief(text); const intent = g ? g.intent(text).intent : '?'; const emo = g ? g.emotion(text) : null; const lines = [`Intent: ${intent}${emo ? ' · emotion: ' + emo : ''}`, `Requirements: ${req.destination ? req.destination.name : 'no destination'}${req.month ? ', ' + DEST.MONTHS[req.month - 1] : ''}${req.group ? ', ' + req.group + ' people' : ''}${req.budget ? ', budget ' + INR(req.budget) : ''}${req.days ? ', ' + req.days + ' days' : ''}${req.needs.length ? ', needs: ' + req.needs.join(', ') : ''}`, `Psyche cues: ${traits.join(', ') || 'none'}`, ...b.lines]; const move = emo === 'fear' || traits.includes('anxious') ? 'Open with reassurance and the safety line, then the fact, then one small next step.' : traits.includes('skeptical') ? 'Lead with proof (reviews, last batch photos, a traveller to call), then price.' : intent === 'book' ? 'Confirm the hold and the exact payment step; nothing else.' : intent.startsWith('objection') ? 'Acknowledge, give the inclusion comparison or pay-in-parts, end with the hold.' : req.destination ? 'Give the grounded price line and ask for the hold.' : 'Ask the two missing things (trip or dates, group size) in one line.'; lines.push('The one right move: ' + move); return lines.join('\n'); },
+    });
     this.register({
       name: 'convert', description: 'Unit conversions (km/mi, kg/lb, °C/°F, currency hints).',
       match: (input) => { const m = input.match(/([\d.]+)\s*(km|kilometers?|mi|miles?|kg|lbs?|pounds?|°?c|celsius|°?f|fahrenheit|m|meters?|ft|feet)\s*(?:to|in|into)\s*(km|kilometers?|mi|miles?|kg|lbs?|pounds?|°?c|celsius|°?f|fahrenheit|m|meters?|ft|feet)\b/i); return m ? { v: +m[1], from: m[2].toLowerCase(), to: m[3].toLowerCase() } : null; },

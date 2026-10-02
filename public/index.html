@@ -100,7 +100,15 @@
       <p class="muted"><a href="/site-demo.html" target="_blank" id="demo-link">See how both look</a> · Your WhatsApp link: <span id="wa-link"></span></p>
       <img id="wa-qr" alt="" width="140" height="140" hidden>
     </div>
-    <div class="card"><h2>5. Connect the real WhatsApp number (free)</h2>
+    <div class="card"><h2>5. Connections</h2>
+      <div class="grid2">
+        <div><h3>Bring leads in</h3><p class="muted">Paste a CSV export from Meta lead forms, Google Forms or any sheet (needs a name or phone column).</p><textarea id="csv-text" rows="4" placeholder="name,phone,trip,source
+Riya Shah,9876543210,Goa,instagram"></textarea><div class="actions"><input id="csv-source" placeholder="Source label (meta, forms)" style="max-width:200px"><button class="btn" id="btn-csv">Import leads</button><span id="csv-result" class="muted"></span></div>
+          <p class="muted">Webhook for Zapier, Make or a site form: POST JSON with name, phone, trip, message to <code>/atlas-chat/lead</code>.</p></div>
+        <div><h3>Take data out</h3><p><a class="btn" id="dl-leads" href="/api/connections/leads.csv" download>Lead sheet as CSV</a> <a class="btn" id="dl-ics" href="/api/connections/trips.ics" download>Departures calendar (.ics)</a></p><p class="muted">Open the CSV in Google Sheets or Excel. Add the .ics to Google Calendar to see departures and balance-due dates.</p></div>
+      </div>
+    </div>
+    <div class="card"><h2>6. Connect the real WhatsApp number (free)</h2>
       <p>On your PC, in the Travelers-clan folder, run <code>npm install @whiskeysockets/baileys qrcode-terminal</code> once, then <code>npm run whatsapp</code>. Scan the QR with WhatsApp Business → Linked devices. Customer messages reach ATLAS; your own number gets the day's list at 9am.</p>
       <label class="checkrow"><input type="checkbox" id="s-auto"> Send replies automatically. Off means ATLAS drafts and you send. Booking, payment and complaint messages always wait for you.</label>
     </div>

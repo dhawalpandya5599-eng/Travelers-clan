@@ -82,6 +82,10 @@ const routes = {
   'POST /api/autopilot/auto': async (q, body) => brain.autopilot.setAuto(String(body.kind || 'follow_up'), !!body.on),
   'GET /api/outbox': async () => brain.autopilot.outbox(),
   'POST /api/outbox/sent': async (q, body) => brain.autopilot.sent(body.id, !!body.ok, body.error) || { error: 'no such message' },
+  'POST /api/connections/leads-csv': async (q, body) => require('./core/connections').importLeadsCSV(brain.growth, String(body.text || ''), { source: body.source || 'csv' }),
+  'GET /api/connections/leads.csv': async () => ({ __raw: require('./core/connections').leadsCSV(brain.growth), type: 'text/csv' }),
+  'GET /api/connections/trips.ics': async () => ({ __raw: require('./core/connections').tripsICS(brain.growth), type: 'text/calendar' }),
+  'POST /api/webhooks/lead': async (q, body) => require('./core/connections').webhookLead(brain.growth, body),
   'GET /api/universe': async () => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'synth', 'universe-report.json'), 'utf8')); } catch { return { error: 'not run yet: npm run universe' }; } },
   'POST /api/agent': async (q, body) => brain.agent.run(String(body.request || body.text || '')),
   'POST /api/agent/correct': async (q, body) => brain.agent.correct(body.id, body.correction) || { error: 'no such run' },
@@ -125,7 +129,7 @@ const server = http.createServer(async (req, res) => {
   }
   const handler = routes[`${req.method} ${url.pathname}`];
   if (handler) {
-    try { json(res, 200, await handler(url.searchParams, req.method === 'POST' ? await readBody(req) : {})); }
+    try { const out = await handler(url.searchParams, req.method === 'POST' ? await readBody(req) : {}); if (out && out.__raw != null) { res.writeHead(200, { 'Content-Type': out.type + '; charset=utf-8', 'Cache-Control': 'no-store' }); return res.end(out.__raw); } json(res, 200, out); }
     catch (e) { json(res, 400, { error: e.message }); }
     return;
   }

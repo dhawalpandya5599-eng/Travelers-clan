@@ -39,7 +39,7 @@ class Brain extends EventEmitter {
     this.mentor = new Mentor();
     this.evolution = new Evolution();
     this.memory = new Memory(this.evolution.genome);
-    this.skills = new Skills();
+    this.skills = new Skills(); this.skills.ctx = { brain: this };
     this.conversion = new Conversion();
     this.funnel = new Funnel();
     this.risk = new RiskDesk();
@@ -58,7 +58,7 @@ class Brain extends EventEmitter {
       const s = JSON.parse(fs.readFileSync(this.file, 'utf8'));
       this.evolution = new Evolution(s.evolution);
       this.memory = new Memory(this.evolution.genome, s.memory);
-      this.skills = new Skills(s.skills);
+      this.skills = new Skills(s.skills); this.skills.ctx = { brain: this };
       this.conversion = new Conversion(s.conversion);
       this.funnel = new Funnel(s.funnel);
       this.risk = new RiskDesk(s.risk);
@@ -104,7 +104,7 @@ class Brain extends EventEmitter {
     const merged = mergeMinds(this.current(), state);
     this.evolution = new Evolution(merged.evolution);
     this.memory = new Memory(this.evolution.genome, merged.memory);
-    this.skills = new Skills(merged.skills);
+    this.skills = new Skills(merged.skills); this.skills.ctx = { brain: this };
     this.conversion = new Conversion(merged.conversion);
     this.funnel = new Funnel(merged.funnel);
     this.risk = new RiskDesk(merged.risk);

@@ -27,3 +27,9 @@ Every self-improvement run appends an entry: what was measured, what was weakest
 - 8 lessons (17-24), 277 sentences, every one parse-checked; mind facts 738 → 1025 after training (generation 102).
 - 12 skills: gst, tcs, margin, break-even, instalments, forex, altitude, packing, long-weekends, invoice, utm, referral, trip-cost.
 - 19 exam cases for knowledge and skills; exam 149/149; levels 1-6 100%; stress 0.1%; universe 300/300.
+
+## 2026-10-02 · the full skill set
+
+- core/world.js (48 destinations + activities with timings), core/minds.js (personality systems + therapy map), core/strategy.js (techniques, pricing strategy, pricing analytics, patterns, news reading, 5W1H), core/connections.js (CSV in/out, ICS, webhook).
+- Skills: activities, 5w1h, personality, therapy, strategy, pricing-strategy, understand (+ the 12 business skills). Agent tools: activities, brief_5w1h, personality, therapy, strategy, pricing_strategy, pricing_analytics, patterns, read_news, understand. Council: strategy, pricing, wellbeing, analyst.
+- Lessons 25-30 (203 facts). Exam 173/173; levels 1-6 100%; stress 0.1%; universe 300/300; tests 19/19; mind 1,247 facts, generation 104.

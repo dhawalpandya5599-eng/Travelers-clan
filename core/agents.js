@@ -311,4 +311,21 @@ const dialogue = {
   },
 };
 
-module.exports = { AGENTS: { sales, operations, cx, news, marketing, critic, tester, dialogue }, parseRequirements };
+const STRAT = require('./strategy'); const MINDS = require('./minds');
+const strategy = {
+  name: 'strategy', title: 'Strategy', duty: 'business techniques for the situation at hand',
+  run(task, ctx) { const text = task.message || task.conversation || ''; const picks = STRAT.techniques(text); const findings = picks.map(p => `${p.situation}: ${p.moves.slice(0, 3).map(m => m[0]).join(', ')}`); const suggestions = [].concat(...picks.map(p => p.moves.slice(0, 2).map(m => `${m[0]}: ${m[1]}`))); return { agent: 'strategy', verdict: 'ok', findings, suggestions, lessons: picks.map(p => `${p.situation.charAt(0).toUpperCase() + p.situation.slice(1)} is fixed by ${p.moves[0][0].toLowerCase()}.`), output: { picks } }; },
+};
+const pricing = {
+  name: 'pricing', title: 'Pricing', duty: 'price ladder, floors, when to move the price',
+  run(task, ctx) { const g = ctx.brain && ctx.brain.growth; const trips = g ? g.upcoming(10) : []; const an = STRAT.priceAnalytics(trips, g ? g.state.leads : [], DEST); const req = parseRequirements(task.message || task.conversation || ''); const t = req.destination ? trips.find(x => x.name.toLowerCase().includes(req.destination.name.toLowerCase())) : null; const ps = t ? STRAT.priceStrategy({ price: t.price, cost: req.destination ? req.destination.costPerDay * (t.days || req.destination.idealDays) : null, seats: t.seats, booked: t.booked, daysOut: t.date ? Math.ceil((new Date(t.date) - Date.now()) / 864e5) : 45 }) : null; return { agent: 'pricing', verdict: an.notes.length ? 'warn' : 'ok', findings: an.notes, suggestions: ps ? ps.rules.slice(0, 3) : ['Set trips in Set up to get a price ladder.'], lessons: an.notes.slice(0, 2), output: { analytics: an.rows, ladder: ps ? ps.ladder : null } }; },
+};
+const wellbeing = {
+  name: 'wellbeing', title: 'Wellbeing', duty: 'travel as therapy: what this person needs from the trip',
+  run(task, ctx) { const text = task.message || task.conversation || ''; const d = MINDS.detectAll(text); const findings = []; const suggestions = []; for (const k of d.therapy) { const t = MINDS.THERAPY[k]; findings.push(`State of mind: ${k}; needs ${t.needs}.`); suggestions.push(`Offer ${t.trip}; pace ${t.pace}; avoid ${t.avoid}.`); } if (d.attachment) suggestions.push(`Attachment ${d.attachment}: ${MINDS.ATTACHMENT[d.attachment]}.`); return { agent: 'wellbeing', verdict: 'ok', findings, suggestions, lessons: d.therapy.map(k => `A ${k} customer needs ${MINDS.THERAPY[k].trip}.`), output: { detected: d } }; },
+};
+const analyst = {
+  name: 'analyst', title: 'Pattern analyst', duty: 'patterns in leads, sources, hours, funnel',
+  run(task, ctx) { const g = ctx.brain && ctx.brain.growth; const p = STRAT.patterns(g ? g.state.leads : [], g ? g.state.log : []); return { agent: 'analyst', verdict: 'ok', findings: p.findings, suggestions: [], lessons: p.findings.filter(f => !/Not enough/.test(f)).slice(0, 2), output: p }; },
+};
+module.exports = { AGENTS: { sales, operations, cx, news, marketing, critic, tester, dialogue, strategy, pricing, wellbeing, analyst }, parseRequirements };

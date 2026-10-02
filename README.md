@@ -205,3 +205,18 @@ Current: all six levels 100%.
 `14500 plus gst` · `gst on 14500 including` · `tcs on 250000` · `cost 11000 at 20% margin` · `cost 11000 price 13750 margin` · `break even with fixed cost 60000 at price 14500 and variable 9000` · `14500 in 3 instalments` · `500 usd in inr` · `altitude in ladakh` · `what to pack for manali in december` · `long weekends` · `invoice for Riya Shah 4 seats 14500 for the Goa trip` · `utm link for whatsapp campaign diwali` · `organiser offer for 12 seats at 14500` · `estimate custom spiti for 8 people 7 days`
 
 Knowledge lessons 17 to 24 add India and international destination deep-dives, money and margins, safety and emergencies, customer psychology by segment, ground operations and vendors, marketing and content, and the 2026-27 travel calendar (277 facts, all parse-checked).
+
+### The full skill set (this build)
+
+- **Destinations:** 79 places in India and abroad with season, cost, route, permits, risks, who it suits, plus **things to do with start times, durations, costs and best months** for 35 of them (`things to do in goa`, `activities in bali`).
+- **5W1H brief:** `tell me everything about ladakh in july for 4 people` → what, why, who, where, when, whom (permits, risks), which (activities), how (money).
+- **Personalities:** Big Five, 16 MBTI types, DISC, Enneagram 9, generations, 10 travel archetypes, attachment styles, money styles, each with how to recognise and how to handle (`personality: <message>`).
+- **Travel as therapy:** burnout, grief, heartbreak, anxiety, loneliness, low confidence, creative block, family distance, couple strain, retirement → trip, pace, group, do, avoid, with helpline numbers and the honest limit.
+- **Business techniques:** ten situations (no leads, low conversion, cancellations, low fill, low margin, bad reviews, seasonality, competition, cash flow, growth) with the moves that fix them (`what should we do about no leads`).
+- **Pricing strategy and analytics:** price ladder (early bird, standard, last seats, premium decoy), floors, when to move, competitor rule; per-trip price per day vs ground benchmark, implied margin, quote-to-book, revenue open (`pricing strategy for goa with competitor at 11999`, `pricing analytics`).
+- **Patterns:** hours, days, sources, funnel, demand, touches-to-book from the real lead sheet (`patterns in the leads`).
+- **News reading:** paste headlines → destination, severity, topic, action; high and medium items go to the risk desk (`news: ...`).
+- **Ultimate understanding:** `understand: <message>` → intent, emotion, requirements, psyche cues, personality, therapy cues, and the one right move.
+- **Council agents added:** Strategy, Pricing, Wellbeing, Pattern analyst (the lead pass now includes Wellbeing when a state of mind is detected).
+- **Connections:** import leads from any CSV export (Meta lead forms, Google Forms, Sheets), webhook `/atlas-chat/lead` for Zapier, Make or a site form, lead sheet out as CSV, departures as an .ics calendar for Google Calendar.
+- **Lessons 25 to 30:** personalities, business strategy, pricing, travel as therapy, more of the world, activities and timings (203 parse-checked facts). Mind at generation 104 with 1,247 facts.

@@ -28,6 +28,7 @@ class Council {
     out.operations = AGENTS.operations.run({ ...task, requirements: req }, ctx);
     out.cx = AGENTS.cx.run(task, ctx);
     out.news = AGENTS.news.run({ ...task, requirements: req }, ctx);
+    out.wellbeing = AGENTS.wellbeing.run(task, ctx); if (!out.wellbeing.findings.length) delete out.wellbeing;
     out.critic = AGENTS.critic.run(task, ctx, out);
     // 2. Polish: rewrite the draft in the customer's style, answering every open point the critic found.
     if (llm && out.sales && out.sales.output.draft) {

@@ -62,6 +62,9 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/autopilot/auto', wrap(req => brain.autopilot.setAuto(String(req.body.kind || 'follow_up'), !!req.body.on)));
   router.get('/api/outbox', wrap(() => brain.autopilot.outbox()));
   router.post('/api/outbox/sent', wrap(req => brain.autopilot.sent(req.body.id, !!req.body.ok, req.body.error) || { error: 'no such message' }));
+  router.post('/api/connections/leads-csv', wrap(req => require('../core/connections').importLeadsCSV(brain.growth, String(req.body.text || ''), { source: req.body.source || 'csv' })));
+  router.get('/api/connections/leads.csv', (req, res) => res.type('text/csv').send(require('../core/connections').leadsCSV(brain.growth)));
+  router.get('/api/connections/trips.ics', (req, res) => res.type('text/calendar').send(require('../core/connections').tripsICS(brain.growth)));
   router.get('/api/universe', wrap(() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'synth', 'universe-report.json'), 'utf8')); } catch { return { error: 'not run yet: npm run universe' }; } }));
   router.post('/api/agent', wrap(req => brain.agent.run(String(req.body.request || req.body.text || ''))));
   router.post('/api/agent/correct', wrap(req => brain.agent.correct(req.body.id, req.body.correction) || { error: 'no such run' }));
@@ -109,6 +112,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   pub.get('/widget.js', (req, res) => { res.type('text/javascript'); res.send(fs.readFileSync(path.join(ROOT, 'public', 'widget.js'), 'utf8')); });
   pub.post('/chat', wrap(req => brain.growth.chat({ id: String(req.body.id || '').slice(0, 40), name: String(req.body.name || '').slice(0, 60), text: String(req.body.text || '').slice(0, 1000), source: 'web' })));
   pub.get('/profile', wrap(() => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(6).map(t => ({ name: t.name, date: t.date, days: t.days, price: t.price, seatsLeft: brain.growth.seatsLeft(t), from: t.from })) }; }));
+  pub.post('/lead', wrap(req => require('../core/connections').webhookLead(brain.growth, req.body)));
   router.widget = pub;
   return router;
 };

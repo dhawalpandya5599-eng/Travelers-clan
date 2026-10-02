@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'growth', 'agent', 'autopilot', 'importers', 'brain'];
+const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'universe', 'growth', 'agent', 'autopilot', 'world', 'minds', 'strategy', 'connections', 'importers', 'brain'];
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
@@ -144,6 +144,7 @@ const glue = `
           case 'POST /api/autopilot/approve': return brain.autopilot.approve(body.id) || { error: 'no such proposal' };
           case 'POST /api/autopilot/dismiss': return brain.autopilot.dismiss(body.id, body.reason || '') || { error: 'no such proposal' };
           case 'POST /api/autopilot/auto': return brain.autopilot.setAuto(String(body.kind || 'follow_up'), !!body.on);
+          case 'POST /api/connections/leads-csv': return __require('./connections').importLeadsCSV(brain.growth, String(body.text || ''), { source: body.source || 'csv' });
           case 'GET /api/universe': return UNIVERSE;
           case 'POST /api/agent': return brain.agent.run(String(body.request || body.text || ''));
           case 'POST /api/agent/correct': return brain.agent.correct(body.id, body.correction) || { error: 'no such run' };
