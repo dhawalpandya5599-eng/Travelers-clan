@@ -96,7 +96,7 @@ function patchServer(file) {
 }
 
 (function main() {
-  const site = given ? path.resolve(given) : findSite();
+  let site = given ? path.resolve(given) : findSite();
   if (!site || !fs.existsSync(path.join(site, 'server.js'))) {
     console.error('\nYour website source was not found on this PC (a folder with server.js and a package.json that has a "package:deploy" script).');
     console.error('If it is on this PC: node scripts\\integrate-site.js "C:\\path\\to\\site" --zip --force');
@@ -114,7 +114,24 @@ function patchServer(file) {
   } catch { console.warn('Smoke test skipped (express not installed here); it will work after npm install on the server.'); }
   if (ZIP) {
     const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    const out = path.join(path.dirname(site), `travelersclan_${stamp}.zip`);
+    let out = path.join(path.dirname(site), `travelersclan_${stamp}.zip`);
+    // If the site has its own packer (releases/latest.json → a staged source folder), pack exactly what it staged
+    // plus ATLAS and the patched server.js, so nothing the site needs is missed and nothing extra goes in.
+    let src = site;
+    try {
+      const latest = JSON.parse(fs.readFileSync(path.join(site, 'releases', 'latest.json'), 'utf8'));
+      const stage = latest.stage && fs.existsSync(latest.stage) ? latest.stage : null;
+      if (stage) {
+        src = path.join(os.tmpdir(), `atlas-stage-${stamp}`); fs.rmSync(src, { recursive: true, force: true });
+        fs.cpSync(stage, src, { recursive: true });
+        copyDir(root, path.join(src, 'atlas'));
+        fs.copyFileSync(path.join(site, 'server.js'), path.join(src, 'server.js'));
+        fs.mkdirSync(path.join(src, 'data', 'atlas'), { recursive: true });
+        out = path.join(site, 'releases', `travelersclan_${stamp.slice(0, 8)}_${stamp.slice(8)}.zip`);
+        console.log(`Using the site's own staged release (${stage}) + ATLAS.`);
+      }
+    } catch { /* no packer; pack the site folder */ }
+    const site0 = site; site = src;
     // Build an explicit file list: skip node_modules, .git, live data, and zero-byte files (Hostinger's
     // uploader rejects archives that contain empty files).
     const files = [], empty = [];
@@ -138,7 +155,8 @@ function patchServer(file) {
     else execSync(`cd "${site}" && zip -q "${out}" -@ < "${list}"`, { stdio: 'inherit' });
     const size = fs.statSync(out).size;
     if (size < 1000) throw new Error('archive came out empty');
-    console.log(`Deploy archive: ${out} (${(size / 1048576).toFixed(1)} MB, ${files.length} files)`);
+    console.log(`Deploy archive: ${out} (${(size / 1048576).toFixed(1)} MB, ${files.length} files, atlas folder ${files.some(f => f.startsWith('atlas/')) ? 'included' : 'MISSING'})`);
+    site = site0;
     console.log('Upload it in hPanel → Websites → travelersclan.in → Deploy (same as your usual zip). ATLAS will be at https://travelersclan.in' + MOUNT);
   }
 })();
