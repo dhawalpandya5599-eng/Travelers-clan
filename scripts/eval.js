@@ -143,6 +143,8 @@ const CASES = [
   // --- WhatsApp agent (growth): a fixed trip is set up, then a customer chats; the LAST reply is judged ---
   { growth: ['hi 4 of us want goa in december budget 15k'], expect: /14,500[\s\S]*58,000[\s\S]*hold/i, kind: 'whatsapp' },
   { growth: ['4 of us goa in dec', 'any hidden costs?'], expect: /no hidden costs[\s\S]*not included/i, notExpect: /14,500 per person/, kind: 'whatsapp' },
+  { growth: ['do we need a visa for thailand?'], expect: /visa-free[\s\S]*arrival card/i, kind: 'whatsapp' },
+  { growth: ['vietnam visa documents?'], expect: /e-visa[\s\S]*passport/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'what if we cancel?'], expect: /transferable|refund/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'is it safe for girls?'], expect: /women|captain/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'where is the pickup?'], expect: /pickup|start from|point/i, kind: 'whatsapp' },

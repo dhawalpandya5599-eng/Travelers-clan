@@ -53,6 +53,25 @@ Blank means the default. Change a number and every reply, draft, exam and the au
 
 Trip rows accept optional `pickup`, `captain`, `hotel` and `groupLink`; set them and the flags clear and the brief fills itself.
 
+## 4c. The visa and permits desk
+
+Its own knowledge base (`core/visa.js`): 28 countries the clan sells plus 9 Indian permit regions, each with the entry type for Indian passports (visa-free, arrival card, visa on arrival, e-visa, online authorisation, embassy, conditional, permit), stay, fee, processing days, the buffer we keep, documents, the official link, and the traps. Every entry carries the month it was checked; verify the link before each batch. Its own case file (`visa.json`): one row per traveller per trip, status not started → documents → applied → approved (or rejected, not needed), documents ticked, dates, notes.
+
+Where it connects:
+
+| Connection | What happens |
+|---|---|
+| WhatsApp and widget | "visa lagega?", "which documents", "passport expires in 3 months" get the exact rule, fee, apply-by date for our batch, documents and our help; the widget has a Visa & documents chip |
+| Chief agent | "visa for dubai", "visa status for the thailand batch", "which trips need visa"; also a `visa` tool for the model |
+| Council | a visa agent joins whenever the conversation touches entry or an international destination: finding, apply-by, what to collect at the advance |
+| Autopilot | `visa_apply` proposals per traveller inside the window: collect documents, apply now, chase the decision; the pre-departure brief carries the entry line |
+| Trip board | flag per trip: travellers without a visa or permit and the apply-by date |
+| Today's work | the desk: lookup any country, cases per trip with a status dropdown |
+| Rules | visa handling charge per person (0 = free) in Set up card 4 |
+| Mind | lesson 10 holds the same facts in plain sentences, so "ask OYE" knows them too |
+
+Cases open themselves for every traveller on hold, advance or balance for a trip that needs action; the founder only moves the status.
+
 ## 5. How OYE gets better
 
 Three exam ladders, all rules only, all at 100% right now:

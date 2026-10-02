@@ -418,6 +418,7 @@ class Brain extends EventEmitter {
   }
 
   /** The council of agents (lazy, so core modules stay independent). */
+  get visa() { if (!this._visa) { const { VisaDesk } = require('./visa'); this._visa = new VisaDesk(this); } return this._visa; }
   get autopilot() { if (!this._autopilot) { const { Autopilot } = require('./autopilot'); this._autopilot = new Autopilot(this); } return this._autopilot; }
   get agent() { if (!this._agent) { const { Agent } = require('./agent'); this._agent = new Agent(this); } return this._agent; }
   get growth() { if (!this._growth) { const { Growth } = require('./growth'); this._growth = new Growth(this); } return this._growth; }

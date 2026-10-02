@@ -273,3 +273,25 @@ test('sales ops: trip board, balance due, waiting list, and a human owed a reply
   assert.ok(kinds.includes('balance_due')); assert.ok(kinds.includes('pre_departure') || row.days > b.growth.rules.pickupShareDays); assert.ok(kinds.includes('human_wait'));
   g.updateLead('ops-2', { stage: 'lost' }); assert.ok(g.state.leads.find(l => l.id === 'ops-2').lostReason);
 });
+
+test('visa desk: rules, timeline, cases, chat, agent, autopilot and board flags', async () => {
+  const b = new Brain({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'oye-visa-')), autosave: false }); b.evolution.genome.curiosity = 0;
+  const V = b.visa; assert.equal(V.rule('thailand').type, 'card'); assert.equal(V.rule('Dubai').key, 'uae'); assert.equal(V.rule('Leh Ladakh').key, 'ladakh'); assert.equal(V.rule('goa').type, 'none'); assert.equal(V.rule('Europe').key, 'schengen'); assert.equal(V.rule('vietnam').fee, 2100);
+  const soon = new Date(Date.now() + 12 * 86400e3).toISOString().slice(0, 10);
+  const tl = V.timeline(V.rule('vietnam'), soon); assert.equal(tl.leadDays, 12); assert.ok(tl.daysLeft <= 0 || tl.status === 'now' || tl.status === 'late');
+  b.growth.setProfile({ phone: '9876543210', upi: 'tc@upi', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }, { name: 'Thailand', date: soon, days: 6, price: 42000, seats: 20, booked: 5 }, { name: 'Vietnam', date: '2099-11-20', days: 7, price: 55000, seats: 20, booked: 2 }] });
+  const g = b.growth;
+  let r = await g.chat({ id: 'vz1', text: 'do we need a visa for thailand?', source: 'web' }); assert.equal(r.intent, 'faq:visa'); assert.match(r.reply, /visa-free/i); assert.match(r.reply, /tdac|arrival card/i);
+  r = await g.chat({ id: 'vz2', text: 'vietnam ka visa lagega? documents?', source: 'web' }); assert.match(r.reply, /e-visa/i); assert.match(r.reply, /2,100/); assert.match(r.reply, /8 Nov/);
+  r = await g.chat({ id: 'vz3', text: 'goa ke liye visa chahiye?', source: 'web' }); assert.match(r.reply, /visa nahi|photo ID/i);
+  r = await g.chat({ id: 'vz4', text: 'my passport expires in 3 months, thailand ok?', source: 'web' }); assert.match(r.reply, /6 months/); assert.match(r.reply, /renew/i);
+  r = await g.chat({ id: 'vz5', text: 'ladakh permit lagta hai?', source: 'web' }); assert.equal(r.intent, 'faq:visa'); assert.match(r.reply, /Inner Line|permit/i);
+  const a = await b.agent.run('visa for dubai'); assert.match(a.final, /UAE/); assert.match(a.final, /working days/);
+  await g.chat({ id: 'vb1', name: 'Asha', text: 'thailand for 2', source: 'web' }); await g.chat({ id: 'vb1', text: 'ok hold', source: 'web' }); g.updateLead('vb1', { stage: 'advance' });
+  const S = V.sync(g); const th = S.find(s => s.trip === 'Thailand'); assert.ok(th && th.cases === 1 && th.pending.length === 1);
+  await b.autopilot.run(); assert.ok(b.autopilot.state.proposals.some(p => p.kind === 'visa_apply'), 'visa proposal inside the window');
+  assert.ok(g.tripBoard().trips.find(t => t.name === 'Thailand').flags.some(f => /Thailand: 1 traveller without visa/.test(f)));
+  V.update(th.pending[0].id, { status: 'approved' }); assert.equal(V.sync(g).find(s => s.trip === 'Thailand').pending.length, 0);
+  const st = await b.agent.run('visa status for the thailand batch'); assert.match(st.final, /Thailand/); assert.match(st.final, /approved 1|all clear/);
+  const c = await b.council.handle({ conversation: 'customer: thailand trip in december, do we need visa?', name: 'Ravi' }); const out = (c.agents && c.agents.visa) || c.visa; assert.ok(out && out.findings.length, 'council visa agent ran');
+});

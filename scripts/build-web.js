@@ -159,6 +159,9 @@ const glue = `
           case 'POST /api/growth/leads': return body.id && brain.growth.state.leads.some(function (l) { return l.id === body.id; }) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {});
           case 'GET /api/growth/today': return brain.growth.today();
           case 'GET /api/growth/board': return brain.growth.tripBoard();
+          case 'GET /api/visa': return u.searchParams.get('country') ? { card: brain.visa.card(u.searchParams.get('country')), rule: brain.visa.rule(u.searchParams.get('country')) } : { trips: brain.visa.sync(brain.growth), summary: brain.visa.summary() };
+          case 'GET /api/visa/cases': return brain.visa.cases({ trip: u.searchParams.get('trip') || '', status: u.searchParams.get('status') || '' });
+          case 'POST /api/visa/cases': return body.id ? brain.visa.update(body.id, body) : brain.visa.openCase(body || {});
           case 'GET /api/growth/campaigns': return brain.growth.broadcasts().then(function (b) { b.campaigns = brain.growth.campaigns(); return b; });
           case 'GET /api/growth/digest': return brain.growth.digest();
           case 'GET /api/growth/content': return brain.growth.content();

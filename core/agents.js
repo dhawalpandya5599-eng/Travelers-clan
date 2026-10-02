@@ -328,4 +328,13 @@ const analyst = {
   name: 'analyst', title: 'Pattern analyst', duty: 'patterns in leads, sources, hours, funnel',
   run(task, ctx) { const g = ctx.brain && ctx.brain.growth; const p = STRAT.patterns(g ? g.state.leads : [], g ? g.state.log : []); return { agent: 'analyst', verdict: 'ok', findings: p.findings, suggestions: [], lessons: p.findings.filter(f => !/Not enough/.test(f)).slice(0, 2), output: p }; },
 };
-module.exports = { AGENTS: { sales, operations, cx, news, marketing, critic, tester, dialogue, strategy, pricing, wellbeing, analyst }, parseRequirements };
+const visa = {
+  name: 'visa', title: 'Visa and permits desk', duty: 'what the traveller needs to enter, by when, and what we collect',
+  run(task, ctx) { const desk = ctx.brain && ctx.brain.visa; const g = ctx.brain && ctx.brain.growth; const text = task.message || task.conversation || ''; const req = task.requirements || parseRequirements(text); if (!desk) return { agent: 'visa', verdict: 'ok', findings: [], suggestions: [], lessons: [], output: {} };
+    const rule = desk.rule(text) || (req.destination ? desk.rule(req.destination.name) : null); if (!rule) return { agent: 'visa', verdict: 'ok', findings: [], suggestions: [], lessons: [], output: {} };
+    const trip = g ? g.upcoming(10).find(x => { const r = desk.rule(x.name); return r && r.key === rule.key; }) : null; const tl = desk.timeline(rule, trip ? trip.date : null); const place = rule.region || rule.country;
+    const findings = [`${place}: ${require('./visa').TYPE_WORDS[rule.type]}${rule.fee ? ', about ₹' + rule.fee.toLocaleString('en-IN') + ' per person' : ', free'}${rule.days ? ', ' + rule.days + ' working days' : ''}.`]; if (tl && tl.leadDays) findings.push(`Apply by ${tl.applyBy} for ${trip.name} (${tl.status === 'late' ? 'already late: urgent route' : tl.daysLeft + ' days left'}).`);
+    const suggestions = desk.needsAction(rule) ? [`Collect at the advance: ${rule.docs.slice(0, 3).join('; ')}.`, `Apply for the whole group together${rule.url ? ' at ' + rule.url : ''}; one typo in a name means a new application.`] : [`Tell them plainly: ${rule.docs[0]}.`];
+    return { agent: 'visa', verdict: desk.needsAction(rule) && tl && tl.status === 'late' ? 'warn' : 'ok', findings, suggestions, lessons: [`${place} entry for Indian passports: ${require('./visa').TYPE_WORDS[rule.type]}.`], output: { rule: rule.key, type: rule.type, applyBy: tl ? tl.applyBy : null, docs: rule.docs } }; },
+};
+module.exports = { AGENTS: { sales, operations, cx, news, marketing, critic, tester, dialogue, strategy, pricing, wellbeing, analyst, visa }, parseRequirements };

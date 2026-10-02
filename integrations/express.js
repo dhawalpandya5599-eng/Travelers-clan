@@ -80,6 +80,9 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/growth/leads', wrap(req => req.body.id && brain.growth.state.leads.some(l => l.id === req.body.id) ? brain.growth.updateLead(req.body.id, req.body) : brain.growth.addLead(req.body || {})));
   router.get('/api/growth/today', wrap(() => brain.growth.today()));
   router.get('/api/growth/board', wrap(() => brain.growth.tripBoard()));
+  router.get('/api/visa', wrap(req => req.query.country ? { card: brain.visa.card(req.query.country), rule: brain.visa.rule(req.query.country) } : { trips: brain.visa.sync(brain.growth), summary: brain.visa.summary() }));
+  router.get('/api/visa/cases', wrap(req => brain.visa.cases({ trip: req.query.trip || '', status: req.query.status || '' })));
+  router.post('/api/visa/cases', wrap(req => req.body.id ? brain.visa.update(req.body.id, req.body) : brain.visa.openCase(req.body || {})));
   router.get('/api/growth/campaigns', wrap(async () => ({ campaigns: brain.growth.campaigns(), ...(await brain.growth.broadcasts()) })));
   router.get('/api/growth/digest', wrap(() => brain.growth.digest()));
   router.get('/api/growth/content', wrap(() => brain.growth.content()));

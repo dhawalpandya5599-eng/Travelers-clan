@@ -24,6 +24,7 @@ const GROUPS = [
   { ok: ['faq:kids'], texts: ['kids price?', 'bachcho ka kitna', 'is there a child rate', 'children free hai?', 'kids ka charge', 'baccha 4 saal ka free?', 'price for a 7 year old', 'kids half price?', 'बच्चों का रेट', 'બાળકો માટે કિંમત?'] },
   { ok: ['faq:weather'], texts: ['how cold will it be', 'kitni thand hogi', 'snow milega?', 'what to pack', 'jacket chahiye?', 'temperature kaisa rahega', 'is it very cold in december', 'thermals lene padenge?', 'बर्फ मिलेगी?', 'ઠંડી કેટલી હશે?'] },
   { ok: ['faq:age'], texts: ['parents allowed?', 'my mother is 65, ok?', 'senior citizens aa sakte hain?', 'is it ok for elderly', 'buzurg ke liye theek hai?', 'kids allowed', 'can my dad come, he is 70', 'वरिष्ठ नागरिक ठीक रहेंगे?', 'is this trip fine for parents'] },
+  { ok: ['faq:visa'], texts: ['do we need a visa for thailand', 'visa lagega kya', 'dubai visa kitne din me aata hai', 'passport chahiye?', 'which documents to carry', 'is thailand visa free for indians', 'ladakh permit lagta hai?', 'e-visa kaise apply kare', 'my passport expires in 4 months, ok?', 'documents list bhejo', 'वीज़ा लगेगा क्या', 'ILP needed for tawang?'] },
   { ok: ['escalate'], texts: ['third time asking, nobody replies', 'this is fraud', 'i will complain to consumer court', 'worst service ever', 'nobody is responding to me', 'is this how you treat customers', 'i want to speak to the owner now, this is unacceptable', 'ignoring me since morning', 'you people never reply'] },
 ];
 async function run() {

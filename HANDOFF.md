@@ -31,12 +31,12 @@ npm run check
 
 | Suite | Command | Result at handoff |
 |---|---|---|
-| Unit tests | `npm test` | 19/19 |
-| Eval | `node scripts/eval.js` | 173/173 |
+| Unit tests | `npm test` | 22/22 |
+| Eval | `node scripts/eval.js` | 175/175 |
 | Levels 1 to 10 | `node scripts/levels.js` | 128/128, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
 | Customer universe (400 personas) | `node scripts/universe.js` | 400/400 |
-| Paraphrases | `node scripts/paraphrase.js` | 152/152 |
+| Paraphrases | `node scripts/paraphrase.js` | 164/164 |
 | Browser smoke | `npm run smoke` | 8/8 |
 | Release gate (all of the above + bundle + archive) | `npm run release` | RELEASE READY |
 | Mastery (needs a model) | `node scripts/mastery.js` | writes `MASTERY-REVIEW.md` when no model is connected |
@@ -77,6 +77,7 @@ Live trip cards: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js"
 | Business strategy, pricing, patterns, news, 5W1H | `core/strategy.js` |
 | 79 destinations, activities with timings | `core/destinations.js`, `core/world.js` |
 | Skills, connections (CSV, ICS, webhook) | `core/skills.js`, `core/connections.js` |
+| Visa and permits desk (knowledge base + case file) | `core/visa.js`, `data/visa.json` |
 | Curriculum (30 lessons OYE studies at start) | `curriculum/*.md` |
 | Dashboard | `public/index.html`, `public/app.js`, `public/style.css`, 3D map libs in `public/vendor/` |
 | Customer-facing floating assistant | `public/widget.js` |

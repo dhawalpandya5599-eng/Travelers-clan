@@ -96,7 +96,7 @@
     msgs.appendChild(box); scroll();
   }
   function chipSet(list) { chips.innerHTML = ''; list.forEach(function (c) { var b = document.createElement('button'); b.type = 'button'; b.textContent = c[0]; b.onclick = function () { send(c[1] || c[0]); }; chips.appendChild(b); }); }
-  var CHIPS = [['Upcoming trips', 'Which trips are coming up?'], ['Price & what\'s included', 'What is the price and what is included?'], ['Hold a seat', 'I want to hold a seat'], ['Is it safe for solo women?', 'Is it safe for a girl travelling solo?'], ['Talk to a human', 'I want to talk to a team member']];
+  var CHIPS = [['Upcoming trips', 'Which trips are coming up?'], ['Price & what\'s included', 'What is the price and what is included?'], ['Hold a seat', 'I want to hold a seat'], ['Is it safe for solo women?', 'Is it safe for a girl travelling solo?'], ['Visa & documents', 'Do we need a visa and which documents should we carry?'], ['Talk to a human', 'I want to talk to a team member']];
   function waContext() { var last = history.filter(function (h) { return h.r === 'u'; }).slice(-3).map(function (h) { return h.t; }); if (!P.waLink) return; wa.href = P.waLink.split('?')[0] + '?text=' + encodeURIComponent('Hi Travelers Clan, I was chatting with ' + NAME + ' on the website' + (last.length ? ': ' + last.join(' / ') : '') + '. Please continue here.'); }
   function greet() {
     var g = GREET || ('Namaste 🙏 I am ' + NAME + ', the Travelers Clan trip buddy. Tell me where you want to go and roughly when, and I will check dates, price and seats for you in seconds.');

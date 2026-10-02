@@ -31,6 +31,7 @@ class Council {
     out.cx = AGENTS.cx.run(task, ctx);
     out.news = AGENTS.news.run({ ...task, requirements: req }, ctx);
     out.wellbeing = AGENTS.wellbeing.run(task, ctx); if (!out.wellbeing.findings.length) delete out.wellbeing;
+    try { const V = require('./visa'); if (V.mentionsVisa(text) || (req.destination && req.destination.country && req.destination.country !== 'India')) { out.visa = AGENTS.visa.run({ ...task, requirements: req }, ctx); if (!out.visa.findings.length) delete out.visa; } } catch { /* desk optional */ }
     out.critic = AGENTS.critic.run(task, ctx, out);
     // 2. Polish: rewrite the draft in the customer's style, answering every open point the critic found.
     if (llm && out.sales && out.sales.output.draft) {
