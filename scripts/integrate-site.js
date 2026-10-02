@@ -24,7 +24,7 @@ const ZIP = args.includes('--zip');
 const FORCE = args.includes('--force'); // remove an earlier ATLAS block and re-insert it at the best spot
 const given = args.find(a => !a.startsWith('--') && a !== MOUNT);
 
-const SKIP = new Set(['node_modules', '.git', 'atlas', 'dist', 'hbuilds', 'AppData', 'Library', 'Program Files', 'Windows', '$Recycle.Bin']);
+const SKIP = new Set(['node_modules', '.git', 'atlas', 'dist', 'hbuilds', 'AppData', 'Library', 'Program Files', 'Program Files (x86)', 'ProgramData', 'Windows', '$Recycle.Bin', 'System Volume Information', 'Intel', 'PerfLogs']);
 
 function looksLikeSite(dir) {
   try {
@@ -54,7 +54,12 @@ function search(bases, maxDepth = 4) {
 function findSite() {
   const home = os.homedir();
   const bases = [process.cwd(), home, path.join(home, 'Desktop'), path.join(home, 'Documents'), path.join(home, 'Downloads'), path.join(home, 'Projects'), path.join(home, 'projects'), path.join(home, 'OneDrive'), 'C:\\Projects', 'C:\\sites', 'D:\\'];
-  const hits = search([...new Set(bases)]);
+  let hits = search([...new Set(bases)]);
+  if (!hits.length && process.platform === 'win32') { // widen: every fixed drive, deeper
+    const drives = ['C:\\', 'D:\\', 'E:\\', 'F:\\'].filter(d => fs.existsSync(d));
+    console.log('Nothing in the usual places; scanning drives ' + drives.join(' ') + ' (this can take a minute)…');
+    hits = search(drives, 6);
+  }
   if (!hits.length) return null;
   console.log('Candidates:'); hits.slice(0, 5).forEach(h => console.log(`  ${h.score === 3 ? '★' : ' '} ${h.dir}`));
   return hits[0].dir;
@@ -93,7 +98,9 @@ function patchServer(file) {
 (function main() {
   const site = given ? path.resolve(given) : findSite();
   if (!site || !fs.existsSync(path.join(site, 'server.js'))) {
-    console.error('Site not found. Run: node scripts/integrate-site.js <path-to-site-folder>'); process.exit(1);
+    console.error('\nYour website source was not found on this PC (a folder with server.js and a package.json that has a "package:deploy" script).');
+    console.error('If it is on this PC: node scripts\\integrate-site.js "C:\\path\\to\\site" --zip --force');
+    console.error('If it is not: download it from hPanel -> Websites -> travelersclan.in -> File manager (the hbuilds/source folder, or the last zip you deployed), unzip it, and run the line above with that folder.'); process.exit(1);
   }
   console.log('Site:', site);
   copyDir(root, path.join(site, 'atlas'));
