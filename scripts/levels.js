@@ -131,6 +131,20 @@ const LEVELS = [
     { agent: 'if we add a kerala batch in feb at 18,500 for 6 days, what margin do we need and what should the advance be', must: [/advance/i, /\d{1,2},\d{3}/, /margin/i, /Kerala/] },
     { chat: ['hi', 'hello?', 'anyone there??'], must: [/here|yes|Hi|which trip|Which trip|right here|with you/i], not: [/founder|24 hours/i] },
   ] },
+  { level: 9, name: 'Legend: accessibility, other pickup cities, hotel doubts after a hold, college groups, medical and altitude, honeymoon upgrades, hour-by-hour rescue, exact sequences', items: [
+    { chat: ['goa 12 dec 2 log', 'ek ko wheelchair chahiye, possible?'], must: [/wheelchair/i, /ground floor|accessible|ramp|assist|saath/i, /captain|team|confirm|call/i] },
+    { chat: ['we are 8 from mumbai, can pickup be from mumbai instead of ahmedabad for goa?'], must: [/Mumbai/, /join|meet|pickup|point|board/i, /price|adjust|same|less|minus|reduce/i] },
+    { chat: ['goa for 2', 'ok hold', 'wait, my friend says the hotel in your plan has bad reviews, which hotel is it?'], must: [/hotel/i, /name|share|send|list/i, /change|option|upgrade|photos|reviews|switch/i], not: [/founder will personally/i] },
+    { chat: ['our college group of 40 students, manali, budget 9000 each, teachers free?'], must: [/40/, /9,000/, /teacher/i, /free|complimentary/i, /custom|private|group|quote/i] },
+    { chat: ['i am diabetic and my wife has bp, is manali ok, altitude?'], must: [/diabet|BP|blood pressure|medic/i, /altitude|height|doctor/i, /captain|first-aid|first aid/i] },
+    { chat: ['honeymoon trip goa, want private room not sharing, extra cost?'], must: [/private|couple|double/i, /₹|extra|supplement/i, /honeymoon|congrat/i] },
+    { chat: ['can you give me the itinerary day by day for goa'], must: [/D1|Day 1/i, /D2|Day 2/i] },
+    { chat: ['मनाली में बर्फ मिलेगी 20 दिसंबर को? और बच्चा 3 साल का है'], must: [/snow|baraf|barf/i, /free|3 saal/i] },
+    { agent: 'goa is 6 seats short with 5 days left, give me a rescue plan hour by hour for today', must: [/\b\d{1,2}\s*(am|pm)\b/i, /seats?/i, /referral|broadcast|reel|post|call/i, /6 seats/i] },
+    { agent: 'a lead said yes on tuesday, paid nothing, went silent for 4 days, write the exact 3-message sequence with timing', must: [/Message 1|1\./, /Message 3|3\./, /hour|day|tomorrow|today/i, /hold|seat/i, /STOP|no pressure|no problem/i] },
+    { agent: 'compare manali 20 dec and goa 12 dec on margin per seat if transport is 30% and stay 35% of price', must: [/Manali/, /Goa/, /margin/i, /4,375|5,075/] },
+    { agent: 'draft the google business profile post for manali with a hook, body and CTA under 80 words', must: [/Manali/, /20 Dec/, /12,500/, /WhatsApp|DM|reply|call|link/i] },
+  ] },
 ];
 
 async function run() {

@@ -33,7 +33,7 @@ npm run check
 |---|---|---|
 | Unit tests | `npm test` | 19/19 |
 | Eval | `node scripts/eval.js` | 173/173 |
-| Levels 1 to 8 | `node scripts/levels.js` | 104/104, all 100% |
+| Levels 1 to 9 | `node scripts/levels.js` | 116/116, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
 | Customer universe (400 personas) | `node scripts/universe.js` | 400/400 |
 | Mastery (needs a model) | `node scripts/mastery.js` | writes `MASTERY-REVIEW.md` when no model is connected |

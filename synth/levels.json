@@ -1,5 +1,5 @@
 {
- "at": "2026-10-02T09:48:04.461Z",
+ "at": "2026-10-02T09:52:30.834Z",
  "report": [
   {
    "level": 1,
@@ -53,6 +53,13 @@
   {
    "level": 8,
    "name": "Grandmaster: negotiations that keep changing, two customers in one chat, refund maths with dates, typos, cash flow",
+   "pass": 12,
+   "total": 12,
+   "pct": 100
+  },
+  {
+   "level": 9,
+   "name": "Legend: accessibility, other pickup cities, hotel doubts after a hold, college groups, medical and altitude, honeymoon upgrades, hour-by-hour rescue, exact sequences",
    "pass": 12,
    "total": 12,
    "pct": 100
