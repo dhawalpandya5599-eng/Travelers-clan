@@ -11,7 +11,8 @@
   const fmt = (n, d = 3) => (n == null ? '–' : typeof n === 'number' ? +n.toFixed(d) : n);
 
   // ---------- Tabs ----------
-  const showTab = (name) => { document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name)); document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name)); try { localStorage.setItem('atlas-tab', name); } catch (e) {} if (name === 'mind') setTimeout(() => window.dispatchEvent(new Event('resize')), 50); };
+  const showTab = (name) => { document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name)); document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name)); try { localStorage.setItem('atlas-tab', name); } catch (e) {} if (name === 'mind') setTimeout(() => window.dispatchEvent(new Event('resize')), 50); window.scrollTo(0, 0); if (typeof loadPage === 'function') loadPage(name); };
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) showTab(b.dataset.go); });
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
   try { const t = localStorage.getItem('atlas-tab'); if (t && document.getElementById('page-' + t)) showTab(t); } catch (e) {}
   document.querySelectorAll('[data-fill]').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); $('council-text').value = a.dataset.fill; }));
@@ -232,8 +233,8 @@
   const G = {};
   const copyBtn = (text) => `<button class="copy" data-copy="${esc(text)}">Copy</button>`;
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-copy]'); if (b) { navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1200); } });
-  document.querySelectorAll('.sub').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.sub').forEach(x => x.classList.toggle('active', x === b)); document.querySelectorAll('.sub-page').forEach(p => p.classList.toggle('active', p.id === 'sub-' + b.dataset.sub)); loadSub(b.dataset.sub); }));
-  const tripRow = (t = {}) => { const tr = document.createElement('tr'); tr.innerHTML = `<td><input class="t-name" value="${esc(t.name)}" placeholder="Goa"></td><td><input class="t-date" type="date" value="${esc(t.date)}"></td><td><input class="t-days" type="number" value="${t.days || ''}" style="width:60px"></td><td><input class="t-price" type="number" value="${t.price || ''}" style="width:90px"></td><td><input class="t-seats" type="number" value="${t.seats || ''}" style="width:60px"></td><td><input class="t-booked" type="number" value="${t.booked || ''}" style="width:60px"></td><td><button class="t-del">×</button></td>`; tr.querySelector('.t-del').onclick = () => tr.remove(); return tr; };
+  function loadPage(name) { if (name === 'today') loadSub('today'); else if (name === 'marketing') { loadSub('gbp'); loadSub('mkt'); loadSub('ig'); } else if (name === 'home' || name === 'setup') loadGrow(); }
+  const tripRow = (t = {}) => { const tr = document.createElement('tr'); tr.innerHTML = `<td><input class="t-name" value="${esc(t.name || '')}" placeholder="Goa"></td><td><input class="t-date" type="date" value="${esc(t.date || '')}"></td><td><input class="t-days" type="number" value="${t.days || ''}" style="width:60px"></td><td><input class="t-price" type="number" value="${t.price || ''}" style="width:90px"></td><td><input class="t-seats" type="number" value="${t.seats || ''}" style="width:60px"></td><td><input class="t-booked" type="number" value="${t.booked || ''}" style="width:60px"></td><td><button class="t-del">×</button></td>`; tr.querySelector('.t-del').onclick = () => tr.remove(); return tr; };
   $('btn-trip-add').onclick = () => $('trips').querySelector('tbody').appendChild(tripRow());
   function readTrips() { return [...$('trips').querySelectorAll('tbody tr')].map(tr => ({ name: tr.querySelector('.t-name').value, date: tr.querySelector('.t-date').value, days: tr.querySelector('.t-days').value, price: tr.querySelector('.t-price').value, seats: tr.querySelector('.t-seats').value, booked: tr.querySelector('.t-booked').value })); }
   const POL = ['included', 'excluded', 'payment', 'cancellation', 'pickup', 'safety', 'food', 'age'];
@@ -242,15 +243,46 @@
   async function loadGrow() {
     try { G.ov = await api('GET', '/api/growth'); } catch (e) { return; }
     const ov = G.ov; if (!ov || ov.error) return;
-    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#sub-setup')) {} else fillProfile(ov.profile);
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#page-setup')) {} else fillProfile(ov.profile);
+    homeSteps(ov);
     $('s-auto').checked = !!(ov.settings && ov.settings.autoReply);
     $('wa-link').innerHTML = ov.waLink ? `<a href="${esc(ov.waLink)}" target="_blank">${esc(ov.waLink)}</a> ${copyBtn(ov.waLink)}` : 'Add the WhatsApp number in Setup to get the link.';
     if (ov.waLink) { $('wa-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(ov.waLink); $('wa-qr').hidden = false; }
     $('widget-snippet').textContent = `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"><\/script>`;
     $('trips-snippet').textContent = `<div id="atlas-trips"></div>\n<script src="/atlas-chat/trips.js" data-base="/atlas-chat"><\/script>`;
-    if (LOCAL) $('demo-link').hidden = true;
-    const sub = document.querySelector('.sub.active'); loadSub(sub ? sub.dataset.sub : 'today');
+    if (LOCAL) { $('demo-link').hidden = true; }
   }
+  function homeSteps(ov) {
+    const P = ov.profile || {}; const done = { phone: !!(P.phone && P.city), trips: (P.trips || []).length >= 1, site: false, today: Object.keys(ov.counts || {}).length > 0 };
+    try { done.site = localStorage.getItem('atlas-site-done') === '1'; } catch (e) {}
+    document.querySelectorAll('#home-steps li').forEach(li => li.classList.toggle('done', !!done[li.dataset.step]));
+  }
+  document.querySelectorAll('[data-copy]').forEach(() => {});
+  document.addEventListener('click', (e) => { if (e.target.closest('#trips-snippet, #widget-snippet')) { try { localStorage.setItem('atlas-site-done', '1'); } catch (x) {} } });
+  /** Take the brand from the website itself: its logo and the colours and fonts declared on :root of its stylesheets. Falls back to the built-in palette. */
+  async function brand() {
+    if (LOCAL) return;
+    try {
+      const html = await (await fetch('/', { credentials: 'same-origin' })).text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const logo = [...doc.querySelectorAll('img')].find(i => /logo/i.test(i.getAttribute('src') || '') || /logo/i.test(i.getAttribute('alt') || '') || /logo/i.test(i.className || ''));
+      if (logo) { const img = $('site-logo'); img.src = new URL(logo.getAttribute('src'), location.origin).href; img.hidden = false; img.onload = () => { document.querySelector('.wordmark .script').style.display = 'none'; }; img.onerror = () => { img.hidden = true; }; }
+      const sheets = [...doc.querySelectorAll('link[rel~="stylesheet"]')].map(l => l.getAttribute('href')).filter(h => h && !/^https?:\/\/(fonts|cdn)/.test(h)).slice(0, 4);
+      let css = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+      for (const h of sheets) { try { css += '\n' + await (await fetch(new URL(h, location.origin).href)).text(); } catch (e) {} }
+      const root = (css.match(/:root\s*\{([^}]*)\}/g) || []).join(' ');
+      const vars = {}; for (const m of root.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) vars[m[1].toLowerCase()] = m[2].trim();
+      const pick = (...names) => { for (const n of names) { const k = Object.keys(vars).find(v => v === n || v.includes(n)); if (k && /^(#|rgb|hsl)/.test(vars[k])) return vars[k]; } return null; };
+      const accent = pick('primary', 'accent', 'brand', 'teal', 'main'); const ink = pick('ink', 'text', 'dark', 'black'); const paper = pick('bg', 'background', 'paper', 'cream', 'light');
+      const R = document.documentElement.style;
+      if (accent) R.setProperty('--accent', accent); if (ink) R.setProperty('--ink', ink); if (paper && paper !== '#fff' && paper !== '#ffffff') R.setProperty('--paper', paper);
+      const fontVar = Object.keys(vars).find(v => /font|family/.test(v) && /heading|display|title|serif/.test(v)) || Object.keys(vars).find(v => /font|family/.test(v));
+      const face = fontVar ? vars[fontVar] : (css.match(/font-family\s*:\s*([^;}]+)/) || [])[1];
+      if (face && !/system-ui|inherit/.test(face)) R.setProperty('--display', face);
+      const gf = [...doc.querySelectorAll('link[href*="fonts.googleapis"]')].map(l => l.href); for (const h of gf) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = h; document.head.appendChild(l); }
+    } catch (e) { /* keep the built-in look */ }
+  }
+  brand();
   async function loadSub(name) {
     if (name === 'today') {
       const t = await api('GET', '/api/growth/today'); if (t.error) return;

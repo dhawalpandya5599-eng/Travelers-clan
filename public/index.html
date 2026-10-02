@@ -3,259 +3,211 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ATLAS · Travelers Clan Mind</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%235ee1c2'/%3E%3C/svg%3E">
+<title>Travelers Clan · Office</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M3 24 L17 10 L22 15 L29 8 L29 24 Z' fill='%23111'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="top">
-  <div class="brand">
-    <span class="pulse" id="pulse"></span>
-    <h1>ATLAS <small>Travelers Clan's learning mind</small></h1>
-  </div>
-  <nav class="tabs" id="tabs">
-    <button class="tab active" data-tab="grow">Grow</button>
-    <button class="tab" data-tab="leads">Leads</button>
-    <button class="tab" data-tab="plans">Trip plans</button>
-    <button class="tab" data-tab="ask">Ask &amp; teach</button>
-    <button class="tab" data-tab="mind">Inside the mind</button>
+<div class="shell">
+<aside class="side">
+  <div class="logo"><img id="site-logo" alt="" hidden><div class="wordmark"><span class="script">Traveler’s Clan</span><span class="tag">Memories worth timetravel</span></div></div>
+  <nav class="nav" id="tabs">
+    <button class="tab active" data-tab="home"><i>1</i>Start here</button>
+    <button class="tab" data-tab="setup"><i>2</i>Set up</button>
+    <button class="tab" data-tab="today"><i>3</i>Today's work</button>
+    <button class="tab" data-tab="customers"><i>4</i>Reply to a customer</button>
+    <button class="tab" data-tab="trips"><i>5</i>Check a trip plan</button>
+    <button class="tab" data-tab="marketing"><i>6</i>Marketing</button>
+    <button class="tab" data-tab="teach"><i>7</i>Teach ATLAS</button>
+    <button class="tab small" data-tab="mind">Advanced: inside the mind</button>
   </nav>
-  <div class="vitals" id="vitals" title="How much it knows and how far it has evolved">
-    <div class="vital"><span class="k">facts it knows</span><b id="v-facts">–</b></div>
-    <div class="vital"><span class="k">version</span><b id="v-gen">–</b></div>
-    <div class="vital"><span class="k">language model</span><b id="v-mentor">–</b></div>
-  </div>
-</header>
+  <div class="status"><span class="pulse" id="pulse"></span><span>ATLAS knows <b id="v-facts">–</b> facts · version <b id="v-gen">–</b></span><span class="muted">language model: <b id="v-mentor">–</b></span></div>
+</aside>
 
-<main>
-  <!-- GROW -->
-  <section class="page active" id="page-grow">
-    <div class="intro">
-      <h2>Grow: Google profile, WhatsApp, marketing</h2>
-      <p>Our own version of the paid "AI agents for local business" tools, free and inside our site. Fill the setup once. Then every day open <b>Today</b>, send what it drafted, and mark it done. It runs on rules offline and uses an open-source model (Ollama) or Claude when one is connected.</p>
+<main class="content">
+  <!-- HOME -->
+  <section class="page active" id="page-home">
+    <header class="ph"><h1>Start here</h1><p>ATLAS is your office assistant. It answers customers on WhatsApp and the website, keeps your lead list, tells you what to do each morning, and writes your posts. Do these four things once, in order.</p></header>
+    <ol class="steps" id="home-steps">
+      <li data-step="phone"><b>Add the company WhatsApp number and city</b><span>Every reply, post and button uses it.</span><button class="btn" data-go="setup">Open Set up</button></li>
+      <li data-step="trips"><b>Add three trips with dates, prices and seats</b><span>Fixed dates sell. The website cards and the agent switch on the moment you save.</span><button class="btn" data-go="setup">Open Set up</button></li>
+      <li data-step="site"><b>Put the chat bubble and trip cards on the website</b><span>Two lines to paste. Shown in Set up.</span><button class="btn" data-go="setup">Open Set up</button></li>
+      <li data-step="today"><b>Every morning, open Today's work</b><span>Send what it drafted, press Done. Ninety minutes a day.</span><button class="btn" data-go="today">Open Today's work</button></li>
+    </ol>
+    <div class="cards3">
+      <div class="card"><h3>A customer wrote to you</h3><p>Paste the chat. ATLAS writes the reply and tells you how hot the lead is.</p><button class="btn primary" data-go="customers">Reply to a customer</button></div>
+      <div class="card"><h3>Planning a trip</h3><p>One line of requirements. You get a day-by-day plan, a price, and every risk.</p><button class="btn primary" data-go="trips">Check a trip plan</button></div>
+      <div class="card"><h3>This week's posts</h3><p>Google posts, Instagram reels, WhatsApp broadcasts, all written from your trips.</p><button class="btn primary" data-go="marketing">Open Marketing</button></div>
     </div>
-    <div class="subtabs" id="grow-tabs"><button class="sub active" data-sub="today">Today</button><button class="sub" data-sub="setup">Setup</button><button class="sub" data-sub="gbp">Google profile</button><button class="sub" data-sub="wa">WhatsApp agent</button><button class="sub" data-sub="mkt">Marketing &amp; ROI</button><button class="sub" data-sub="ig">Instagram week</button></div>
+  </section>
 
-    <div class="sub-page active" id="sub-today">
-      <div class="work">
-        <div class="col">
-          <h3>Follow-ups due now <span class="hint">copy, send on WhatsApp, press Done</span></h3>
-          <div id="today-list" class="council-out"><div class="empty">Nothing due. Add leads in the WhatsApp agent tab or let the widget collect them.</div></div>
-        </div>
-        <div class="col">
-          <h3>Alerts</h3><ul id="today-alerts" class="facts"></ul>
-          <h3>Pipeline</h3><div id="today-counts" class="genome"></div>
-          <h3>Add a lead by hand</h3>
-          <div class="actions"><input id="lead-name" placeholder="Name"><input id="lead-phone" placeholder="Phone"><input id="lead-trip" placeholder="Trip"><input id="lead-source" placeholder="Source (instagram, referral, walk-in)"><button id="btn-lead">Add</button></div>
-          <h3>All leads</h3><ul id="lead-list" class="facts"></ul>
-        </div>
+  <!-- SETUP -->
+  <section class="page" id="page-setup">
+    <header class="ph"><h1>Set up</h1><p>Fill this once. Change a trip here and the website, the agent and the posts all change with it.</p></header>
+    <div class="card"><h2>1. Business</h2>
+      <div class="grid2">
+        <label>Company name<input id="p-name"></label><label>City<input id="p-city" placeholder="e.g. Ahmedabad"></label>
+        <label>WhatsApp Business number<input id="p-phone" placeholder="10 digits"></label><label>UPI id for advances<input id="p-upi" placeholder="name@bank"></label>
+        <label>Website<input id="p-website"></label><label>Instagram<input id="p-instagram" placeholder="@handle"></label>
+        <label>Email<input id="p-email"></label><label>Hours<input id="p-hours"></label>
+        <label>Languages<input id="p-languages" placeholder="English, Hindi, Gujarati"></label><label>What makes us different (one line)<input id="p-usp"></label>
       </div>
     </div>
-
-    <div class="sub-page" id="sub-setup">
-      <div class="work">
-        <div class="col">
-          <h3>Business</h3>
-          <div class="grid2">
-            <label>Company name<input id="p-name"></label><label>City<input id="p-city" placeholder="e.g. Ahmedabad"></label>
-            <label>WhatsApp Business number<input id="p-phone" placeholder="10 digits"></label><label>Email<input id="p-email"></label>
-            <label>Website<input id="p-website"></label><label>Instagram<input id="p-instagram" placeholder="@handle"></label>
-            <label>Hours<input id="p-hours"></label><label>UPI id for advances<input id="p-upi" placeholder="name@bank"></label><label>Languages<input id="p-languages" placeholder="English, Hindi, Gujarati"></label>
-          </div>
-          <label>What makes us different (one line)<input id="p-usp"></label>
-          <h3>Policies the agent answers from <span class="hint">plain sentences; it quotes these word for word</span></h3>
-          <div class="grid2" id="policies">
-            <label>Included<textarea id="pol-included" rows="3"></textarea></label><label>Not included<textarea id="pol-excluded" rows="3"></textarea></label>
-            <label>Payment<textarea id="pol-payment" rows="3"></textarea></label><label>Cancellation<textarea id="pol-cancellation" rows="3"></textarea></label>
-            <label>Pickup<textarea id="pol-pickup" rows="3"></textarea></label><label>Safety<textarea id="pol-safety" rows="3"></textarea></label>
-            <label>Food<textarea id="pol-food" rows="3"></textarea></label><label>Ages / families<textarea id="pol-age" rows="3"></textarea></label>
-          </div>
-          <div class="actions"><button class="primary" id="btn-profile">Save setup</button><span id="profile-result" class="hint"></span></div>
-        </div>
-        <div class="col">
-          <h3>Upcoming trips <span class="hint">fixed dates sell; "starting at" does not</span></h3>
-          <table class="trips" id="trips"><thead><tr><th>Trip</th><th>Date</th><th>Days</th><th>Price/person</th><th>Seats</th><th>Booked</th><th></th></tr></thead><tbody></tbody></table>
-          <div class="actions"><button id="btn-trip-add">+ Add trip</button></div>
-        </div>
+    <div class="card"><h2>2. Upcoming trips</h2><p class="muted">One row per departure. Seats left is counted automatically from booked and holds.</p>
+      <table class="trips" id="trips"><thead><tr><th>Trip</th><th>Date</th><th>Days</th><th>Price per person</th><th>Seats</th><th>Booked</th><th></th></tr></thead><tbody></tbody></table>
+      <div class="actions"><button class="btn" id="btn-trip-add">+ Add a trip</button></div>
+    </div>
+    <div class="card"><h2>3. Policies the agent quotes</h2><p class="muted">Plain sentences. The agent repeats these word for word, so it never invents a refund rule.</p>
+      <div class="grid2" id="policies">
+        <label>Included<textarea id="pol-included" rows="3"></textarea></label><label>Not included<textarea id="pol-excluded" rows="3"></textarea></label>
+        <label>Payment<textarea id="pol-payment" rows="3"></textarea></label><label>Cancellation<textarea id="pol-cancellation" rows="3"></textarea></label>
+        <label>Pickup<textarea id="pol-pickup" rows="3"></textarea></label><label>Safety<textarea id="pol-safety" rows="3"></textarea></label>
+        <label>Food<textarea id="pol-food" rows="3"></textarea></label><label>Ages and families<textarea id="pol-age" rows="3"></textarea></label>
       </div>
     </div>
-
-    <div class="sub-page" id="sub-gbp">
-      <div class="work">
-        <div class="col">
-          <h3>Profile audit <span class="hint" id="gbp-score"></span></h3><ul id="gbp-audit" class="facts"></ul>
-          <h3>Keywords to use in the profile, posts and website</h3><div id="gbp-keywords" class="chips"></div>
-        </div>
-        <div class="col">
-          <h3>This week's posts <span class="hint">paste into Google Business Profile → Add update</span></h3>
-          <div id="gbp-posts" class="council-out"></div>
-          <h3>Reply to a review</h3>
-          <textarea id="rev-text" placeholder="Paste the review"></textarea>
-          <div class="actions"><input id="rev-name" placeholder="Reviewer name"><input id="rev-stars" type="number" min="1" max="5" value="5" style="max-width:80px"><button id="btn-review-reply">Draft reply</button></div>
-          <div id="rev-out" class="council-out"></div>
-        </div>
+    <div class="savebar"><button class="btn primary big" id="btn-profile">Save everything</button><span id="profile-result" class="muted"></span></div>
+    <div class="card"><h2>4. Put it on the website</h2>
+      <div class="grid2">
+        <div><p><b>Chat bubble</b>, bottom right of every page:</p><pre class="code" id="widget-snippet"></pre></div>
+        <div><p><b>Trip cards</b> with seats left and a WhatsApp button, where the trips should appear:</p><pre class="code" id="trips-snippet"></pre></div>
       </div>
+      <p class="muted"><a href="/site-demo.html" target="_blank" id="demo-link">See how both look</a> · Your WhatsApp link: <span id="wa-link"></span></p>
+      <img id="wa-qr" alt="" width="140" height="140" hidden>
     </div>
+    <div class="card"><h2>5. Connect the real WhatsApp number (free)</h2>
+      <p>On your PC, in the Travelers-clan folder, run <code>npm install @whiskeysockets/baileys qrcode-terminal</code> once, then <code>npm run whatsapp</code>. Scan the QR with WhatsApp Business → Linked devices. Customer messages reach ATLAS; your own number gets the day's list at 9am.</p>
+      <label class="checkrow"><input type="checkbox" id="s-auto"> Send replies automatically. Off means ATLAS drafts and you send. Booking, payment and complaint messages always wait for you.</label>
+    </div>
+  </section>
 
-    <div class="sub-page" id="sub-wa">
-      <div class="work">
-        <div class="col">
-          <h3>Test the agent <span class="hint">write as a customer would</span></h3>
-          <div class="chatcol"><div class="messages" id="wa-messages"></div><form id="wa-form" class="composer"><input id="wa-input" autocomplete="off" placeholder="bhai manali ka kitna hoga 2 log ke liye"><button type="submit" class="primary">Send</button></form></div>
-          <h3>Settings</h3>
-          <label><input type="checkbox" id="s-auto"> Auto-send replies on WhatsApp (off = it drafts, you send). Booking and payment messages always go to a human.</label>
-        </div>
-        <div class="col">
-          <h3>Your WhatsApp link and QR</h3>
-          <div id="wa-link" class="hint"></div><img id="wa-qr" alt="" width="160" height="160" hidden>
-          <h3>Website blocks <span class="hint">paste into travelersclan.in; <a href="/site-demo.html" target="_blank" id="demo-link">preview</a></span></h3>
-          <p class="hint">Chat bubble (bottom right of every page):</p><pre class="code" id="widget-snippet"></pre>
-          <p class="hint">Live trip cards with seats left and a WhatsApp button, where the trips should appear:</p><pre class="code" id="trips-snippet"></pre>
-          <h3>Connect the real WhatsApp number (free)</h3>
-          <p class="hint">On your PC, in the site folder: <code>npm install @whiskeysockets/baileys qrcode-terminal</code>, then <code>node scripts/whatsapp.js</code>, scan the QR with WhatsApp Business → Linked devices. Incoming messages reach this agent; replies are drafted here or sent automatically if the switch above is on.</p>
-        </div>
+  <!-- TODAY -->
+  <section class="page" id="page-today">
+    <header class="ph"><h1>Today's work</h1><p>Copy each message, send it on WhatsApp, press Done. Then post one reel. That is the whole system.</p></header>
+    <div class="two">
+      <div>
+        <h2>Follow-ups due now</h2>
+        <div id="today-list" class="stack"><div class="empty">Nothing due. Leads appear here when customers write in or when you add them.</div></div>
       </div>
-    </div>
-
-    <div class="sub-page" id="sub-mkt">
-      <div class="work">
-        <div class="col">
-          <h3>Campaign calendar <span class="hint">start each one on the date shown</span></h3><ul id="mkt-cal" class="facts"></ul>
-          <h3>ROI from the lead sheet</h3>
-          <div class="actions"><input id="roi-spend" type="number" placeholder="Ad spend this month (₹)"><button id="btn-roi">Compute</button></div>
-          <div id="roi-out" class="genome"></div>
-        </div>
-        <div class="col">
-          <h3>Broadcast drafts <span class="hint">one list per segment in WhatsApp Business</span></h3>
-          <div id="mkt-drafts" class="council-out"></div>
-          <ul id="mkt-rules" class="facts"></ul>
-        </div>
-      </div>
-    </div>
-    <div class="sub-page" id="sub-ig">
-      <div class="work">
-        <div class="col">
-          <h3>Bio <span class="hint">paste into Instagram</span></h3><div id="ig-bio" class="agent"></div>
-          <h3>Hashtags</h3><div id="ig-tags" class="chips"></div>
-          <ul id="ig-rules" class="facts"></ul>
-        </div>
-        <div class="col">
-          <h3>This week, one post a day</h3><div id="ig-plan" class="council-out"></div>
-        </div>
+      <div>
+        <h2>Alerts</h2><ul id="today-alerts" class="list"></ul>
+        <h2>Pipeline</h2><div id="today-counts" class="kv"></div>
+        <h2>Add a lead by hand</h2>
+        <div class="grid2"><input id="lead-name" placeholder="Name"><input id="lead-phone" placeholder="Phone"><input id="lead-trip" placeholder="Trip"><input id="lead-source" placeholder="Where from (Instagram, referral, walk-in)"></div>
+        <div class="actions"><button class="btn" id="btn-lead">Add lead</button></div>
+        <h2>All leads</h2><ul id="lead-list" class="list"></ul>
       </div>
     </div>
   </section>
 
-  <!-- LEADS -->
-  <section class="page" id="page-leads">
-    <div class="intro">
-      <h2>Handle a lead</h2>
-      <p>Paste the customer's messages (WhatsApp, Instagram, email). ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team then checks the plan, the tone, the risks, and lists what to fix.</p>
-    </div>
-    <div class="work">
-      <div class="col">
-        <label for="council-text">Customer conversation <span class="hint">one message per line; start our replies with <code>clan:</code></span></label>
-        <textarea id="council-text" placeholder="lead: hi, 4 of us want Goa in December, budget 15k each
+  <!-- CUSTOMERS -->
+  <section class="page" id="page-customers">
+    <header class="ph"><h1>Reply to a customer</h1><p>Paste the conversation. ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team checks the plan, the tone and the risks.</p></header>
+    <div class="two">
+      <div class="card">
+        <label for="council-text">Customer conversation <span class="muted">one message per line; start our replies with <code>clan:</code></span></label>
+        <textarea id="council-text" rows="7" placeholder="lead: hi, 4 of us want Goa in December, budget 15k each
 clan: Perfect, December works. Sending the plan within the hour.
 lead: 15,500 per person? hmm any hidden costs?"></textarea>
-        <div class="actions">
-          <input id="council-name" placeholder="Customer's first name (optional)">
-          <button class="primary" id="btn-council">Analyse &amp; draft reply</button>
-          <span id="council-verdict" class="hint"></span>
-        </div>
-        <div class="examples hint">Try: <a href="#" data-fill="lead: namaste, planning ladakh for my parents aged 65 and 68 in january, 5 days, budget 25k per person, knee issues
+        <div class="actions"><input id="council-name" placeholder="Customer's first name (optional)"><button class="btn primary" id="btn-council">Write the reply</button><span id="council-verdict" class="muted"></span></div>
+        <p class="muted">Try: <a href="#" data-fill="lead: namaste, planning ladakh for my parents aged 65 and 68 in january, 5 days, budget 25k per person, knee issues
 clan: 28000 per person
-lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href="#" data-fill="lead: we are 12 college students, cheapest manali trip in oct after exams, budget 8k max">college group</a> · <a href="#" data-fill="lead: Hello, we are visiting India from London in December with 6 family members and would like a Rajasthan tour. Premium hotels and an invoice please.">NRI family</a></div>
+lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href="#" data-fill="lead: we are 12 college students, cheapest manali trip in oct after exams, budget 8k max">college group</a> · <a href="#" data-fill="lead: Hello, we are visiting India from London in December with 6 family members and would like a Rajasthan tour. Premium hotels and an invoice please.">NRI family</a></p>
       </div>
-      <div class="col">
-        <div id="council-out" class="council-out"><div class="empty">Results appear here: the reply to send, the plan, the price, and every issue found.</div></div>
+      <div><div id="council-out" class="stack"><div class="empty">The reply to send, the plan, the price, and every issue found appear here.</div></div></div>
+    </div>
+    <h2>Test the WhatsApp agent <span class="muted">write as a customer would, in any language</span></h2>
+    <div class="two">
+      <div class="card chatcol"><div class="messages" id="wa-messages"></div><form id="wa-form" class="composer"><input id="wa-input" autocomplete="off" placeholder="bhai manali ka kitna hoga 2 log ke liye"><button type="submit" class="btn primary">Send</button></form></div>
+      <div class="card"><h3>Reply to a Google review</h3>
+        <textarea id="rev-text" rows="4" placeholder="Paste the review"></textarea>
+        <div class="actions"><input id="rev-name" placeholder="Reviewer name"><input id="rev-stars" type="number" min="1" max="5" value="5" style="max-width:80px"><button class="btn" id="btn-review-reply">Draft reply</button></div>
+        <div id="rev-out" class="stack"></div>
       </div>
     </div>
   </section>
 
-  <!-- PLANS -->
-  <section class="page" id="page-plans">
-    <div class="intro">
-      <h2>Check a trip plan</h2>
-      <p>Describe the trip in one line. Operations checks the season, the days, the altitude, the budget and the permits, builds a day-by-day plan with a price, and the Critic lists every loophole with a fix.</p>
-    </div>
-    <div class="work">
-      <div class="col">
+  <!-- TRIPS -->
+  <section class="page" id="page-trips">
+    <header class="ph"><h1>Check a trip plan</h1><p>Describe the trip in one line. You get the season check, a day-by-day plan with a price, and every loophole with a fix.</p></header>
+    <div class="two">
+      <div class="card">
         <label for="plan-text">Trip requirements</label>
-        <textarea id="plan-text" placeholder="family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10, veg food"></textarea>
-        <div class="actions"><button class="primary" id="btn-review">Check this plan</button><span id="plan-verdict" class="hint"></span></div>
-        <div class="examples hint">Try: <a href="#" data-fill-plan="6 friends, Spiti in August, 9 days, budget 35k per person, want a trek">Spiti in August</a> · <a href="#" data-fill-plan="2 of us, Ladakh in January, 4 days, budget 20k per person">Ladakh in January</a> · <a href="#" data-fill-plan="honeymoon couple, Bali in July, 6 days, budget 80k per person, private villa">Bali honeymoon</a></div>
-        <h3>World &amp; risk news <span class="hint">paste headlines, one per line; ATLAS keeps them and warns on affected trips</span></h3>
-        <textarea id="news-text" placeholder="Cyclone warning for Andaman islands, ferries suspended
-Thailand extends visa free entry for Indian travellers"></textarea>
-        <div class="actions"><button id="btn-news">Add news</button><span id="news-result" class="hint"></span></div>
+        <textarea id="plan-text" rows="4" placeholder="family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10, veg food"></textarea>
+        <div class="actions"><button class="btn primary" id="btn-review">Check this plan</button><span id="plan-verdict" class="muted"></span></div>
+        <p class="muted">Try: <a href="#" data-fill-plan="6 friends, Spiti in August, 9 days, budget 35k per person, want a trek">Spiti in August</a> · <a href="#" data-fill-plan="2 of us, Ladakh in January, 4 days, budget 20k per person">Ladakh in January</a> · <a href="#" data-fill-plan="honeymoon couple, Bali in July, 6 days, budget 80k per person, private villa">Bali honeymoon</a></p>
+        <h3>World and risk news <span class="muted">paste headlines, one per line; ATLAS warns on affected trips</span></h3>
+        <textarea id="news-text" rows="3" placeholder="Cyclone warning for Andaman islands, ferries suspended"></textarea>
+        <div class="actions"><button class="btn" id="btn-news">Add news</button><span id="news-result" class="muted"></span></div>
       </div>
-      <div class="col">
-        <div id="plan-out" class="council-out"><div class="empty">The day-by-day plan, price, season check, risks and fixes appear here.</div></div>
-      </div>
+      <div><div id="plan-out" class="stack"><div class="empty">The plan, price, season check, risks and fixes appear here.</div></div></div>
     </div>
   </section>
 
-  <!-- ASK & TEACH -->
-  <section class="page" id="page-ask">
-    <div class="intro">
-      <h2>Ask it anything, teach it anything</h2>
-      <p>Type a question and it answers from what it knows. Type a fact and it remembers it forever. If it is wrong, say "No, …" and it corrects itself. Use 👍 👎 to reward answers.</p>
-    </div>
-    <div class="work">
-      <div class="col chatcol">
-        <div class="messages" id="messages"></div>
-        <form id="chat-form" class="composer">
-          <input id="chat-input" autocomplete="off" placeholder='"How much is the advance?" · "The Goa trip costs 14000" · "No, the Goa trip costs 15000" · "score this lead: …"'>
-          <button type="submit" class="primary">Send</button>
-        </form>
-        <div class="feedback">
-          <button id="fb-up" title="Reward the last answer">👍 good answer</button>
-          <button id="fb-down" title="Punish the last answer">👎 wrong</button>
-          <span id="dopamine" class="dopamine"><i></i><label>mood</label></span>
-        </div>
+  <!-- MARKETING -->
+  <section class="page" id="page-marketing">
+    <header class="ph"><h1>Marketing</h1><p>Everything here is written from your trips. Copy, paste, post. Update a trip in Set up and it all updates.</p></header>
+    <div class="two">
+      <div>
+        <div class="card"><h2>Google Business Profile <span class="muted" id="gbp-score"></span></h2><ul id="gbp-audit" class="list check"></ul>
+          <h3>Words to use in the profile and posts</h3><div id="gbp-keywords" class="chips"></div></div>
+        <div class="card"><h2>Campaign calendar <span class="muted">start each one on the date shown</span></h2><ul id="mkt-cal" class="list"></ul></div>
+        <div class="card"><h2>Results</h2><div class="actions"><input id="roi-spend" type="number" placeholder="Ad spend this month (₹)"><button class="btn" id="btn-roi">Update</button></div><div id="roi-out" class="kv"></div></div>
       </div>
-      <div class="col">
-        <h3>Teach many facts at once <span class="hint">one fact per sentence</span></h3>
-        <textarea id="teach-text" placeholder="Travelers Clan runs a Ladakh trip in June. The Ladakh trip costs 24000 per person. The advance is 5000."></textarea>
-        <div class="actions"><button id="btn-teach">Teach</button><span id="teach-result" class="hint"></span></div>
-        <details class="import">
-          <summary>Learn from a WhatsApp chat export</summary>
-          <input id="wa-staff" placeholder="Our staff names in the chat, comma separated (their messages become facts)">
-          <textarea id="wa-text" placeholder="Paste the exported chat .txt here"></textarea>
-          <div class="actions"><button id="btn-wa">Import chat</button><span id="wa-result" class="hint"></span></div>
-        </details>
-        <h3>Questions it has for you</h3>
-        <ul id="asks" class="facts"></ul>
-        <h3>Things it knows best</h3>
-        <ul id="facts" class="facts"></ul>
+      <div>
+        <div class="card"><h2>This week's Google posts</h2><div id="gbp-posts" class="stack"></div></div>
+        <div class="card"><h2>WhatsApp broadcasts <span class="muted">one list per group</span></h2><div id="mkt-drafts" class="stack"></div><ul id="mkt-rules" class="list"></ul></div>
+      </div>
+    </div>
+    <h2>Instagram, one post a day</h2>
+    <div class="two">
+      <div class="card"><h3>Bio</h3><div id="ig-bio"></div><h3>Hashtags</h3><div id="ig-tags" class="chips"></div><ul id="ig-rules" class="list"></ul></div>
+      <div id="ig-plan" class="stack"></div>
+    </div>
+  </section>
+
+  <!-- TEACH -->
+  <section class="page" id="page-teach">
+    <header class="ph"><h1>Teach ATLAS</h1><p>Type a question and it answers from what it knows. Type a fact and it remembers it. If it is wrong, say "No, …" and it corrects itself. Use the thumbs to reward answers.</p></header>
+    <div class="two">
+      <div class="card chatcol">
+        <div class="messages" id="messages"></div>
+        <form id="chat-form" class="composer"><input id="chat-input" autocomplete="off" placeholder='"How much is the advance?" · "The Goa trip costs 14000" · "No, the Goa trip costs 15000"'><button type="submit" class="btn primary">Send</button></form>
+        <div class="feedback"><button class="btn" id="fb-up">👍 good answer</button><button class="btn" id="fb-down">👎 wrong</button><span id="dopamine" class="dopamine"><i></i><label>mood</label></span></div>
+      </div>
+      <div>
+        <div class="card"><h3>Teach many facts at once <span class="muted">one fact per sentence</span></h3>
+          <textarea id="teach-text" rows="4" placeholder="Travelers Clan runs a Ladakh trip in June. The Ladakh trip costs 24000 per person. The advance is 5000."></textarea>
+          <div class="actions"><button class="btn" id="btn-teach">Teach</button><span id="teach-result" class="muted"></span></div>
+          <details class="import"><summary>Learn from a WhatsApp chat export</summary>
+            <input id="wa-staff" placeholder="Our staff names in the chat, comma separated">
+            <textarea id="wa-text" rows="4" placeholder="Paste the exported chat .txt here"></textarea>
+            <div class="actions"><button class="btn" id="btn-wa">Import chat</button><span id="wa-result" class="muted"></span></div>
+          </details></div>
+        <div class="card"><h3>Questions it has for you</h3><ul id="asks" class="list"></ul><h3>Things it knows best</h3><ul id="facts" class="list facts"></ul></div>
       </div>
     </div>
   </section>
 
   <!-- MIND -->
   <section class="page" id="page-mind">
-    <div class="intro">
-      <h2>Inside the mind</h2>
-      <p>How it works under the hood. The map shows what it knows and how ideas connect; brighter dots are what it is thinking about now. It "sleeps" to turn memories into facts and "evolves" to tune how it learns. You never need this tab to use ATLAS.</p>
-    </div>
-    <div class="work mindgrid">
-      <div class="panel brain"><h4>Knowledge map <span class="hint">click a dot to ask about it</span></h4><canvas id="graph"></canvas><div class="wm" id="wm"></div></div>
-      <div class="panel"><h4>Learning progress <span class="hint">score per version</span></h4><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>
+    <header class="ph"><h1>Inside the mind</h1><p>How it works under the hood. You never need this page to run the business.</p></header>
+    <div class="mindgrid">
+      <div class="card brain"><h3>Knowledge map <span class="muted">click a dot to ask about it</span></h3><canvas id="graph"></canvas><div class="wm" id="wm"></div></div>
+      <div class="card"><h3>Learning progress</h3><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>
         <div class="actions">
-          <button id="btn-sleep" title="Turn recent memories into facts">Sleep</button>
-          <button id="btn-evolve" title="Tune how it learns, 5 rounds">Evolve</button>
-          <button id="btn-grow" title="Ask the language model to write a new skill">Grow skill</button>
+          <button class="btn" id="btn-sleep">Sleep</button><button class="btn" id="btn-evolve">Evolve</button><button class="btn" id="btn-grow">Grow skill</button>
           <a class="btn" id="btn-export" href="/api/export" download="atlas-mind.json">Export mind</a>
           <label class="btn" for="mind-file">Merge a mind</label><input id="mind-file" type="file" accept="application/json,.json" hidden>
-          <button id="btn-openmodel" hidden title="Runs an open-source model in this browser (about 0.7 GB download, needs WebGPU). Not available inside claude.ai.">Load open model</button>
+          <button class="btn" id="btn-openmodel" hidden>Load open model</button>
         </div>
-        <h4>Skills</h4><ul id="skills" class="skills"></ul>
-      </div>
-      <div class="panel"><h4>What it is doing right now</h4><ul id="log" class="log"></ul></div>
+        <h3>Skills</h3><ul id="skills" class="skills"></ul></div>
+      <div class="card"><h3>What it is doing right now</h3><ul id="log" class="log"></ul></div>
     </div>
   </section>
 </main>
+</div>
 <script src="/app.js"></script>
 </body>
 </html>
