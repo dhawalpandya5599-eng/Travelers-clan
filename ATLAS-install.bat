@@ -11,8 +11,8 @@ if exist "%REPO%\.git" (
   cd /d "%REPO%"
 )
 echo.
-echo === Integrating ATLAS into your website source (searching this PC) ===
-node scripts\integrate-site.js --zip
+echo === Integrating the latest ATLAS into your website source and making the upload zip ===
+node scripts\integrate-site.js --zip --force
 echo.
 echo === Starting the local ATLAS server (the growing loop). Keep this window open. ===
 echo Open http://localhost:3000 in your browser.
