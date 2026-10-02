@@ -1,7 +1,7 @@
 # OYE handoff: continue on your own computer
 
 This file is the bridge between the cloud session that built OYE and the next session on your PC.
-Open the repo in Claude Code (or any editor) and say: **"Read HANDOFF.md and continue from Next steps."**
+Open the repo in Claude Code (or any editor) and say: **"Read SYSTEM.md and HANDOFF.md, run npm run release, and continue from Next steps."**
 
 ## Where the work lives
 
@@ -36,6 +36,9 @@ npm run check
 | Levels 1 to 10 | `node scripts/levels.js` | 128/128, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
 | Customer universe (400 personas) | `node scripts/universe.js` | 400/400 |
+| Paraphrases | `node scripts/paraphrase.js` | 152/152 |
+| Browser smoke | `npm run smoke` | 8/8 |
+| Release gate (all of the above + bundle + archive) | `npm run release` | RELEASE READY |
 | Mastery (needs a model) | `node scripts/mastery.js` | writes `MASTERY-REVIEW.md` when no model is connected |
 
 ## Deploy the latest version to travelersclan.in
@@ -93,6 +96,7 @@ Environment variables accept `OYE_*` or the older `ATLAS_*` names. `ATLAS_NO_OLL
 
 ## Next steps (in order)
 
+0. **Confirm the rules** in Set up card 4 (advance, holds, refunds, kids, name change, joins, rooms, margins): the defaults are Claude's guesses, see SYSTEM.md section 2.
 1. **Deploy**: run the integrate line above, upload, check `/admin/atlas` and the floating OYE on the home page.
 2. **Connect a model** in Set up (Claude key, or Ollama locally) so the council polishes replies and `npm run mastery` can grade itself.
 3. **Level 11+** in `scripts/levels.js`: levels 7 to 10 are done (crises, corporate, refunds with dates, kids pricing, cash flow, accessibility, flights, summaries, merge-or-cancel, content calendars, press). Next levels should need a connected model: free-form negotiation over 10 turns, a customer who lies about dates, two languages in one sentence with typos, and judging OYE's own drafts against a rubric (`npm run mastery`).

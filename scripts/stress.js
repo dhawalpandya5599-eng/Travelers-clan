@@ -18,7 +18,7 @@ const OPENERS = {
   hindi: ['{trip} {n} लोगों के लिए कितना?', 'क्या {trip} दिसंबर में है? हम {n} लोग'],
   gujarati: ['{trip} {n} લોકો કિંમત કેટલી?', '{trip} ડિસેમ્બર માં છે? {n} જણ'],
 };
-const FAQ = [['any hidden costs?', /no hidden|included|not included/i], ['what is included?', /included/i], ['what if we cancel', /transfer|refund/i], ['pickup point?', /pickup|start|point/i], ['safe for girls?', /women|captain|ladkiyon/i], ['veg food?', /veg|jain/i], ['hotel kaisa hai', /sharing|room|stay/i], ['kids allowed?', /family|parents|welcome|20/i], ['how to pay', /advance|upi|screenshot/i], ['send details', /D1|plan/i], ['રદ કરીએ તો?', /transfer|refund/i], ['खाना शाकाहारी?', /veg|jain/i]];
+const FAQ = [['any hidden costs?', /no hidden|hidden cost nahi|included|not included/i], ['what is included?', /included/i], ['what if we cancel', /transfer|refund/i], ['pickup point?', /pickup|start|point/i], ['safe for girls?', /women|captain|ladkiyon/i], ['veg food?', /veg|jain/i], ['hotel kaisa hai', /sharing|room|stay/i], ['kids allowed?', /family|parents|welcome|20/i], ['how to pay', /advance|upi|screenshot/i], ['send details', /D1|plan/i], ['રદ કરીએ તો?', /transfer|refund/i], ['खाना शाकाहारी?', /veg|jain/i]];
 const PATHS = ['faq-heavy', 'bargainer', 'ghost', 'size-changer', 'script-switcher', 'direct-booker', 'angry', 'thinker'];
 
 function conversation(lang, pathName, trip) {

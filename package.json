@@ -23,7 +23,10 @@
     "universe": "node scripts/universe.js",
     "mastery": "node scripts/mastery.js",
     "levels": "node scripts/levels.js",
-    "check": "npm test && npm run exam && node scripts/stress.js --n 200 && node scripts/universe.js --n 300"
+    "check": "npm test && npm run exam && node scripts/paraphrase.js && node scripts/stress.js --n 200 && node scripts/universe.js --n 300",
+    "paraphrase": "node scripts/paraphrase.js",
+    "smoke": "node scripts/smoke.js",
+    "release": "node scripts/release.js"
   },
   "license": "MIT",
   "private": true

@@ -1,0 +1,83 @@
+# The OYE operating system
+
+How Travelers Clan runs OYE day to day, how OYE gets better, and what must be true before anything goes live.
+Read this once; the dashboard follows the same order.
+
+## 1. Who does what
+
+| Role | Owns | Where |
+|---|---|---|
+| Founder (Dhawal) | Trips, prices, the numbers OYE states as fact, approving drafts, confirming bookings | Set up, Today's work |
+| OYE | First reply to every customer in seconds, holds, follow-ups, drafts, proposals, learning from corrections | WhatsApp, website widget, dashboard |
+| Claude (cloud routine or local Claude Code) | Harder exams, fixes to 100%, new skills and data, releases | `scripts/`, `core/`, this repo |
+
+## 2. The numbers OYE states as fact
+
+OYE never invents a refund rule; it reads them from two places you control in Set up:
+
+- **Policies** (sentences): included, not included, payment, cancellation, pickup, safety, food, ages. Quoted word for word.
+- **Rules** (numbers): advance % and cap, hold hours, balance due, refund cut-off, transfer months, refund-when-we-cancel days, kids free-under and reduced-until ages and %, free name change days, self-drive or flight join % off, private room %, teacher free per N students, corporate quote hours, transport and stay share of price, target margin, confirmation minutes, pickup share days.
+
+Blank means the default. Change a number and every reply, draft, exam and the autopilot use it from the next message. The defaults were set by Claude, not by you: **confirm or change each one in Set up, card 4, before the widget goes on the website.**
+
+## 3. The daily loop (10 minutes)
+
+1. Open **Today's work**. Follow-ups due now are listed with a ready draft; send or edit.
+2. Holds expiring today: call, convert or release.
+3. **OYE proposes** on Start here: approve, edit or dismiss each card (a follow-up, a seat push, a fill decision, a review ask, a referral ask).
+4. Anything OYE got wrong: open **Reply to a customer**, paste the message, correct the reply. The correction becomes a lesson.
+
+## 4. The weekly loop (30 minutes, Monday)
+
+1. Ask OYE: "summarise this week: leads, holds, bookings, and what to do monday morning".
+2. Ask: "which of our trips should get the marketing budget this week and why" and "write a 7-day instagram content calendar for <trip> with hooks".
+3. Update trips and seats in Set up; add next month's batch 45 days out.
+4. Check the Google profile score and the campaign calendar in **Marketing**.
+
+## 5. How OYE gets better
+
+Three exam ladders, all rules only, all at 100% right now:
+
+| Ladder | Command | What it proves |
+|---|---|---|
+| Eval, 173 checks | `node scripts/eval.js` | facts, funnel, playbook, council, WhatsApp, expression |
+| Levels 1 to 10, 128 checks | `node scripts/levels.js` | easiest to hardest: facts, flow, emotion, requirements, business judgement, expert, master, grandmaster, legend, chief |
+| Paraphrases, 152 wordings | `node scripts/paraphrase.js` | the same intent said many ways routes the same (guards against rules tuned to one sentence) |
+
+Plus stress (200 chats), the customer universe (400 personas from a space of a billion), mastery (model-graded when a model is connected), and the browser smoke (`npm run smoke`).
+
+**Adding a level.** In `scripts/levels.js` add a block with 12 items harder than the last level: `chat` (messages, judged on the last reply), `agent` (a chief request) or `review` (a plan), with `must` and `not` patterns. Run it alone with `--level N`, fix OYE until 100%, then run everything. A check that encodes a wrong policy is a test bug: fix the test, not OYE.
+
+**Adding a wording.** When a real customer message misroutes, add it to the matching group in `scripts/paraphrase.js` first, then widen the intent in `core/growth.js` until the suite is green again.
+
+**Teaching.** Lessons live in `curriculum/*.md` (30 files, read at start); facts you tell OYE in chat are remembered; corrections in Reply to a customer become lessons. `npm run train` and `npm run evolve` consolidate.
+
+## 6. The release gate
+
+Nothing goes live unless `npm run release` prints RELEASE READY. It runs tests, eval, levels, paraphrases, stress, universe, browser smoke, rebuilds `dist/oye-web.html`, writes `dist/oye-release-<sha>.zip` and `synth/release.json`. `--quick` skips the slow suites for a local check.
+
+Then:
+
+```bat
+git push
+node scripts\integrate-site.js "C:\Downloads\tcnodedeploy" --zip --force
+```
+
+Upload the printed zip in hPanel → Websites → travelersclan.in → Deploy. Dashboard at `/admin/atlas`; widget tag for the site:
+
+```html
+<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>
+```
+
+## 7. What is still weak (honest list)
+
+- The exams are keyword checks written by the same author as the fixes. A model-graded pass (`npm run mastery` with a key in Set up) is the real second opinion; run it monthly.
+- No real transcripts yet. Export 20 real WhatsApp conversations, grade them once by hand, and add them to `scripts/eval.js` as a golden set.
+- The transliteration table covers common Hindi and Gujarati words only; new words found in real chats go into `XLIT` in `core/growth.js`.
+- Dates in the suites are in 2099; add one fixture with a departure 10 days out so run-rate and hold-expiry paths run under test.
+- The WhatsApp bridge and the Express mount are exercised by hand, not by a test.
+- Two customers holding the last seat at the same moment is not tested.
+
+## 8. If you are continuing with Claude Code on a PC
+
+Open the repo and say: "Read SYSTEM.md and HANDOFF.md, run npm run release, and continue from section 7." Credits permitting, the cloud routine "OYE self-improvement loop" does the same every 6 hours on the branch `claude/clever-maxwell-aclt88`.

@@ -241,3 +241,15 @@ test('agent: tool loop with a scripted model, fallback without one, correction b
   const c = b.agent.correct(r.id, 'Goa has 7 seats left but 2 are on hold, so 5 are sellable.'); assert.ok(c.correction);
   assert.ok(b.memory.facts.some(f => /sellable|on hold/i.test(f.text || f.o || '')));
 });
+
+test('rules: numbers the founder sets in Set up change what OYE quotes', async () => {
+  const b = new Brain({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'oye-rules-')), autosave: false }); b.evolution.genome.curiosity = 0;
+  b.growth.setProfile({ upi: 'tc@upi', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }] });
+  assert.equal(b.growth.advance(b.growth.profile.trips[0]), 4500);
+  b.growth.setProfile({ rules: { advancePct: 20, advanceCap: 9000, kidsPct: 50, kidsFreeUnder: 3 } });
+  assert.equal(b.growth.advance(b.growth.profile.trips[0]), 3000);
+  const r = await b.growth.chat({ id: 'rules-1', text: 'we are 2 adults and 1 kid aged 4 for goa, kids price?', source: 'test' });
+  assert.match(r.reply, /50%/); assert.match(r.reply, /under 3/);
+  b.growth.setProfile({ rules: { advancePct: '', advanceCap: '' } }); assert.equal(b.growth.advance(b.growth.profile.trips[0]), 4500);
+  const ov = await b.growth.overview(); assert.equal(ov.profile.rules.kidsPct, 50); assert.ok(ov.profile.ruleLabels.kidsPct);
+});

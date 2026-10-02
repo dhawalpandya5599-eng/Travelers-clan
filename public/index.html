@@ -92,7 +92,8 @@
       </div>
     </div>
     <div class="savebar"><button class="btn primary big" id="btn-profile">Save everything</button><span id="profile-result" class="muted"></span></div>
-    <div class="card"><h2>4. Put it on the website</h2>
+    <div class="card"><h2>4. Numbers OYE states as fact</h2><p class="muted">Advance, holds, refunds, kids, name changes, joins, rooms, margins. Every reply, draft and exam uses these values. Blank means the default shown.</p><div class="grid3" id="rules"></div></div>
+    <div class="card"><h2>5. Put it on the website</h2>
       <div class="grid2">
         <div><p><b>Chat bubble</b>, bottom right of every page:</p><pre class="code" id="widget-snippet"></pre><p class="muted">Floating OYE assistant: branded avatar, greeting, live trip cards with seats left, one-tap seat hold, quick replies, WhatsApp handoff that carries the chat, and it remembers the visitor across pages. Any link can open it with a question: <code>&lt;a href="#" data-oye="Goa in December for 4?"&gt;Ask OYE&lt;/a&gt;</code>.</p></div>
         <div><p><b>Trip cards</b> with seats left and a WhatsApp button, where the trips should appear:</p><pre class="code" id="trips-snippet"></pre></div>
@@ -100,7 +101,7 @@
       <p class="muted"><a href="/site-demo.html" target="_blank" id="demo-link">See how both look</a> · Your WhatsApp link: <span id="wa-link"></span></p>
       <img id="wa-qr" alt="" width="140" height="140" hidden>
     </div>
-    <div class="card"><h2>5. Connections</h2>
+    <div class="card"><h2>6. Connections</h2>
       <div class="grid2">
         <div><h3>Bring leads in</h3><p class="muted">Paste a CSV export from Meta lead forms, Google Forms or any sheet (needs a name or phone column).</p><textarea id="csv-text" rows="4" placeholder="name,phone,trip,source
 Riya Shah,9876543210,Goa,instagram"></textarea><div class="actions"><input id="csv-source" placeholder="Source label (meta, forms)" style="max-width:200px"><button class="btn" id="btn-csv">Import leads</button><span id="csv-result" class="muted"></span></div>
@@ -108,7 +109,7 @@ Riya Shah,9876543210,Goa,instagram"></textarea><div class="actions"><input id="c
         <div><h3>Take data out</h3><p><a class="btn" id="dl-leads" href="/api/connections/leads.csv" download>Lead sheet as CSV</a> <a class="btn" id="dl-ics" href="/api/connections/trips.ics" download>Departures calendar (.ics)</a></p><p class="muted">Open the CSV in Google Sheets or Excel. Add the .ics to Google Calendar to see departures and balance-due dates.</p></div>
       </div>
     </div>
-    <div class="card"><h2>6. Connect the real WhatsApp number (free)</h2>
+    <div class="card"><h2>7. Connect the real WhatsApp number (free)</h2>
       <p>On your PC, in the Travelers-clan folder, run <code>npm install @whiskeysockets/baileys qrcode-terminal</code> once, then <code>npm run whatsapp</code>. Scan the QR with WhatsApp Business → Linked devices. Customer messages reach OYE; your own number gets the day's list at 9am.</p>
       <label class="checkrow"><input type="checkbox" id="s-auto"> Send replies automatically. Off means OYE drafts and you send. Booking, payment and complaint messages always wait for you.</label>
     </div>

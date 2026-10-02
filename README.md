@@ -111,3 +111,8 @@ Admin routes are under `/api/` (mounted at `/admin/atlas` inside the site); publ
 ## 7. Development
 
 `core/` is the mind and the office, `scripts/` the training and examination tools, `curriculum/` the lessons, `public/` the dashboard and the website blocks, `integrations/` the Express mount, `mind/` the trained mind, `synth/` generated data and reports, `test/` unit tests. All checks: `npm run check`. Before pushing anything that touches `core/` run it; the routine refuses to keep any change that lowers a score.
+
+
+## The operating system
+
+How the clan runs OYE day to day, how it gets better, and the release gate: see [SYSTEM.md](SYSTEM.md). Continuing on a new machine: [HANDOFF.md](HANDOFF.md).

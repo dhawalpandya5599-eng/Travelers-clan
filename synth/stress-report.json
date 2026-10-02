@@ -1,12 +1,8 @@
 {
- "at": "2026-10-02T10:01:48.542Z",
+ "at": "2026-10-02T10:16:18.410Z",
  "convs": 200,
  "turns": 669,
- "weak": {
-  "did not answer: any hidden costs?": [
-   "Dobara se: Koi hidden cost nahi. Start city se travel, stay (sharing), breakfast aur dinner, plan ki saari sig"
-  ]
- },
+ "weak": {},
  "reachedHold": 94,
  "holdable": 94
 }
