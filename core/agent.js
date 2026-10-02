@@ -132,7 +132,7 @@ class Agent {
     else if (/\b(lead|customer|wrote|said|replied|whatsapp)\b/.test(r) && /\n|:|"|'/.test(request)) { const msg = (request.match(/["“'‘](.+?)["”'’]/) || [])[1] || request.split(/\n|:/).slice(1).join(' ').trim() || request; const w = await use('whatsapp_reply', { text: msg }); final = `Reply to send:\n${w.reply}\n\n(${w.intent}${w.handoff ? ', needs you' : ''})`; }
     else if (/\b(price|cost|how much|rate)\b/.test(r)) { const trips = await use('trips', {}); const t = tripNamed() || trips[0]; final = t ? `${t.name}: ${money(t.price)} per person${n ? `, ${money(t.price * n)} for ${n}` : ''}, all-inclusive. ${t.seatsLeft} seats left.` : 'No trips set up yet.'; }
     else { const x = await use('recall', { query: request }); final = x.answer; }
-    return { final: final + '\n\n(Answered by rules. Connect a language model in Set up for deeper reasoning.)', steps };
+    return { final: final + '\n\n(rules; connect a model in Set up for deeper reasoning)', steps };
   }
 
   /** The chief corrects an answer: the correction becomes a lesson, and the pairing is remembered for next time. */
