@@ -109,7 +109,7 @@
     if (!logSeeded) { logSeeded = true; for (const e of s.log) pushLog(e); }
     drawEvo(s.history);
     if (s.pendingQuestion && !askedPending) { askedPending = s.pendingQuestion.subject; }
-    const g = await api('GET', '/api/graph?limit=110');
+    const g = await api('GET', '/api/graph?limit=180');
     graph.update(g);
   }
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -148,75 +148,76 @@
     ctx.fillStyle = '#5ee1c2'; ctx.fillText('best', W - pad.r - 70, pad.t + 8); ctx.fillStyle = '#8b7cff'; ctx.fillText('mean', W - pad.r - 36, pad.t + 8);
   }
 
-  // ---------- Knowledge graph (force-directed, canvas) ----------
+  // ---------- Knowledge graph: god's-eye 3D view (3d-force-graph + three), 2D canvas fallback ----------
+  const PALETTE = ['#d47a60', '#5fb3a1', '#e0b35a', '#7c9cf2', '#c585d4', '#6fcf97', '#f28c8c', '#58c4dd', '#b8a06a', '#9ad46b', '#e59ad2', '#8fa3c8'];
   const graph = (() => {
-    const canvas = $('graph'); const ctx = canvas.getContext('2d');
-    let nodes = [], links = [], byId = new Map(), flashUntil = 0, hover = null, drag = null;
+    const host = $('graph3d'); const canvas = $('graph');
+    let data = { nodes: [], links: [], clusters: [] }, byId = new Map(), fg = null, rotating = true, angle = 0, hoverNode = null, flashUntil = 0;
+    const color = (n) => n.group < 0 ? '#8a94a8' : PALETTE[n.group % PALETTE.length];
+    function legend(cl) { $('legend').innerHTML = cl.slice(0, 8).map(c => `<span><i style="background:${PALETTE[c.id % PALETTE.length]}"></i>${esc(c.name)} <b>${c.size}</b></span>`).join('') || ''; }
+    function sprite(n) {
+      const s = new SpriteText(n.label); s.color = n.activation > 0.3 ? '#ffffff' : 'rgba(238,241,247,.85)'; s.textHeight = n.hub ? 4.5 : n.strength > 0.6 || n.activation > 0.3 ? 3.4 : 2.6; s.fontFace = 'Montserrat, sans-serif'; s.fontWeight = n.strength > 0.5 ? '600' : '400';
+      s.backgroundColor = n.activation > 0.3 ? 'rgba(212,122,96,.55)' : 'rgba(11,18,32,.55)'; s.padding = 1.2; s.borderRadius = 2; s.position.set(0, 3 + n.strength * 3, 0); return s;
+    }
+    function init3d() {
+      if (!window.ForceGraph3D || !window.SpriteText) return false;
+      try {
+        fg = ForceGraph3D({ controlType: 'orbit' })(host)
+          .backgroundColor('rgba(0,0,0,0)').showNavInfo(false)
+          .nodeId('id').nodeLabel(n => `${n.label} · strength ${n.strength} · seen ${n.count}×`)
+          .nodeVal(n => 0.6 + n.strength * 2.5 + n.activation * 3).nodeRelSize(3)
+          .nodeColor(n => hoverNode && hoverNode !== n && !neighbors(hoverNode).has(n.id) ? 'rgba(120,130,150,.25)' : color(n))
+          .nodeOpacity(0.95).nodeResolution(16)
+          .nodeThreeObjectExtend(true).nodeThreeObject(n => (n.strength > 0.6 || n.activation > 0.3 || n.hub || data.nodes.length < 50) ? sprite(n) : null)
+          .linkColor(l => hoverNode && l.source !== hoverNode && l.target !== hoverNode ? 'rgba(120,130,150,.08)' : `rgba(238,241,247,${0.08 + l.w * 0.5})`)
+          .linkWidth(l => l.w * 1.6).linkOpacity(0.6)
+          .linkDirectionalParticles(l => l.w > 0.6 ? 2 : 0).linkDirectionalParticleWidth(1.2).linkDirectionalParticleSpeed(0.004).linkDirectionalParticleColor(() => '#d47a60')
+          .onNodeHover(n => { hoverNode = n || null; host.style.cursor = n ? 'pointer' : 'grab'; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()); })
+          .onNodeClick(n => { const dist = 60; const r = dist / Math.hypot(n.x, n.y, n.z); fg.cameraPosition({ x: n.x * r, y: n.y * r, z: n.z * r }, n, 900); $('chat-input').value = `What is ${n.label}?`; })
+          .onBackgroundClick(() => {}).warmupTicks(60).cooldownTicks(200);
+        fg.d3Force('charge').strength(-70); fg.d3Force('link').distance(l => 16 + (1 - l.w) * 40);
+        let dist = 420; fg.cameraPosition({ x: 0, y: 60, z: dist });
+        let fitted = false; fg.onEngineStop(() => { if (fitted) return; fitted = true; fg.zoomToFit(600, 50); setTimeout(() => { const c = fg.cameraPosition(); dist = Math.max(200, Math.hypot(c.x, c.y, c.z)); angle = Math.atan2(c.x, c.z); }, 700); });
+        const resize = () => { const w = host.getBoundingClientRect().width || host.parentElement.clientWidth - 24; if (w > 50) fg.width(w).height(host.clientHeight || 620); }; resize(); window.addEventListener('resize', resize); host.__resize = resize;
+        (function orbit() { if (rotating && !hoverNode && fitted) { angle += 0.0015; const d = dist; fg.cameraPosition({ x: d * Math.sin(angle), y: d * 0.22 + d * 0.08 * Math.sin(angle * 0.5), z: d * Math.cos(angle) }); } requestAnimationFrame(orbit); })();
+        $('btn-rotate').onclick = () => { rotating = !rotating; $('btn-rotate').textContent = rotating ? 'Pause orbit' : 'Resume orbit'; };
+        $('btn-fit').onclick = () => { fg.zoomToFit(800, 50); setTimeout(() => { const c = fg.cameraPosition(); dist = Math.max(200, Math.hypot(c.x, c.y, c.z)); angle = Math.atan2(c.x, c.z); }, 900); };
+        return true;
+      } catch (e) { console.warn('3D view unavailable, using 2D', e); fg = null; return false; }
+    }
+    function neighbors(n) { const s = new Set([n.id]); for (const l of data.links) { const a = typeof l.source === 'object' ? l.source.id : l.source, b = typeof l.target === 'object' ? l.target.id : l.target; if (a === n.id) s.add(b); if (b === n.id) s.add(a); } return s; }
     function update(g) {
-      const next = new Map();
-      for (const n of g.nodes) {
-        const old = byId.get(n.id);
-        next.set(n.id, old ? Object.assign(old, n) : { ...n, x: canvas.clientWidth / 2 + (Math.random() - .5) * 200, y: canvas.clientHeight / 2 + (Math.random() - .5) * 200, vx: 0, vy: 0 });
-      }
-      byId = next; nodes = [...next.values()];
-      links = g.links.map(l => ({ a: next.get(l.source), b: next.get(l.target), w: l.w })).filter(l => l.a && l.b);
+      legend(g.clusters || []);
+      if (fg) {
+        // keep positions of nodes we already have, so the map breathes instead of jumping
+        const prev = new Map(data.nodes.map(n => [n.id, n]));
+        const hubNames = new Set((g.clusters || []).map(c => c.name)); const nodes = g.nodes.map(n => Object.assign(prev.get(n.id) || {}, n, { hub: hubNames.has(n.label) }));
+        if (host.__resize) host.__resize();
+        const links = g.links.map(l => ({ source: l.source, target: l.target, w: l.w }));
+        data = { nodes, links, clusters: g.clusters || [] }; byId = new Map(nodes.map(n => [n.id, n]));
+        fg.graphData({ nodes, links });
+      } else draw2d(g);
     }
     function flash() { flashUntil = performance.now() + 900; }
-    function step() {
-      const W = canvas.clientWidth, H = canvas.clientHeight;
-      const cx = W / 2, cy = H / 2;
-      const scale = Math.sqrt((W * H) / Math.max(1, nodes.length)); // mean area per node → natural spacing
-      const spacing = Math.min(80, scale * 0.9);
-      for (let i = 0; i < nodes.length; i++) {
-        const a = nodes[i];
-        a.vx += (cx - a.x) * 0.006; a.vy += (cy - a.y) * 0.006; // gravity to centre
-        for (let j = i + 1; j < nodes.length; j++) {
-          const b = nodes[j]; let dx = a.x - b.x, dy = a.y - b.y; const d2 = dx * dx + dy * dy + 0.01;
-          if (d2 > spacing * spacing * 9) continue;
-          const f = (spacing * spacing * 0.35) / d2; dx *= f / Math.sqrt(d2) ; dy *= f / Math.sqrt(d2); a.vx += dx; a.vy += dy; b.vx -= dx; b.vy -= dy;
-        }
-      }
-      for (const l of links) {
-        const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.sqrt(dx * dx + dy * dy) + 0.01;
-        const target = spacing * (1.3 - 0.6 * l.w); const f = (d - target) * 0.01 * (0.3 + l.w);
-        l.a.vx += dx / d * f; l.a.vy += dy / d * f; l.b.vx -= dx / d * f; l.b.vy -= dy / d * f;
-      }
-      for (const n of nodes) {
-        if (n === drag) { n.vx = n.vy = 0; continue; }
-        n.vx *= 0.7; n.vy *= 0.7; n.x += Math.max(-6, Math.min(6, n.vx)); n.y += Math.max(-6, Math.min(6, n.vy));
-        n.x = Math.max(24, Math.min(W - 24, n.x)); n.y = Math.max(16, Math.min(H - 16, n.y));
-      }
+    // --- 2D fallback (no WebGL or the library did not load) ---
+    let nodes2 = [], links2 = [], by2 = new Map();
+    function draw2d(g) {
+      canvas.hidden = false; host.hidden = true; const ctx = canvas.getContext('2d');
+      const next = new Map(); for (const n of g.nodes) { const old = by2.get(n.id); next.set(n.id, old ? Object.assign(old, n) : { ...n, x: canvas.clientWidth / 2 + (Math.random() - .5) * 300, y: canvas.clientHeight / 2 + (Math.random() - .5) * 300, vx: 0, vy: 0 }); }
+      by2 = next; nodes2 = [...next.values()]; links2 = g.links.map(l => ({ a: next.get(l.source), b: next.get(l.target), w: l.w })).filter(l => l.a && l.b);
+      if (!draw2d.loop) { draw2d.loop = true; (function loop() { step2d(ctx); requestAnimationFrame(loop); })(); canvas.addEventListener('click', e => { const r = canvas.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; const n = nodes2.find(n => (n.x - x) ** 2 + (n.y - y) ** 2 < 144); if (n) { $('chat-input').value = `What is ${n.label}?`; } }); }
     }
-    function draw() {
-      const dpr = window.devicePixelRatio || 1; const W = canvas.clientWidth, H = canvas.clientHeight;
-      if (canvas.width !== W * dpr || canvas.height !== H * dpr) { canvas.width = W * dpr; canvas.height = H * dpr; }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-      const flashing = performance.now() < flashUntil;
-      for (const l of links) {
-        const hot = hover && (l.a === hover || l.b === hover);
-        ctx.strokeStyle = hot ? 'rgba(94,225,194,.9)' : `rgba(139,124,255,${0.08 + l.w * 0.5})`; ctx.lineWidth = hot ? 1.5 : 0.5 + l.w * 2;
-        ctx.beginPath(); ctx.moveTo(l.a.x, l.a.y); ctx.lineTo(l.b.x, l.b.y); ctx.stroke();
-      }
-      for (const n of nodes) {
-        const r = 3 + n.strength * 9 + Math.log1p(n.count) * 0.8;
-        const glow = n.activation + (flashing ? 0.3 : 0);
-        if (glow > 0.05) { ctx.beginPath(); ctx.arc(n.x, n.y, r + 6 + glow * 10, 0, Math.PI * 2); ctx.fillStyle = `rgba(94,225,194,${Math.min(0.35, glow * 0.35)})`; ctx.fill(); }
-        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = n.kind === 'entity' ? '#5ee1c2' : '#8b7cff'; ctx.fill();
-        if (n === hover) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
-        if (n.strength > 0.35 || n === hover || n.activation > 0.4 || nodes.length < 25) {
-          ctx.fillStyle = n === hover ? '#fff' : 'rgba(230,236,245,.85)'; ctx.font = `${n === hover ? 13 : 11}px system-ui, sans-serif`; ctx.fillText(n.label, n.x + r + 3, n.y + 4);
-        }
-      }
-      if (!nodes.length) { ctx.fillStyle = '#8a9ab5'; ctx.font = '13px system-ui'; ctx.fillText('The cortex is empty. Teach me something.', 20, 30); }
+    function step2d(ctx) {
+      const W = canvas.clientWidth, H = canvas.clientHeight; if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+      const k = Math.sqrt((W * H) / Math.max(1, nodes2.length)) * 0.9;
+      for (let i = 0; i < nodes2.length; i++) { const a = nodes2[i]; a.vx += (W / 2 - a.x) * 0.002; a.vy += (H / 2 - a.y) * 0.002; for (let j = i + 1; j < nodes2.length; j++) { const b = nodes2[j]; let dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy + 0.01, d = Math.sqrt(d2); const f = (k * k) / d2 * 0.5 * (a.group === b.group ? 0.7 : 1.3); dx /= d; dy /= d; a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f; } }
+      for (const l of links2) { const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.hypot(dx, dy) + 0.01; const f = (d - k * (1.2 - l.w * 0.6)) * 0.02 * l.w; l.a.vx += dx / d * f; l.a.vy += dy / d * f; l.b.vx -= dx / d * f; l.b.vy -= dy / d * f; }
+      for (const n of nodes2) { n.vx *= 0.8; n.vy *= 0.8; n.x = Math.max(16, Math.min(W - 16, n.x + n.vx)); n.y = Math.max(16, Math.min(H - 16, n.y + n.vy)); }
+      ctx.clearRect(0, 0, W, H);
+      for (const l of links2) { ctx.strokeStyle = `rgba(238,241,247,${0.06 + l.w * 0.4})`; ctx.lineWidth = 0.5 + l.w * 2; ctx.beginPath(); ctx.moveTo(l.a.x, l.a.y); ctx.lineTo(l.b.x, l.b.y); ctx.stroke(); }
+      for (const n of nodes2) { const r = 3 + n.strength * 7 + n.activation * 6; ctx.fillStyle = color(n); ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fill(); if (n.strength > 0.45 || n.activation > 0.3 || nodes2.length < 60) { ctx.fillStyle = 'rgba(238,241,247,.9)'; ctx.font = `${n.strength > 0.5 ? '600 ' : ''}11px Montserrat, sans-serif`; ctx.fillText(n.label, n.x + r + 4, n.y + 4); } }
     }
-    function loop() { step(); draw(); requestAnimationFrame(loop); }
-    const pick = (e) => { const r = canvas.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; return nodes.find(n => (n.x - x) ** 2 + (n.y - y) ** 2 < 144) || null; };
-    canvas.addEventListener('mousemove', e => { if (drag) { const r = canvas.getBoundingClientRect(); drag.x = e.clientX - r.left; drag.y = e.clientY - r.top; } else hover = pick(e); canvas.style.cursor = hover ? 'pointer' : 'default'; });
-    canvas.addEventListener('mousedown', e => { drag = pick(e); });
-    window.addEventListener('mouseup', () => { drag = null; });
-    canvas.addEventListener('click', e => { const n = pick(e); if (n && !drag) { $('chat-input').value = `What is ${n.label}?`; $('chat-input').focus(); } });
-    loop();
+    if (!init3d()) draw2d({ nodes: [], links: [], clusters: [] });
     return { update, flash };
   })();
 

@@ -192,22 +192,28 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- MIND -->
   <section class="page" id="page-mind">
-    <header class="ph"><span class="eyebrow">Master control</span><h1>Inside the mind</h1><p>How it works under the hood. You never need this page to run the business.</p></header>
+    <header class="ph"><span class="eyebrow">God's eye view</span><h1>Inside the mind</h1><p>Everything ATLAS knows, as one living map. Each sphere is an idea, each line a connection it learned, each colour a cluster of ideas that belong together. Bright spheres are what it is thinking about right now. Drag to orbit, scroll to zoom, click a sphere to ask about it.</p></header>
+    <div class="card brain">
+      <div class="brain-bar"><div class="legend" id="legend"></div><div class="wm" id="wm"></div><div class="actions"><button class="btn" id="btn-rotate">Pause orbit</button><button class="btn" id="btn-fit">Reset view</button></div></div>
+      <div id="graph3d"></div><canvas id="graph" hidden></canvas>
+    </div>
     <div class="mindgrid">
-      <div class="card brain"><h3>Knowledge map <span class="muted">click a dot to ask about it</span></h3><canvas id="graph"></canvas><div class="wm" id="wm"></div></div>
-      <div class="card"><h3>Learning progress</h3><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>
+      <div class="card"><h3>How well it learns <span class="muted">score per version</span></h3><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>
         <div class="actions">
           <button class="btn" id="btn-sleep">Sleep</button><button class="btn" id="btn-evolve">Evolve</button><button class="btn" id="btn-grow">Grow skill</button>
           <a class="btn" id="btn-export" href="/api/export" download="atlas-mind.json">Export mind</a>
           <label class="btn" for="mind-file">Merge a mind</label><input id="mind-file" type="file" accept="application/json,.json" hidden>
           <button class="btn" id="btn-openmodel" hidden>Load open model</button>
-        </div>
-        <h3>Skills</h3><ul id="skills" class="skills"></ul></div>
+        </div></div>
+      <div class="card"><h3>Skills it has</h3><ul id="skills" class="skills"></ul></div>
       <div class="card"><h3>What it is doing right now</h3><ul id="log" class="log"></ul></div>
     </div>
   </section>
 </main>
 </div>
+<script src="/vendor/three.min.js"></script>
+<script src="/vendor/three-spritetext.min.js"></script>
+<script src="/vendor/3d-force-graph.min.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>

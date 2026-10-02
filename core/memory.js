@@ -254,9 +254,22 @@ class Memory {
     const ids = new Set(nodes.map(n => n.id));
     const links = [...this.synapses.values()].filter(s => ids.has(s.a) && ids.has(s.b) && s.w > 0.05)
       .sort((a, b) => b.w - a.w).slice(0, limit * 3);
+    // Clusters around hubs: the strongest well-connected ideas become centres; every other idea joins the centre
+    // it is most strongly tied to (directly, else through a neighbour). Named after the hub, so the legend reads well.
+    const nb = new Map(); for (const l of links) { (nb.get(l.a) || nb.set(l.a, []).get(l.a)).push([l.b, l.w]); (nb.get(l.b) || nb.set(l.b, []).get(l.b)).push([l.a, l.w]); }
+    const degree = (id) => (nb.get(id) || []).reduce((n, [, w]) => n + w, 0);
+    const K = Math.max(4, Math.min(10, Math.round(nodes.length / 18)));
+    const hubs = []; for (const n of nodes.slice().sort((a, b) => (degree(b.id) * (0.5 + b.strength)) - (degree(a.id) * (0.5 + a.strength)))) { if (hubs.length >= K) break; if (n.label.length < 4 || /^(per|the|and|for|with|from|this|that|have|will|your|our|you)$/.test(n.label)) continue; if (hubs.some(h => (nb.get(h.id) || []).some(([m, w]) => m === n.id && w > 0.5))) continue; hubs.push(n); }
+    const hubIndex = new Map(hubs.map((h, i) => [h.id, i]));
+    const label = new Map(); for (const h of hubs) label.set(h.id, hubIndex.get(h.id));
+    for (let pass = 0; pass < 3; pass++) for (const n of nodes) { if (label.has(n.id) && pass === 0) continue; const votes = new Map(); for (const [m, w] of nb.get(n.id) || []) if (label.has(m)) votes.set(label.get(m), (votes.get(label.get(m)) || 0) + w * (hubIndex.has(m) ? 2 : 1)); if (votes.size) label.set(n.id, [...votes.entries()].sort((a, b) => b[1] - a[1])[0][0]); }
+    const groups = new Map(hubs.map((h, i) => [i, { id: i, hub: h, members: [] }])); for (const n of nodes) if (label.has(n.id)) groups.get(label.get(n.id)).members.push(n);
+    const clusters = [...groups.values()].map(g => ({ id: g.id, size: g.members.length, name: g.hub.label })).filter(c => c.size > 1).sort((a, b) => b.size - a.size);
+    const small = new Set(clusters.map(c => c.id));
     return {
-      nodes: nodes.map(n => ({ id: n.id, label: n.label, strength: +n.strength.toFixed(3), activation: +n.activation.toFixed(3), kind: n.kind, count: n.count })),
+      nodes: nodes.map(n => ({ id: n.id, label: n.label, strength: +n.strength.toFixed(3), activation: +n.activation.toFixed(3), kind: n.kind, count: n.count, group: label.has(n.id) && small.has(label.get(n.id)) ? label.get(n.id) : -1 })),
       links: links.map(l => ({ source: l.a, target: l.b, w: +l.w.toFixed(3) })),
+      clusters,
     };
   }
 

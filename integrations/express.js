@@ -80,12 +80,13 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.get(['/', '/index.html'], (req, res) => {
     const base = req.baseUrl.replace(/\/$/, '');
     const html = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8')
-      .replace('href="/style.css"', `href="${base}/style.css"`).replace('src="/app.js"', `src="${base}/app.js"`)
+      .replace('href="/style.css"', `href="${base}/style.css"`).replace('src="/app.js"', `src="${base}/app.js"`).replace(/src="\/vendor\//g, `src="${base}/vendor/`).replace('href="/site-demo.html"', '/site-demo.html')
       .replace('href="/api/export"', `href="${base}/api/export"`)
       .replace('</head>', `<script>window.ATLAS_BASE=${JSON.stringify(base)};</script></head>`);
     res.type('html').send(html);
   });
   for (const f of ['style.css', 'app.js']) router.get('/' + f, (req, res) => res.type(MIME[path.extname(f)]).send(fs.readFileSync(path.join(ROOT, 'public', f), 'utf8')));
+  router.get('/vendor/:file', (req, res) => { const f = path.join(ROOT, 'public', 'vendor', path.basename(req.params.file)); if (!fs.existsSync(f)) return res.status(404).end(); res.type('text/javascript').set('Cache-Control', 'public, max-age=86400').send(fs.readFileSync(f)); });
 
   router.brain = brain;
   // Public widget router: mount WITHOUT admin auth, e.g. app.use('/atlas-chat', atlas.widget).
