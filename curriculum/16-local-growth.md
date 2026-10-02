@@ -10,6 +10,8 @@ A follow-up sequence has five touches. The first touch is the instant reply. The
 
 Broadcasts go only to opted-in contacts. A broadcast includes a stop line. A broadcast list holds two hundred fifty six contacts. Past travellers get seats first. Organisers get a free seat for every ten paid seats.
 
+The WhatsApp agent quotes the written policies word for word. The agent says the price once per conversation. A booking message always goes to a human. Instagram posts carry a date and a price. Reels go out between 7pm and 9pm.
+
 Diwali campaigns start thirty five days before Diwali. New Year campaigns start fifty days before New Year. Summer vacation campaigns start forty five days before schools close. Republic Day is a long weekend. Independence Day is a long weekend.
 
 Return on ad spend is revenue divided by ad spend. Cost per lead is ad spend divided by leads. Conversion is bookings divided by leads.

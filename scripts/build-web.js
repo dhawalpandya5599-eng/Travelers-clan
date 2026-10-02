@@ -148,6 +148,7 @@ const glue = `
           case 'POST /api/growth/leads': return body.id && brain.growth.state.leads.some(function (l) { return l.id === body.id; }) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {});
           case 'GET /api/growth/today': return brain.growth.today();
           case 'GET /api/growth/campaigns': return brain.growth.broadcasts().then(function (b) { b.campaigns = brain.growth.campaigns(); return b; });
+          case 'GET /api/growth/content': return brain.growth.content();
           case 'GET /api/growth/roi': return brain.growth.roi({ adSpend: +u.searchParams.get('adSpend') || 0 });
           case 'POST /api/grow': return brain.growSkill().then(function (s) { return s || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : brain.mentor.lastError }; });
           default: throw new Error('not found: ' + key);

@@ -65,6 +65,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/growth/leads', wrap(req => req.body.id && brain.growth.state.leads.some(l => l.id === req.body.id) ? brain.growth.updateLead(req.body.id, req.body) : brain.growth.addLead(req.body || {})));
   router.get('/api/growth/today', wrap(() => brain.growth.today()));
   router.get('/api/growth/campaigns', wrap(async () => ({ campaigns: brain.growth.campaigns(), ...(await brain.growth.broadcasts()) })));
+  router.get('/api/growth/content', wrap(() => brain.growth.content()));
   router.get('/api/growth/roi', wrap(req => brain.growth.roi({ adSpend: +req.query.adSpend || 0 })));
   router.get('/api/growth/thread', wrap(req => brain.growth.thread(req.query.id || '')));
   // Public chat widget (no admin auth): mount `atlas.widget` on your site, e.g. app.use('/atlas-chat', atlas.widget)

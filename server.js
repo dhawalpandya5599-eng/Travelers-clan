@@ -85,6 +85,7 @@ const routes = {
   'POST /api/growth/leads': async (q, body) => body.id && brain.growth.state.leads.some(l => l.id === body.id) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {}),
   'GET /api/growth/today': async () => brain.growth.today(),
   'GET /api/growth/campaigns': async () => ({ campaigns: brain.growth.campaigns(), ...(await brain.growth.broadcasts()) }),
+  'GET /api/growth/content': async () => brain.growth.content(),
   'GET /api/growth/roi': async (q) => brain.growth.roi({ adSpend: +q.get('adSpend') || 0 }),
   'POST /atlas-chat/chat': async (q, body) => brain.growth.chat({ id: String(body.id || '').slice(0, 40), name: String(body.name || '').slice(0, 60), text: String(body.text || '').slice(0, 1000), source: 'web' }),
   'GET /atlas-chat/profile': async () => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(3) }; },

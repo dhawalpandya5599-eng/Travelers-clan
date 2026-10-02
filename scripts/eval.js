@@ -126,6 +126,19 @@ const CASES = [
   { q: 'ops: 6 friends, Spiti in August, 9 days, budget 35k per person', expect: /in season[\s\S]*Itinerary: D1/i, kind: 'council' },
   { q: 'news: Curfew imposed in Srinagar after unrest, tourists advised to avoid Kashmir', expect: /Logged 1 advisory.*Kashmir \[high/i, kind: 'council' },
   { journeys: true, q: 'What is the most common reason a lead is lost?', expect: /no reply|ghosted|slow|price|objection|decide|quiet/i, kind: 'funnel' },
+  // --- WhatsApp agent (growth): a fixed trip is set up, then a customer chats; the LAST reply is judged ---
+  { growth: ['hi 4 of us want goa in december budget 15k'], expect: /14,500[\s\S]*58,000[\s\S]*hold/i, kind: 'whatsapp' },
+  { growth: ['4 of us goa in dec', 'any hidden costs?'], expect: /no hidden costs[\s\S]*not included/i, notExpect: /14,500 per person/, kind: 'whatsapp' },
+  { growth: ['goa for 2', 'what if we cancel?'], expect: /transferable|refund/i, kind: 'whatsapp' },
+  { growth: ['goa for 2', 'is it safe for girls?'], expect: /women|captain/i, kind: 'whatsapp' },
+  { growth: ['goa for 2', 'where is the pickup?'], expect: /pickup|start from|point/i, kind: 'whatsapp' },
+  { growth: ['bhai goa ka kitna hoga 2 log ke liye'], expect: /14,500[\s\S]*29,000[\s\S]*hold karun/i, kind: 'whatsapp' },
+  { growth: ['goa for 4', 'too expensive'], expect: /all-inclusive|separately/i, kind: 'whatsapp' },
+  { growth: ['goa for 4', 'ok hold 4 seats'], expect: /advance[\s\S]*screenshot/i, kind: 'whatsapp', handoff: true },
+  { growth: ['I want to cancel and want my refund, this is fraud'], expect: /founder[\s\S]*24 hours/i, kind: 'whatsapp', handoff: true },
+  { growth: ['manali for 3 in jan'], expect: /do not have a fixed batch for Manali[\s\S]*Goa/i, kind: 'whatsapp' },
+  { growth: ['hi'], expect: /which trip[\s\S]*Goa 12 Dec/i, kind: 'whatsapp' },
+  { growth: ['goa for 2', 'veg food available?'], expect: /vegetarian|jain/i, kind: 'whatsapp' },
 ];
 
 async function run() {
@@ -141,7 +154,13 @@ async function run() {
     if (c.conversions) { const f = path.join(__dirname, '..', 'synth', 'conversations.json'); if (fs.existsSync(f)) b.learnConversions(JSON.parse(fs.readFileSync(f, 'utf8')).conversations, { source: 'synthetic' }); }
     for (const t of c.teach || []) await b.respond(t);
     for (const d of c.dialogue || []) await b.respond(d);
-    const r = await b.respond(c.q);
+    let r;
+    if (c.growth) {
+      b.growth.setProfile({ city: 'Ahmedabad', phone: '9876543210', upi: 'travelersclan@upi', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }] });
+      let last; for (const m of c.growth) last = await b.growth.chat({ id: 'exam', text: m });
+      r = { text: last.reply, via: 'growth:' + last.intent }; if (c.handoff != null && last.handoff !== c.handoff) r.text = '';
+      c.q = c.growth.join(' / ');
+    } else r = await b.respond(c.q);
     const ok = c.expect.test(r.text || '') && !(c.notExpect && c.notExpect.test(r.text || ''));
     results[c.kind] = results[c.kind] || { pass: 0, total: 0 };
     results[c.kind].total++;

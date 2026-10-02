@@ -236,8 +236,9 @@
   const tripRow = (t = {}) => { const tr = document.createElement('tr'); tr.innerHTML = `<td><input class="t-name" value="${esc(t.name)}" placeholder="Goa"></td><td><input class="t-date" type="date" value="${esc(t.date)}"></td><td><input class="t-days" type="number" value="${t.days || ''}" style="width:60px"></td><td><input class="t-price" type="number" value="${t.price || ''}" style="width:90px"></td><td><input class="t-seats" type="number" value="${t.seats || ''}" style="width:60px"></td><td><input class="t-booked" type="number" value="${t.booked || ''}" style="width:60px"></td><td><button class="t-del">×</button></td>`; tr.querySelector('.t-del').onclick = () => tr.remove(); return tr; };
   $('btn-trip-add').onclick = () => $('trips').querySelector('tbody').appendChild(tripRow());
   function readTrips() { return [...$('trips').querySelectorAll('tbody tr')].map(tr => ({ name: tr.querySelector('.t-name').value, date: tr.querySelector('.t-date').value, days: tr.querySelector('.t-days').value, price: tr.querySelector('.t-price').value, seats: tr.querySelector('.t-seats').value, booked: tr.querySelector('.t-booked').value })); }
-  function fillProfile(P) { for (const k of ['name', 'city', 'phone', 'email', 'website', 'instagram', 'hours', 'usp']) $('p-' + k).value = P[k] || ''; $('p-languages').value = (P.languages || []).join(', '); const tb = $('trips').querySelector('tbody'); tb.innerHTML = ''; (P.trips || []).forEach(t => tb.appendChild(tripRow(t))); if (!P.trips || !P.trips.length) tb.appendChild(tripRow()); }
-  $('btn-profile').onclick = () => action($('btn-profile'), async () => { const body = { trips: readTrips() }; for (const k of ['name', 'city', 'phone', 'email', 'website', 'instagram', 'hours', 'usp', 'languages']) body[k] = $('p-' + k).value; const P = await api('POST', '/api/growth/profile', body); $('profile-result').textContent = P.error || `saved · ${(P.trips || []).length} trips · the mind learned the facts`; loadGrow(); });
+  const POL = ['included', 'excluded', 'payment', 'cancellation', 'pickup', 'safety', 'food', 'age'];
+  function fillProfile(P) { for (const k of ['name', 'city', 'phone', 'email', 'website', 'instagram', 'hours', 'usp', 'upi']) $('p-' + k).value = P[k] || ''; for (const k of POL) $('pol-' + k).value = (P.policies || {})[k] || ''; $('p-languages').value = (P.languages || []).join(', '); const tb = $('trips').querySelector('tbody'); tb.innerHTML = ''; (P.trips || []).forEach(t => tb.appendChild(tripRow(t))); if (!P.trips || !P.trips.length) tb.appendChild(tripRow()); }
+  $('btn-profile').onclick = () => action($('btn-profile'), async () => { const body = { trips: readTrips(), policies: {} }; for (const k of ['name', 'city', 'phone', 'email', 'website', 'instagram', 'hours', 'usp', 'languages', 'upi']) body[k] = $('p-' + k).value; for (const k of POL) body.policies[k] = $('pol-' + k).value; const P = await api('POST', '/api/growth/profile', body); $('profile-result').textContent = P.error || `saved · ${(P.trips || []).length} trips · the mind learned the facts`; loadGrow(); });
   async function loadGrow() {
     try { G.ov = await api('GET', '/api/growth'); } catch (e) { return; }
     const ov = G.ov; if (!ov || ov.error) return;
@@ -264,6 +265,12 @@
       $('gbp-audit').innerHTML = g.items.map(i => `<li class="${i.ok ? 'ok' : 'bad'}" title="${esc(i.why)}">${esc(i.what)}</li>`).join('');
       $('gbp-keywords').innerHTML = g.keywords.map(k => `<span>${esc(k)}</span>`).join('');
       $('gbp-posts').innerHTML = g.posts.map(p => `<div class="agent"><h4>${esc(p.title)} <span class="v">${esc(p.type)}</span></h4><div class="draft">${esc(p.body)}${copyBtn(p.title + '\n' + p.body)}</div><div class="meta">Button: ${esc(p.cta)} → ${esc(p.link)}</div></div>`).join('');
+    } else if (name === 'ig') {
+      const c = await api('GET', '/api/growth/content'); if (c.error) return;
+      $('ig-bio').innerHTML = `<div class="draft">${esc(c.bio)}${copyBtn(c.bio)}</div>`;
+      $('ig-tags').innerHTML = c.hashtags.map(h => `<span>${esc(h)}</span>`).join('') + copyBtn(c.hashtags.join(' '));
+      $('ig-rules').innerHTML = c.rules.map(r => `<li>${esc(r)}</li>`).join('');
+      $('ig-plan').innerHTML = c.plan.map(p => `<div class="agent"><h4>${esc(p.day)} · ${esc(p.idea)} <span class="v">${esc(p.format)}</span></h4><div class="meta">${esc(p.script)}</div>${p.caption ? `<div class="draft">${esc(p.caption)}${copyBtn(p.caption)}</div>` : ''}</div>`).join('');
     } else if (name === 'mkt') {
       const m = await api('GET', '/api/growth/campaigns'); if (m.error && !m.campaigns) { $('mkt-drafts').innerHTML = `<div class="empty">${esc(m.error)}</div>`; }
       $('mkt-cal').innerHTML = (m.campaigns || []).map(c => `<li class="${c.status === 'run now' ? 'bad' : ''}">${esc(c.name)} (${esc(c.date)}): ${esc(c.pitch)}${c.trip ? ' → ' + esc(c.trip) : ''}<span>${c.status === 'run now' ? 'RUN NOW' : 'start ' + esc(c.startBy)}</span></li>`).join('');

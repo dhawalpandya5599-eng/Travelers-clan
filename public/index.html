@@ -34,7 +34,7 @@
       <h2>Grow: Google profile, WhatsApp, marketing</h2>
       <p>Our own version of the paid "AI agents for local business" tools, free and inside our site. Fill the setup once. Then every day open <b>Today</b>, send what it drafted, and mark it done. It runs on rules offline and uses an open-source model (Ollama) or Claude when one is connected.</p>
     </div>
-    <div class="subtabs" id="grow-tabs"><button class="sub active" data-sub="today">Today</button><button class="sub" data-sub="setup">Setup</button><button class="sub" data-sub="gbp">Google profile</button><button class="sub" data-sub="wa">WhatsApp agent</button><button class="sub" data-sub="mkt">Marketing &amp; ROI</button></div>
+    <div class="subtabs" id="grow-tabs"><button class="sub active" data-sub="today">Today</button><button class="sub" data-sub="setup">Setup</button><button class="sub" data-sub="gbp">Google profile</button><button class="sub" data-sub="wa">WhatsApp agent</button><button class="sub" data-sub="mkt">Marketing &amp; ROI</button><button class="sub" data-sub="ig">Instagram week</button></div>
 
     <div class="sub-page active" id="sub-today">
       <div class="work">
@@ -60,9 +60,16 @@
             <label>Company name<input id="p-name"></label><label>City<input id="p-city" placeholder="e.g. Ahmedabad"></label>
             <label>WhatsApp Business number<input id="p-phone" placeholder="10 digits"></label><label>Email<input id="p-email"></label>
             <label>Website<input id="p-website"></label><label>Instagram<input id="p-instagram" placeholder="@handle"></label>
-            <label>Hours<input id="p-hours"></label><label>Languages<input id="p-languages" placeholder="English, Hindi, Gujarati"></label>
+            <label>Hours<input id="p-hours"></label><label>UPI id for advances<input id="p-upi" placeholder="name@bank"></label><label>Languages<input id="p-languages" placeholder="English, Hindi, Gujarati"></label>
           </div>
           <label>What makes us different (one line)<input id="p-usp"></label>
+          <h3>Policies the agent answers from <span class="hint">plain sentences; it quotes these word for word</span></h3>
+          <div class="grid2" id="policies">
+            <label>Included<textarea id="pol-included" rows="3"></textarea></label><label>Not included<textarea id="pol-excluded" rows="3"></textarea></label>
+            <label>Payment<textarea id="pol-payment" rows="3"></textarea></label><label>Cancellation<textarea id="pol-cancellation" rows="3"></textarea></label>
+            <label>Pickup<textarea id="pol-pickup" rows="3"></textarea></label><label>Safety<textarea id="pol-safety" rows="3"></textarea></label>
+            <label>Food<textarea id="pol-food" rows="3"></textarea></label><label>Ages / families<textarea id="pol-age" rows="3"></textarea></label>
+          </div>
           <div class="actions"><button class="primary" id="btn-profile">Save setup</button><span id="profile-result" class="hint"></span></div>
         </div>
         <div class="col">
@@ -121,6 +128,18 @@
           <h3>Broadcast drafts <span class="hint">one list per segment in WhatsApp Business</span></h3>
           <div id="mkt-drafts" class="council-out"></div>
           <ul id="mkt-rules" class="facts"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="sub-page" id="sub-ig">
+      <div class="work">
+        <div class="col">
+          <h3>Bio <span class="hint">paste into Instagram</span></h3><div id="ig-bio" class="agent"></div>
+          <h3>Hashtags</h3><div id="ig-tags" class="chips"></div>
+          <ul id="ig-rules" class="facts"></ul>
+        </div>
+        <div class="col">
+          <h3>This week, one post a day</h3><div id="ig-plan" class="council-out"></div>
         </div>
       </div>
     </div>
