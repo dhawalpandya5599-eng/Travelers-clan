@@ -35,8 +35,8 @@ button:disabled { opacity: .5; cursor: progress; }
 .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
 .side { background: var(--side); border-right: 1px solid var(--line); padding: 22px 18px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 0; height: 100vh; }
 .logo { display: flex; align-items: center; gap: 10px; padding: 4px 4px 16px; border-bottom: 1px solid var(--line); }
-.mark { width: 34px; height: 24px; color: var(--ink); flex: none; }
-.wordmark { font-size: 13px; letter-spacing: .3em; font-weight: 500; color: var(--ink); white-space: nowrap; } .wordmark em { font-style: normal; color: var(--accent); }
+.mark { height: 30px; width: auto; flex: none; } :root[data-theme="dark"] .mark { filter: brightness(0) invert(1); opacity: .92; }
+.wordmark { font-size: 12.5px; letter-spacing: .32em; font-weight: 500; color: #8c8c8c; white-space: nowrap; } :root[data-theme="dark"] .wordmark { color: #b9c0cf; } .wordmark em { font-style: normal; color: var(--accent); }
 .theme { margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; color: var(--ink); font-size: 14px; }
 .nav { display: flex; flex-direction: column; gap: 4px; }
 .tab { display: flex; align-items: center; gap: 10px; text-align: left; background: none; border: 0; border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 500; color: var(--ink); cursor: pointer; }

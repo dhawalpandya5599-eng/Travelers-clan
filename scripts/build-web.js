@@ -172,7 +172,7 @@ const glue = `
 
 const html = read('public/index.html');
 const body = html.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, '').replace(/<script src="\/app.js"><\/script>/, '')
-  .replace('src="/vendor/three.min.js"', 'src="https://unpkg.com/three@0.160.0/build/three.min.js"').replace('src="/vendor/three-spritetext.min.js"', 'src="https://unpkg.com/three-spritetext@1.8.2/dist/three-spritetext.min.js"').replace('src="/vendor/3d-force-graph.min.js"', 'src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"');
+  .replace(/src="\/logo-mark.png"/g, 'src="data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '..', 'public', 'logo-mark.png')).toString('base64') + '"').replace('src="/vendor/three.min.js"', 'src="https://unpkg.com/three@0.160.0/build/three.min.js"').replace('src="/vendor/three-spritetext.min.js"', 'src="https://unpkg.com/three-spritetext@1.8.2/dist/three-spritetext.min.js"').replace('src="/vendor/3d-force-graph.min.js"', 'src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"');
 const css = read('public/style.css').replace(':root {', ':root { color-scheme: dark;');
 const page = `<title>ATLAS Clan Mind</title>
 <style>${css}
