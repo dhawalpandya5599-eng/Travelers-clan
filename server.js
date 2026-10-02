@@ -32,6 +32,7 @@ setInterval(async () => {
   brain.tick(1 / 60);
   if (sinceSleep >= 30 || Date.now() - lastSleep > 20 * 60e3) { sinceSleep = 0; lastSleep = Date.now(); await brain.sleep(); }
   if (Date.now() - lastEvolve > 60 * 60e3) { lastEvolve = Date.now(); brain.evolve(1); }
+  if (Date.now() - (brain.autopilot.state.lastRun || 0) > 30 * 60e3) brain.autopilot.run().catch(() => {});
   // The growing loop: once a day the local server raises itself and snapshots the result (ATLAS_UPBRINGING_HOURS to tune).
   if (Date.now() - lastUpbringing > (+process.env.ATLAS_UPBRINGING_HOURS || 24) * 3600e3) { lastUpbringing = Date.now(); await brain.upbringing({ generations: 5 }); snapshot(); }
 }, 60e3).unref();
@@ -75,6 +76,12 @@ const routes = {
   'POST /api/sleep': async () => brain.sleep(),
   'POST /api/evolve': async (q, body) => brain.evolve(Math.min(50, Math.max(1, +body.generations || 1))),
   'POST /api/grow': async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError },
+  'GET /api/autopilot': async () => ({ pending: await brain.autopilot.run(), kpis: brain.autopilot.kpis(), auto: brain.autopilot.state.auto, outbox: brain.autopilot.outbox().length, recent: brain.autopilot.state.proposals.filter(p => p.status !== 'pending').slice(0, 20) }),
+  'POST /api/autopilot/approve': async (q, body) => brain.autopilot.approve(body.id) || { error: 'no such proposal' },
+  'POST /api/autopilot/dismiss': async (q, body) => brain.autopilot.dismiss(body.id, body.reason || '') || { error: 'no such proposal' },
+  'POST /api/autopilot/auto': async (q, body) => brain.autopilot.setAuto(String(body.kind || 'follow_up'), !!body.on),
+  'GET /api/outbox': async () => brain.autopilot.outbox(),
+  'POST /api/outbox/sent': async (q, body) => brain.autopilot.sent(body.id, !!body.ok, body.error) || { error: 'no such message' },
   'POST /api/agent': async (q, body) => brain.agent.run(String(body.request || body.text || '')),
   'POST /api/agent/correct': async (q, body) => brain.agent.correct(body.id, body.correction) || { error: 'no such run' },
   'POST /api/agent/approve': async (q, body) => brain.agent.approve(body.id) || { error: 'no such run' },

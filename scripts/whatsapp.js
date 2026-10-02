@@ -34,7 +34,7 @@ async function start() {
   sock.ev.on('creds.update', saveCreds);
   sock.ev.on('connection.update', (u) => {
     if (u.qr) { try { require('qrcode-terminal').generate(u.qr, { small: true }); } catch { console.log('QR:', u.qr); } console.log('Scan with WhatsApp Business → Linked devices.'); }
-    if (u.connection === 'open') { console.log('Connected. ATLAS at', ATLAS_URL); startDigest(sock); }
+    if (u.connection === 'open') { console.log('Connected. ATLAS at', ATLAS_URL); startDigest(sock); startOutbox(sock); }
     if (u.connection === 'close') { const code = u.lastDisconnect && u.lastDisconnect.error && u.lastDisconnect.error.output && u.lastDisconnect.error.output.statusCode; if (code !== DisconnectReason.loggedOut) { console.log('Reconnecting…'); start(); } else console.log('Logged out. Delete', AUTH_DIR, 'and scan again.'); }
   });
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
@@ -52,6 +52,22 @@ async function start() {
       } catch (e) { console.error('ATLAS unreachable:', e.message); }
     }
   });
+}
+/** Every 20 s: send what the chief approved in the dashboard (autopilot outbox). */
+let outboxTimer = null;
+function startOutbox(sock) {
+  if (outboxTimer) return;
+  outboxTimer = setInterval(async () => {
+    try {
+      const items = await atlas('GET', '/api/outbox');
+      for (const m of items.slice(0, 5)) {
+        const to = String(m.to).replace(/\D/g, ''); if (to.length < 10) { await atlas('POST', '/api/outbox/sent', { id: m.id, ok: false, error: 'no phone number' }); continue; }
+        const jid = (to.length === 10 ? '91' + to : to) + '@s.whatsapp.net';
+        try { await sock.sendPresenceUpdate('composing', jid); await new Promise(r => setTimeout(r, 1200)); await sock.sendMessage(jid, { text: m.text }); await atlas('POST', '/api/outbox/sent', { id: m.id, ok: true }); console.log('Sent to', to, ':', m.text.slice(0, 60)); }
+        catch (e) { await atlas('POST', '/api/outbox/sent', { id: m.id, ok: false, error: e.message }); }
+      }
+    } catch (e) { /* ATLAS offline; try again */ }
+  }, 20e3);
 }
 /** 9:00 IST every day: the day's work, sent to this number itself (or WA_DIGEST_TO=91XXXXXXXXXX). */
 let digestTimer = null, lastDigestDay = '';

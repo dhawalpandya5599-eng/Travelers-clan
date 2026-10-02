@@ -40,6 +40,19 @@
         <details class="steps-detail"><summary class="muted">How it got there</summary><ol id="agent-steps" class="trace"></ol></details>
       </div>
     </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="two">
+      <div class="card">
+        <h2>ATLAS proposes <span class="muted" id="ap-count"></span></h2>
+        <p class="muted">It watches leads, holds, seats, campaigns, risks and reviews on its own. Approve and the connector sends; dismiss with a reason and it learns.</p>
+        <label class="checkrow"><input type="checkbox" id="ap-auto"> Send follow-up messages automatically without asking</label>
+        <div id="ap-list" class="stack"><div class="empty">Nothing to propose yet. Add the number and trips in Set up.</div></div>
+      </div>
+      <div>
+        <div class="card"><h2>The team, live</h2><div id="team" class="team"></div></div>
+        <div class="card"><h2>Recently done</h2><ul id="ap-recent" class="list"></ul></div>
+      </div>
+    </div>
     <h2>Set up once, in order</h2>
     <ol class="steps" id="home-steps">
       <li data-step="phone"><b>Add the company WhatsApp number and city</b><span>Every reply, post and button uses it.</span><button class="btn" data-go="setup">Open Set up</button></li>

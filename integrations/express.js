@@ -30,6 +30,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
     brain.tick(1 / 60);
     if (sinceSleep >= 30 || Date.now() - lastSleep > 20 * 60e3) { sinceSleep = 0; lastSleep = Date.now(); await brain.sleep(); }
     if (Date.now() - lastEvolve > 60 * 60e3) { lastEvolve = Date.now(); brain.evolve(1); }
+    if (Date.now() - (brain.autopilot.state.lastRun || 0) > 30 * 60e3) brain.autopilot.run().catch(() => {});
     if (Date.now() - lastUp > 24 * 3600e3) { lastUp = Date.now(); await brain.upbringing({ generations: 5 }); }
   }, 60e3).unref();
 
@@ -55,6 +56,12 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/sleep', wrap(() => brain.sleep()));
   router.post('/api/evolve', wrap(req => brain.evolve(Math.min(50, Math.max(1, +req.body.generations || 1)))));
   router.post('/api/grow', wrap(async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError }));
+  router.get('/api/autopilot', wrap(async () => ({ pending: await brain.autopilot.run(), kpis: brain.autopilot.kpis(), auto: brain.autopilot.state.auto, outbox: brain.autopilot.outbox().length, recent: brain.autopilot.state.proposals.filter(p => p.status !== 'pending').slice(0, 20) })));
+  router.post('/api/autopilot/approve', wrap(req => brain.autopilot.approve(req.body.id) || { error: 'no such proposal' }));
+  router.post('/api/autopilot/dismiss', wrap(req => brain.autopilot.dismiss(req.body.id, req.body.reason || '') || { error: 'no such proposal' }));
+  router.post('/api/autopilot/auto', wrap(req => brain.autopilot.setAuto(String(req.body.kind || 'follow_up'), !!req.body.on)));
+  router.get('/api/outbox', wrap(() => brain.autopilot.outbox()));
+  router.post('/api/outbox/sent', wrap(req => brain.autopilot.sent(req.body.id, !!req.body.ok, req.body.error) || { error: 'no such message' }));
   router.post('/api/agent', wrap(req => brain.agent.run(String(req.body.request || req.body.text || ''))));
   router.post('/api/agent/correct', wrap(req => brain.agent.correct(req.body.id, req.body.correction) || { error: 'no such run' }));
   router.post('/api/agent/approve', wrap(req => brain.agent.approve(req.body.id) || { error: 'no such run' }));

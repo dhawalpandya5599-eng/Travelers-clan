@@ -125,9 +125,9 @@
     while (log.children.length > 80) log.lastChild.remove();
   }
   function connect() {
-    if (LOCAL) { LOCAL.onEvent(e => { pushLog(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); }); return; }
+    if (LOCAL) { LOCAL.onEvent(e => { pushLog(e); teamPulse(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); }); return; }
     const es = new EventSource(BASE + '/api/events');
-    es.onmessage = (m) => { const e = JSON.parse(m.data); pushLog(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); };
+    es.onmessage = (m) => { const e = JSON.parse(m.data); pushLog(e); teamPulse(e); if (['sleep', 'evolve', 'learn', 'reward'].includes(e.kind)) graph.flash(); };
     es.onerror = () => { es.close(); setTimeout(connect, 3000); };
   }
 
@@ -234,7 +234,7 @@
   const G = {};
   const copyBtn = (text) => `<button class="copy" data-copy="${esc(text)}">Copy</button>`;
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-copy]'); if (b) { navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1200); } });
-  function loadPage(name) { if (name === 'today') loadSub('today'); else if (name === 'marketing') { loadSub('gbp'); loadSub('mkt'); loadSub('ig'); } else if (name === 'home' || name === 'setup') loadGrow(); }
+  function loadPage(name) { if (name === 'today') loadSub('today'); else if (name === 'marketing') { loadSub('gbp'); loadSub('mkt'); loadSub('ig'); } else if (name === 'home') { loadGrow(); loadAutopilot(); } else if (name === 'setup') loadGrow(); }
   const tripRow = (t = {}) => { const tr = document.createElement('tr'); tr.innerHTML = `<td><input class="t-name" value="${esc(t.name || '')}" placeholder="Goa"></td><td><input class="t-date" type="date" value="${esc(t.date || '')}"></td><td><input class="t-days" type="number" value="${t.days || ''}" style="width:60px"></td><td><input class="t-price" type="number" value="${t.price || ''}" style="width:90px"></td><td><input class="t-seats" type="number" value="${t.seats || ''}" style="width:60px"></td><td><input class="t-booked" type="number" value="${t.booked || ''}" style="width:60px"></td><td><button class="t-del">×</button></td>`; tr.querySelector('.t-del').onclick = () => tr.remove(); return tr; };
   $('btn-trip-add').onclick = () => $('trips').querySelector('tbody').appendChild(tripRow());
   function readTrips() { return [...$('trips').querySelectorAll('tbody tr')].map(tr => ({ name: tr.querySelector('.t-name').value, date: tr.querySelector('.t-date').value, days: tr.querySelector('.t-days').value, price: tr.querySelector('.t-price').value, seats: tr.querySelector('.t-seats').value, booked: tr.querySelector('.t-booked').value })); }
@@ -300,6 +300,21 @@
   $('s-auto').onchange = () => api('POST', '/api/growth/settings', { autoReply: $('s-auto').checked });
   const waId = 'test-' + Math.random().toString(36).slice(2, 8);
   $('wa-form').addEventListener('submit', async (e) => { e.preventDefault(); const t = $('wa-input').value.trim(); if (!t) return; $('wa-input').value = ''; const m = $('wa-messages'); const add = (c, x, meta) => { const d = document.createElement('div'); d.className = 'msg ' + c; d.textContent = x; if (meta) { const s = document.createElement('span'); s.className = 'meta'; s.textContent = meta; d.appendChild(s); } m.appendChild(d); m.scrollTop = m.scrollHeight; }; add('user', t); busy(true); const r = await api('POST', '/api/growth/chat', { id: waId, text: t, source: 'test' }); busy(false); add('atlas', r.reply || r.error || '…', `stage ${r.stage} · ${r.language}${r.handoff ? ' · HANDOFF to human' : ''}${r.issues && r.issues.length ? ' · critic: ' + r.issues[0] : ''}`); });
+  // ---------- Mission control: KPIs, proposals, the team ----------
+  const TEAM = [['sales', 'Sales', 'qualifies and drafts replies'], ['operations', 'Operations', 'feasibility, routes, prices'], ['cx', 'Customer experience', 'tone and open questions'], ['news', 'Risk desk', 'news affecting trips'], ['critic', 'Critic', 'finds every loophole'], ['marketing', 'Marketing', 'campaigns and posts'], ['autopilot', 'Autopilot', 'proposes the next actions'], ['agent', 'Reasoning', 'thinks with the model'], ['learn', 'Memory', 'learns from every exchange'], ['sleep', 'Sleep', 'consolidates into facts']];
+  $('team').innerHTML = TEAM.map(([k, n, d]) => `<div class="member" data-member="${k}"><i></i><div><b>${n}</b><span>${d}</span></div></div>`).join('');
+  function teamPulse(e) { const txt = String(e.text || ''); const keys = []; if (e.kind === 'council') for (const [k] of TEAM) if (new RegExp('\\b' + k + '\\b').test(txt)) keys.push(k); if (['autopilot', 'agent', 'learn', 'sleep'].includes(e.kind)) keys.push(e.kind); for (const k of keys) { const el = document.querySelector(`.member[data-member="${k}"]`); if (!el) continue; el.classList.add('on'); el.querySelector('span').textContent = txt.slice(0, 70); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 4000); } }
+  async function loadAutopilot() {
+    let a; try { a = await api('GET', '/api/autopilot'); } catch (e) { return; } if (!a || a.error) return;
+    const k = a.kpis; const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+    $('kpis').innerHTML = [['Seats left', k.seatsLeft, `${k.booked}/${k.seats} booked · ${k.fill}% full`], ['Booked revenue', inr(k.revenueBooked), `${inr(k.revenueOpen)} still open`], ['Open leads', k.leadsOpen, `${k.holds} on hold · ${k.leadsTotal} total`], ['Next departure', k.nextTrip ? k.nextTrip.days + ' days' : '–', k.nextTrip ? `${k.nextTrip.name} · ${k.nextTrip.left} left` : 'add a trip'], ['Replies 24h', k.replies24, `${k.sentToday} sent today`], ['To approve', k.pending, 'proposals waiting']].map(([t, v, s]) => `<div class="kpi"><div class="k">${t}</div><b>${v}</b><small>${esc(s)}</small></div>`).join('');
+    $('ap-count').textContent = a.pending.length ? `${a.pending.length} waiting` : ''; $('ap-auto').checked = !!(a.auto && a.auto.follow_up);
+    $('ap-list').innerHTML = a.pending.length ? a.pending.map(p => `<div class="prop p${p.priority}"><h4>${esc(p.title)}</h4><div class="why">${esc(p.why || '')}</div>${p.message ? `<div class="msg">${esc(p.message)}</div>` : ''}${p.options ? `<ul class="opts">${p.options.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}<div class="actions"><button class="btn primary" data-ap="${p.id}">${p.to && p.message ? 'Approve & send' : p.action ? 'Done: ' + esc(p.action) : 'Approve'}</button>${p.message ? copyBtn(p.message) : ''}<button class="btn" data-apx="${p.id}">Dismiss</button></div></div>`).join('') : '<div class="empty">Nothing to propose right now. ATLAS checks again every 30 minutes.</div>';
+    $('ap-recent').innerHTML = (a.recent || []).map(r => `<li>${esc(r.title)}<span>${r.status}${r.reason ? ': ' + esc(r.reason) : ''}</span></li>`).join('') || '<li>Nothing yet.</li>';
+    $('ap-list').querySelectorAll('[data-ap]').forEach(b => b.onclick = () => api('POST', '/api/autopilot/approve', { id: b.dataset.ap }).then(loadAutopilot));
+    $('ap-list').querySelectorAll('[data-apx]').forEach(b => b.onclick = () => { const reason = prompt('Why not? (optional, ATLAS learns from it)') || ''; api('POST', '/api/autopilot/dismiss', { id: b.dataset.apx, reason }).then(loadAutopilot); });
+  }
+  $('ap-auto').onchange = () => api('POST', '/api/autopilot/auto', { kind: 'follow_up', on: $('ap-auto').checked });
   // ---------- The agent: ask ATLAS to do anything ----------
   let lastRun = null;
   $('agent-form').addEventListener('submit', async (e) => {
@@ -319,5 +334,5 @@
   $('agent-good').onclick = () => lastRun && api('POST', '/api/agent/approve', { id: lastRun.id }).then(() => { $('agent-status').textContent = 'Thanks. Remembered as a good answer.'; refresh(); });
   $('agent-bad').onclick = () => { $('agent-correct').hidden = false; $('agent-correction').focus(); };
   $('agent-correct-send').onclick = () => { const c = $('agent-correction').value.trim(); if (!c || !lastRun) return; api('POST', '/api/agent/correct', { id: lastRun.id, correction: c }).then(() => { $('agent-status').textContent = 'Learned. Next time it answers this way.'; $('agent-correct').hidden = true; $('agent-correction').value = ''; refresh(); }); };
-  loadGrow();
+  loadGrow(); loadAutopilot();
 })();
