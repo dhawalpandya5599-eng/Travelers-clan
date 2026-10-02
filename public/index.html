@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Travelers Clan · Office</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M3 24 L17 10 L22 15 L29 8 L29 24 Z' fill='%23111'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 32'%3E%3Cpath d='M2 20 L44 4 L30 30 L22 20 Z' fill='none' stroke='%23c6684f' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <div class="shell">
 <aside class="side">
-  <div class="logo"><img id="site-logo" alt="" hidden><div class="wordmark"><span class="script">Traveler’s Clan</span><span class="tag">Memories worth timetravel</span></div></div>
+  <div class="logo"><svg class="mark" viewBox="0 0 48 32" aria-hidden="true"><path d="M2 20 L44 4 L30 30 L22 20 Z M22 20 L44 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="wordmark">TRAVELERS <em>CLAN</em></span><button class="theme" id="theme-toggle" title="Light / dark">☾</button></div>
   <nav class="nav" id="tabs">
     <button class="tab active" data-tab="home"><i>1</i>Start here</button>
     <button class="tab" data-tab="setup"><i>2</i>Set up</button>
@@ -29,7 +29,7 @@
 <main class="content">
   <!-- HOME -->
   <section class="page active" id="page-home">
-    <header class="ph"><h1>Start here</h1><p>ATLAS is your office assistant. It answers customers on WhatsApp and the website, keeps your lead list, tells you what to do each morning, and writes your posts. Do these four things once, in order.</p></header>
+    <header class="ph"><span class="eyebrow">Welcome back</span><h1>Start here</h1><p>ATLAS is your office assistant. It answers customers on WhatsApp and the website, keeps your lead list, tells you what to do each morning, and writes your posts. Do these four things once, in order.</p></header>
     <ol class="steps" id="home-steps">
       <li data-step="phone"><b>Add the company WhatsApp number and city</b><span>Every reply, post and button uses it.</span><button class="btn" data-go="setup">Open Set up</button></li>
       <li data-step="trips"><b>Add three trips with dates, prices and seats</b><span>Fixed dates sell. The website cards and the agent switch on the moment you save.</span><button class="btn" data-go="setup">Open Set up</button></li>
@@ -45,7 +45,7 @@
 
   <!-- SETUP -->
   <section class="page" id="page-setup">
-    <header class="ph"><h1>Set up</h1><p>Fill this once. Change a trip here and the website, the agent and the posts all change with it.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Set up</h1><p>Fill this once. Change a trip here and the website, the agent and the posts all change with it.</p></header>
     <div class="card"><h2>1. Business</h2>
       <div class="grid2">
         <label>Company name<input id="p-name"></label><label>City<input id="p-city" placeholder="e.g. Ahmedabad"></label>
@@ -84,7 +84,7 @@
 
   <!-- TODAY -->
   <section class="page" id="page-today">
-    <header class="ph"><h1>Today's work</h1><p>Copy each message, send it on WhatsApp, press Done. Then post one reel. That is the whole system.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Today's work</h1><p>Copy each message, send it on WhatsApp, press Done. Then post one reel. That is the whole system.</p></header>
     <div class="two">
       <div>
         <h2>Follow-ups due now</h2>
@@ -103,7 +103,7 @@
 
   <!-- CUSTOMERS -->
   <section class="page" id="page-customers">
-    <header class="ph"><h1>Reply to a customer</h1><p>Paste the conversation. ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team checks the plan, the tone and the risks.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Reply to a customer</h1><p>Paste the conversation. ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team checks the plan, the tone and the risks.</p></header>
     <div class="two">
       <div class="card">
         <label for="council-text">Customer conversation <span class="muted">one message per line; start our replies with <code>clan:</code></span></label>
@@ -130,7 +130,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- TRIPS -->
   <section class="page" id="page-trips">
-    <header class="ph"><h1>Check a trip plan</h1><p>Describe the trip in one line. You get the season check, a day-by-day plan with a price, and every loophole with a fix.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Check a trip plan</h1><p>Describe the trip in one line. You get the season check, a day-by-day plan with a price, and every loophole with a fix.</p></header>
     <div class="two">
       <div class="card">
         <label for="plan-text">Trip requirements</label>
@@ -147,7 +147,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- MARKETING -->
   <section class="page" id="page-marketing">
-    <header class="ph"><h1>Marketing</h1><p>Everything here is written from your trips. Copy, paste, post. Update a trip in Set up and it all updates.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Marketing</h1><p>Everything here is written from your trips. Copy, paste, post. Update a trip in Set up and it all updates.</p></header>
     <div class="two">
       <div>
         <div class="card"><h2>Google Business Profile <span class="muted" id="gbp-score"></span></h2><ul id="gbp-audit" class="list check"></ul>
@@ -169,7 +169,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- TEACH -->
   <section class="page" id="page-teach">
-    <header class="ph"><h1>Teach ATLAS</h1><p>Type a question and it answers from what it knows. Type a fact and it remembers it. If it is wrong, say "No, …" and it corrects itself. Use the thumbs to reward answers.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Teach ATLAS</h1><p>Type a question and it answers from what it knows. Type a fact and it remembers it. If it is wrong, say "No, …" and it corrects itself. Use the thumbs to reward answers.</p></header>
     <div class="two">
       <div class="card chatcol">
         <div class="messages" id="messages"></div>
@@ -192,7 +192,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- MIND -->
   <section class="page" id="page-mind">
-    <header class="ph"><h1>Inside the mind</h1><p>How it works under the hood. You never need this page to run the business.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Inside the mind</h1><p>How it works under the hood. You never need this page to run the business.</p></header>
     <div class="mindgrid">
       <div class="card brain"><h3>Knowledge map <span class="muted">click a dot to ask about it</span></h3><canvas id="graph"></canvas><div class="wm" id="wm"></div></div>
       <div class="card"><h3>Learning progress</h3><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>

@@ -259,30 +259,10 @@
   }
   document.querySelectorAll('[data-copy]').forEach(() => {});
   document.addEventListener('click', (e) => { if (e.target.closest('#trips-snippet, #widget-snippet')) { try { localStorage.setItem('atlas-site-done', '1'); } catch (x) {} } });
-  /** Take the brand from the website itself: its logo and the colours and fonts declared on :root of its stylesheets. Falls back to the built-in palette. */
-  async function brand() {
-    if (LOCAL) return;
-    try {
-      const html = await (await fetch('/', { credentials: 'same-origin' })).text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const logo = [...doc.querySelectorAll('img')].find(i => /logo/i.test(i.getAttribute('src') || '') || /logo/i.test(i.getAttribute('alt') || '') || /logo/i.test(i.className || ''));
-      if (logo) { const img = $('site-logo'); img.src = new URL(logo.getAttribute('src'), location.origin).href; img.hidden = false; img.onload = () => { document.querySelector('.wordmark .script').style.display = 'none'; }; img.onerror = () => { img.hidden = true; }; }
-      const sheets = [...doc.querySelectorAll('link[rel~="stylesheet"]')].map(l => l.getAttribute('href')).filter(h => h && !/^https?:\/\/(fonts|cdn)/.test(h)).slice(0, 4);
-      let css = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
-      for (const h of sheets) { try { css += '\n' + await (await fetch(new URL(h, location.origin).href)).text(); } catch (e) {} }
-      const root = (css.match(/:root\s*\{([^}]*)\}/g) || []).join(' ');
-      const vars = {}; for (const m of root.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) vars[m[1].toLowerCase()] = m[2].trim();
-      const pick = (...names) => { for (const n of names) { const k = Object.keys(vars).find(v => v === n || v.includes(n)); if (k && /^(#|rgb|hsl)/.test(vars[k])) return vars[k]; } return null; };
-      const accent = pick('primary', 'accent', 'brand', 'teal', 'main'); const ink = pick('ink', 'text', 'dark', 'black'); const paper = pick('bg', 'background', 'paper', 'cream', 'light');
-      const R = document.documentElement.style;
-      if (accent) R.setProperty('--accent', accent); if (ink) R.setProperty('--ink', ink); if (paper && paper !== '#fff' && paper !== '#ffffff') R.setProperty('--paper', paper);
-      const fontVar = Object.keys(vars).find(v => /font|family/.test(v) && /heading|display|title|serif/.test(v)) || Object.keys(vars).find(v => /font|family/.test(v));
-      const face = fontVar ? vars[fontVar] : (css.match(/font-family\s*:\s*([^;}]+)/) || [])[1];
-      if (face && !/system-ui|inherit/.test(face)) R.setProperty('--display', face);
-      const gf = [...doc.querySelectorAll('link[href*="fonts.googleapis"]')].map(l => l.href); for (const h of gf) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = h; document.head.appendChild(l); }
-    } catch (e) { /* keep the built-in look */ }
-  }
-  brand();
+  // Light / dark, same as the website's sun/moon toggle. Remembered per browser.
+  const setTheme = (t) => { document.documentElement.setAttribute('data-theme', t); $('theme-toggle').textContent = t === 'dark' ? '☀' : '☾'; try { localStorage.setItem('atlas-theme', t); } catch (e) {} };
+  try { setTheme(localStorage.getItem('atlas-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); } catch (e) { setTheme('light'); }
+  $('theme-toggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   async function loadSub(name) {
     if (name === 'today') {
       const t = await api('GET', '/api/growth/today'); if (t.error) return;
