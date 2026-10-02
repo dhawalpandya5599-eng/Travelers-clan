@@ -47,7 +47,7 @@ async function run() {
   const flag = (k, ex) => { (weak[k] = weak[k] || []).push(ex); };
   for (let i = 0; i < N; i++) {
     const lang = pick(['english', 'english', 'hinglish', 'hinglish', 'hindi', 'gujarati']); const pathName = pick(PATHS); const trip = pick(TRIPS);
-    const c = conversation(lang, pathName, trip); const id = `s${i}`; const seen = new Set(); let gotHold = false; convs++;
+    const c = conversation(lang, pathName, trip); const id = `s${i}`; for (const t of g.profile.trips) t.holds = []; // each persona is an independent customer: seats held by earlier ones do not carry over const seen = new Set(); let gotHold = false; convs++;
     for (const [msg, expect] of c.turns) {
       const r = await g.chat({ id, text: msg, source: 'stress' }); turnsTotal++;
       const reply = r.reply || '';

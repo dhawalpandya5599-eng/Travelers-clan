@@ -28,7 +28,7 @@ class Autopilot {
     const k = this.key(p.kind, p.ref); const existing = this.state.proposals.find(x => x.key === k && x.status === 'pending');
     if (existing) { Object.assign(existing, p, { key: k }); return existing; }
     if (this.state.done[k] && Date.now() - this.state.done[k] < (p.repeatDays || 3) * DAY) return null;
-    const e = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), key: k, status: 'pending', t: Date.now(), ...p };
+    this.state.seq = (this.state.seq || 0) + 1; const e = { id: Date.now().toString(36) + '-' + this.state.seq.toString(36), key: k, status: 'pending', t: Date.now(), ...p };
     this.state.proposals.unshift(e); return e;
   }
 
@@ -62,6 +62,10 @@ class Autopilot {
     // 7. Weekly post.
     if (g.upcoming(1).length && now - (this.state.lastPostAt || 0) > 7 * DAY) { const posts = await g.gbpPosts(); this.propose({ kind: 'weekly_post', ref: new Date().toISOString().slice(0, 10), priority: 3, title: 'No Google post this week', why: 'Google posts expire after 7 days; a dead profile looks like a dead business.', message: posts[0] ? posts[0].title + '\n' + posts[0].body : '', action: 'post it on the Google Business Profile', repeatDays: 7 }); }
     this.state.lastRun = now;
+    // Prune: keep 30 days of decided proposals, 30 days of sent outbox, and done keys for 60 days.
+    this.state.proposals = this.state.proposals.filter(p => p.status === 'pending' || now - (p.at || p.t) < 30 * DAY).slice(0, 500);
+    this.state.outbox = this.state.outbox.filter(m => !m.sent || now - m.sent < 30 * DAY);
+    for (const [k, t] of Object.entries(this.state.done)) if (now - t > 60 * DAY) delete this.state.done[k];
     // Auto-send kinds the chief switched on.
     for (const p of this.state.proposals) if (p.status === 'pending' && p.message && p.to && this.state.auto[p.kind]) this.approve(p.id, { silent: true });
     this.save();
@@ -81,8 +85,8 @@ class Autopilot {
   }
   dismiss(id, reason = '') { const p = this.state.proposals.find(x => x.id === id); if (!p) return null; p.status = 'dismissed'; p.reason = reason; p.at = Date.now(); this.state.done[p.key] = Date.now(); if (reason) this.brain.teach(`The chief dismissed "${p.title}" because: ${reason}.`, { source: 'chief', importance: 0.7 }); this.save(); return p; }
   /** The connector takes what is approved and reports back. */
-  outbox() { return this.state.outbox.filter(m => !m.sent); }
-  sent(id, ok, error) { const m = this.state.outbox.find(x => x.id === id); if (!m) return null; m.sent = Date.now(); m.ok = !!ok; if (error) m.error = error; this.save(); return m; }
+  outbox() { return this.state.outbox.filter(m => !m.sent && (m.attempts || 0) < 3); }
+  sent(id, ok, error) { const m = this.state.outbox.find(x => x.id === id); if (!m) return null; if (ok) { m.sent = Date.now(); m.ok = true; } else { m.attempts = (m.attempts || 0) + 1; m.error = error || 'send failed'; if (m.attempts >= 3) { m.sent = Date.now(); m.ok = false; const p = this.state.proposals.find(x => x.id === id); if (p) { p.status = 'pending'; p.why = (p.why || '') + ' (automatic send failed 3 times: ' + m.error + '; send by hand)'; } this.brain.event('autopilot', `send failed 3 times for ${id}: ${m.error}`); } } this.save(); return m; }
   setAuto(kind, on) { this.state.auto[kind] = !!on; this.save(); return this.state.auto; }
   /** Live numbers for mission control. */
   kpis() {

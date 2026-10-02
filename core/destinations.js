@@ -69,10 +69,11 @@ const D = {
   varkala: { name: 'Varkala', country: 'India', hub: 'Trivandrum', altitude: 0, maxAltitude: 50, season: [10, 11, 12, 1, 2, 3], shoulder: [9, 4], minDays: 3, idealDays: 4, costPerDay: 2800, permits: [], acclimatize: 0, route: ['Cliff cafes and beach', 'Kappil and backwaters', 'Surf or yoga, departure'], highlights: ['Cliff', 'Surfing'], risks: ['monsoon June to August'], kids: 'good', seniors: 'good', drive: {} },
 };
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-function monthNum(w) { const i = MONTHS.findIndex(m => m.startsWith(String(w || '').toLowerCase().slice(0, 3))); return i < 0 ? null : i + 1; }
+function monthNum(w) { if (!w || !String(w).trim()) return null; const i = MONTHS.findIndex(m => m.startsWith(String(w || '').toLowerCase().slice(0, 3))); return i < 0 ? null : i + 1; }
 const { MORE, activitiesFor } = require('./world');
 Object.assign(D, MORE);
 const ALIASES = { jaipur: ['jaipur', 'pink city'], ooty: ['ooty', 'udhagamandalam', 'nilgiris'], jimcorbett: ['corbett', 'jim corbett'], europe: ['europe', 'paris', 'switzerland', 'amsterdam', 'schengen', 'interlaken'], kazakhstan: ['kazakhstan', 'almaty'], hongkong: ['hong kong', 'hongkong'], mountabu: ['mount abu', 'abu'], gangtok: ['gangtok'], kedarkantha: ['kedarkantha'], kutch: ['rann of kutch', 'rann', 'kutch', 'kachchh', 'dhordo', 'white desert'], lonavala: ['lonavala', 'lonavla', 'khandala'], dharamshala: ['dharamshala', 'dharamsala', 'mcleod', 'mcleodganj', 'triund'], pondicherry: ['pondicherry', 'puducherry', 'pondy'], varanasi: ['varanasi', 'banaras', 'kashi'], ladakh: ['ladakh', 'leh'], kashmir: ['kashmir', 'srinagar', 'gulmarg'], kerala: ['kerala', 'munnar', 'alleppey'], meghalaya: ['meghalaya', 'shillong', 'cherrapunji'] };
-function find(text) { const t = String(text).toLowerCase(); for (const [k, names] of Object.entries(ALIASES)) if (D[k] && names.some(n => t.includes(n))) return D[k]; return Object.values(D).find(d => t.includes(d.name.toLowerCase())) || null; }
+const has = (t, n) => new RegExp('(^|[^a-z])' + n.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-z])', 'i').test(t);
+function find(text) { const t = String(text).toLowerCase(); for (const [k, names] of Object.entries(ALIASES)) if (D[k] && names.some(n => has(t, n))) return D[k]; return Object.values(D).find(d => has(t, d.name)) || null; }
 function seasonStatus(d, month) { if (!month) return 'unknown'; return d.season.includes(month) ? 'in season' : d.shoulder.includes(month) ? 'shoulder season' : 'off season'; }
 module.exports = { DESTINATIONS: D, find, monthNum, seasonStatus, MONTHS, activitiesFor };

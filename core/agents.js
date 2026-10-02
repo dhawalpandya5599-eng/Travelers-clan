@@ -17,10 +17,10 @@ function parseRequirements(text) {
   const t = String(text);
   const dest = DEST.find(t);
   const month = DEST.monthNum((t.match(MONTH_RE) || [])[1]);
-  const group = +(t.match(/\b(\d{1,3})\s*(?:people|pax|persons|of us|friends|members|employees|adults|students|seniors|riders)\b/i) || [])[1] || (/\b(couple|honeymoon|my wife and i|me and my husband|two of us|2 of us|my parents)\b/i.test(t) ? 2 : /\b(solo|alone|by myself)\b/i.test(t) ? 1 : null);
+  const group = +(t.match(/\b(\d{1,3})\s*(?:people|pax|persons|of us|friends|members|employees|adults|students|seniors|riders)\b/i) || [])[1] || (/\b(couple|honeymoon|my wife and i|me and my husband|me and my wife|my husband and i|wife and me|husband and me|me and my (gf|bf|girlfriend|boyfriend|partner)|two of us|2 of us|my parents|hum dono)\b/i.test(t) ? 2 : /\b(solo|alone|by myself)\b/i.test(t) ? 1 : null);
   // Budget: scan every amount; prefer ones with a budget/price context or a k/lakh suffix; ignore ages and small numbers.
   let budget = null;
-  for (const m of t.matchAll(/(budget|around|approx|about|max|upto|up to|rs\.?|₹|inr)?\s*(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(k|lakh|lac|thousand)?\s*(per\s*(?:person|head|pp|pax)|pp|each|total)?/gi)) {
+  for (const m of t.matchAll(/(budget|around|approx|about|max|upto|up to|rs\.?|₹|inr)?\s*(\d{1,2}(?:,\d{2})*,\d{3}|\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(k|lakh|lac|thousand)?(?![a-z])\s*(per\s*(?:person|head|pp|pax)|pp|each|total)?/gi)) {
     let v = +m[2].replace(/,/g, ''); const u = (m[3] || '').toLowerCase(); if (u === 'k' || u === 'thousand') v *= 1000; if (u === 'lakh' || u === 'lac') v *= 100000;
     const contextual = m[1] || m[3] || m[4];
     if (v >= 2000 && (contextual || v >= 5000)) { budget = v; if (contextual) break; }
