@@ -55,6 +55,10 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/sleep', wrap(() => brain.sleep()));
   router.post('/api/evolve', wrap(req => brain.evolve(Math.min(50, Math.max(1, +req.body.generations || 1)))));
   router.post('/api/grow', wrap(async () => (await brain.growSkill()) || { ok: false, reason: brain.mentor.enabled ? 'not enough unanswered questions yet' : 'mentor disabled: ' + brain.mentor.lastError }));
+  router.post('/api/agent', wrap(req => brain.agent.run(String(req.body.request || req.body.text || ''))));
+  router.post('/api/agent/correct', wrap(req => brain.agent.correct(req.body.id, req.body.correction) || { error: 'no such run' }));
+  router.post('/api/agent/approve', wrap(req => brain.agent.approve(req.body.id) || { error: 'no such run' }));
+  router.get('/api/agent/log', wrap(() => brain.agent.log.slice(-30)));
   router.get('/api/growth', wrap(() => brain.growth.overview()));
   router.post('/api/growth/profile', wrap(req => brain.growth.setProfile(req.body || {})));
   router.post('/api/growth/settings', wrap(req => { Object.assign(brain.growth.state.settings, req.body || {}); brain.growth.save(); return brain.growth.state.settings; }));

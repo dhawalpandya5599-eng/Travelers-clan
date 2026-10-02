@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'growth', 'importers', 'brain'];
+const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 'merge', 'reason', 'cohorts', 'conversion', 'journeys', 'funnel', 'destinations', 'risk', 'agents', 'council', 'growth', 'agent', 'importers', 'brain'];
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
@@ -138,6 +138,9 @@ const glue = `
           case 'POST /api/upbringing': return brain.upbringing({ generations: Math.min(50, +body.generations || 5) });
           case 'POST /api/sleep': return brain.sleep();
           case 'POST /api/evolve': return brain.evolve(Math.min(50, Math.max(1, +body.generations || 1)));
+          case 'POST /api/agent': return brain.agent.run(String(body.request || body.text || ''));
+          case 'POST /api/agent/correct': return brain.agent.correct(body.id, body.correction) || { error: 'no such run' };
+          case 'POST /api/agent/approve': return brain.agent.approve(body.id) || { error: 'no such run' };
           case 'GET /api/growth': return brain.growth.overview();
           case 'POST /api/growth/profile': return brain.growth.setProfile(body || {});
           case 'POST /api/growth/settings': Object.assign(brain.growth.state.settings, body || {}); brain.growth.save(); return brain.growth.state.settings;

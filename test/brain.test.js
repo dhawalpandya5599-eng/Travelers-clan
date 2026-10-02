@@ -227,3 +227,17 @@ test('growth engine: grounded WhatsApp replies, handoff, follow-ups, campaigns, 
   const rr = await g.reviewReply('worst trip ever, bus broke down', 1, 'Amit'); assert.equal(rr.escalate, true); assert.match(rr.reply, /9876543210/);
   assert.match((await b.respond('what is the phone number of travelers clan')).text, /9876543210/);
 });
+
+test('agent: tool loop with a scripted model, fallback without one, correction becomes a lesson', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-agent-'));
+  const b = new Brain({ dataDir: dir, autosave: false });
+  b.growth.setProfile({ city: 'Ahmedabad', phone: '9876543210', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }] });
+  const r0 = await b.agent.run('how many seats left on goa'); assert.match(r0.final, /7 seats left/); assert.equal(r0.model, 'rules only');
+  const script = [{ thought: 'need trips', tool: 'trips', args: {} }, { thought: 'compute', tool: 'calc', args: { expression: '7*14500' } }, { thought: 'done', final: 'Goa has 7 seats left, worth 1,01,500 if all sell.', facts: ['The Goa batch has 7 seats left.'], todo: ['Post the seat count today.'] }];
+  b.mentor = { enabled: true, status: () => ({ model: 'scripted' }), json: async () => script.shift(), ask: async () => null };
+  b._agent = null; const r = await b.agent.run('how many seats left on goa and what are they worth?');
+  assert.equal(r.steps.length, 2); assert.equal(r.steps[1].result.result, 101500); assert.match(r.final, /7 seats/); assert.equal(r.facts.length, 1);
+  assert.ok(b.memory.facts.some(f => /goa batch/i.test(f.s || '') && /7/.test(String(f.o || ''))) || b.memory.episodes.some(e => /7 seats left/.test(e.text)));
+  const c = b.agent.correct(r.id, 'Goa has 7 seats left but 2 are on hold, so 5 are sellable.'); assert.ok(c.correction);
+  assert.ok(b.memory.facts.some(f => /sellable|on hold/i.test(f.text || f.o || '')));
+});

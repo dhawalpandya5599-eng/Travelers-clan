@@ -300,5 +300,24 @@
   $('s-auto').onchange = () => api('POST', '/api/growth/settings', { autoReply: $('s-auto').checked });
   const waId = 'test-' + Math.random().toString(36).slice(2, 8);
   $('wa-form').addEventListener('submit', async (e) => { e.preventDefault(); const t = $('wa-input').value.trim(); if (!t) return; $('wa-input').value = ''; const m = $('wa-messages'); const add = (c, x, meta) => { const d = document.createElement('div'); d.className = 'msg ' + c; d.textContent = x; if (meta) { const s = document.createElement('span'); s.className = 'meta'; s.textContent = meta; d.appendChild(s); } m.appendChild(d); m.scrollTop = m.scrollHeight; }; add('user', t); busy(true); const r = await api('POST', '/api/growth/chat', { id: waId, text: t, source: 'test' }); busy(false); add('atlas', r.reply || r.error || '…', `stage ${r.stage} · ${r.language}${r.handoff ? ' · HANDOFF to human' : ''}${r.issues && r.issues.length ? ' · critic: ' + r.issues[0] : ''}`); });
+  // ---------- The agent: ask ATLAS to do anything ----------
+  let lastRun = null;
+  $('agent-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); const q = $('agent-input').value.trim(); if (!q) return;
+    $('btn-agent').disabled = true; $('agent-status').textContent = 'thinking…'; busy(true);
+    try {
+      const r = await api('POST', '/api/agent', { request: q }); lastRun = r;
+      $('agent-out').hidden = false; $('agent-final').textContent = r.final || r.error || '…'; $('agent-model').textContent = r.model || '';
+      $('agent-todo').innerHTML = (r.todo || []).map(t => `<li>→ ${esc(t)}</li>`).join('');
+      $('agent-steps').innerHTML = (r.steps || []).map(s => `<li><b>${esc(s.tool)}</b> ${esc(JSON.stringify(s.args || {}))}${s.thought ? ' · ' + esc(s.thought) : ''}<code>${esc(JSON.stringify(s.result)).slice(0, 700)}</code></li>`).join('') || '<li>Answered directly.</li>';
+      $('agent-status').textContent = `${(r.steps || []).length} step(s) · ${r.ms} ms${(r.facts || []).length ? ' · learned ' + r.facts.length + ' fact(s)' : ''}`;
+      $('agent-correct').hidden = true;
+    } catch (err) { $('agent-status').textContent = 'Error: ' + err.message; }
+    $('btn-agent').disabled = false; busy(false); refresh();
+  });
+  $('agent-copy').onclick = () => { navigator.clipboard && navigator.clipboard.writeText($('agent-final').textContent); $('agent-copy').textContent = 'Copied'; setTimeout(() => $('agent-copy').textContent = 'Copy', 1200); };
+  $('agent-good').onclick = () => lastRun && api('POST', '/api/agent/approve', { id: lastRun.id }).then(() => { $('agent-status').textContent = 'Thanks. Remembered as a good answer.'; refresh(); });
+  $('agent-bad').onclick = () => { $('agent-correct').hidden = false; $('agent-correction').focus(); };
+  $('agent-correct-send').onclick = () => { const c = $('agent-correction').value.trim(); if (!c || !lastRun) return; api('POST', '/api/agent/correct', { id: lastRun.id, correction: c }).then(() => { $('agent-status').textContent = 'Learned. Next time it answers this way.'; $('agent-correct').hidden = true; $('agent-correction').value = ''; refresh(); }); };
   loadGrow();
 })();

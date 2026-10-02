@@ -29,7 +29,18 @@
 <main class="content">
   <!-- HOME -->
   <section class="page active" id="page-home">
-    <header class="ph"><span class="eyebrow">Welcome back</span><h1>Start here</h1><p>ATLAS is your office assistant. It answers customers on WhatsApp and the website, keeps your lead list, tells you what to do each morning, and writes your posts. Do these four things once, in order.</p></header>
+    <header class="ph"><span class="eyebrow">Welcome back</span><h1>Ask ATLAS to do anything</h1><p>It thinks, uses what it knows (trips, seats, policies, leads, destinations, risks) and acts. Correct it once and it remembers.</p></header>
+    <div class="card command">
+      <form id="agent-form"><textarea id="agent-input" rows="2" placeholder="e.g. Which leads should I message today and what exactly do I say?  ·  Plan a Diwali campaign for the Goa batch with all messages  ·  A customer wrote: 'bhai 6 log ke liye goa december, budget 12k' — reply  ·  Is Spiti in November a good idea for a family with a 7-year-old?"></textarea>
+      <div class="actions"><button type="submit" class="btn primary big" id="btn-agent">Do it</button><span id="agent-status" class="muted"></span></div></form>
+      <div id="agent-out" hidden>
+        <div class="agent reply"><h4>Answer <span class="v" id="agent-model"></span></h4><div class="draft" id="agent-final"></div><div class="actions"><button class="btn" id="agent-copy">Copy</button><button class="btn" id="agent-good">👍 Good</button><button class="btn" id="agent-bad">👎 Correct it</button></div>
+          <div id="agent-correct" hidden><textarea id="agent-correction" rows="2" placeholder="Say what the right answer was. ATLAS learns it for next time."></textarea><div class="actions"><button class="btn primary" id="agent-correct-send">Teach the correction</button></div></div>
+          <ul id="agent-todo" class="list"></ul></div>
+        <details class="steps-detail"><summary class="muted">How it got there</summary><ol id="agent-steps" class="trace"></ol></details>
+      </div>
+    </div>
+    <h2>Set up once, in order</h2>
     <ol class="steps" id="home-steps">
       <li data-step="phone"><b>Add the company WhatsApp number and city</b><span>Every reply, post and button uses it.</span><button class="btn" data-go="setup">Open Set up</button></li>
       <li data-step="trips"><b>Add three trips with dates, prices and seats</b><span>Fixed dates sell. The website cards and the agent switch on the moment you save.</span><button class="btn" data-go="setup">Open Set up</button></li>
