@@ -14,7 +14,7 @@
   function add(cls, t) { var d = document.createElement('div'); d.className = cls; d.textContent = t; m.appendChild(d); m.scrollTop = m.scrollHeight; }
   fetch(base + '/profile').then(function (r) { return r.json(); }).then(function (P) {
     wa.href = P.waLink || '#'; if (!P.waLink) wa.style.display = 'none';
-    add('a', 'Hi! Which trip and dates are you looking at?' + (P.trips && P.trips.length ? ' Next: ' + P.trips.map(function (t) { return t.name + (t.date ? ' (' + t.date + ')' : ''); }).join(', ') + '.' : ''));
+    add('a', 'Hi! Which trip and dates are you looking at?' + (P.trips && P.trips.length ? ' Next: ' + P.trips.slice(0, 3).map(function (t) { return t.name + (t.date ? ' ' + new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '') + (t.price ? ' ₹' + t.price.toLocaleString('en-IN') : ''); }).join(', ') + '.' : ''));
   }).catch(function () { add('a', 'Hi! Which trip and dates are you looking at?'); });
   w.querySelector('.b').onclick = function () { p.classList.toggle('o'); if (p.classList.contains('o')) inp.focus(); };
   var history = [];

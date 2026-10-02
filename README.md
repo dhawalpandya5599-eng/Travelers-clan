@@ -165,7 +165,8 @@ The paid "AI agents for local business" products sell three things. ATLAS now ha
 
 Setup once in **Grow → Setup**: phone number, city, and your upcoming trips with fixed dates, prices and seats. Then open **Today** every morning, send what it drafted, press Done.
 
-- **Website widget** on travelersclan.in: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. With the Express integration mount it publicly: `app.use('/atlas-chat', atlas.widget)`.
+- **Live trip cards** on travelersclan.in: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js" data-base="/atlas-chat"></script>`. Fixed date, price, real seats left (holds counted), a WhatsApp button per trip, waitlist when full. Change a trip in Setup and the website changes. Preview at `/site-demo.html`.
+- **Website widget** on travelersclan.in: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. `scripts/integrate-site.js` now mounts the public routes for you (`app.use('/atlas-chat', atlasRouter.widget)`), so run it again with `--force` on an older install.
 - **Real WhatsApp number, free**: `npm install @whiskeysockets/baileys qrcode-terminal && node scripts/whatsapp.js`, scan the QR from WhatsApp Business → Linked devices. Replies are drafted by default; flip "Auto-send" in the Grow tab to send them automatically. Money and complaint messages always wait for you.
 - **Open-source model**: install [Ollama](https://ollama.com), run `ollama pull llama3.2` (or `qwen2.5:7b` for better Hindi), start ATLAS; every post, reply and broadcast gets polished in the customer's own language. Nothing breaks without it.
 

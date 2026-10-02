@@ -75,7 +75,7 @@ function patchServer(file) {
     if (!FORCE) { console.log('server.js already mounts ATLAS; leaving it as is (use --force to re-place it).'); return false; }
     src = src.replace(/\n?\/\/ ATLAS:begin[\s\S]*?\/\/ ATLAS:end\n?/, '\n');
   }
-  const block = `\n// ATLAS:begin — the clan's learning mind, mounted at ${MOUNT} (keep after your admin auth middleware)\nconst atlas = require('./atlas/integrations/express');\napp.use('${MOUNT}', atlas({ dataDir: __dirname + '/data/atlas', express }));\n// ATLAS:end\n`;
+  const block = `\n// ATLAS:begin — the clan's learning mind, mounted at ${MOUNT} (keep after your admin auth middleware)\nconst atlas = require('./atlas/integrations/express');\nconst atlasRouter = atlas({ dataDir: __dirname + '/data/atlas', express });\napp.use('${MOUNT}', atlasRouter);\n// Public, no auth: the website chat widget (/atlas-chat/widget.js) and the live trips block (/atlas-chat/trips.js)\napp.use('/atlas-chat', atlasRouter.widget);\n// ATLAS:end\n`;
   // Insert above the first catch-all handler (a 404 page or error handler registered with app.use and no
   // path), otherwise before app.listen(...). Either way every middleware above (auth, parsers) is already registered.
   const catchAll = src.match(/^[ \t]*app\.use\(\s*(?:async\s*)?(?:function\s*)?\(\s*(?:req|request|_req|_)\s*,\s*(?:res|response)\b/m)

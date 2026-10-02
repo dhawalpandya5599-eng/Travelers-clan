@@ -246,7 +246,9 @@
     $('s-auto').checked = !!(ov.settings && ov.settings.autoReply);
     $('wa-link').innerHTML = ov.waLink ? `<a href="${esc(ov.waLink)}" target="_blank">${esc(ov.waLink)}</a> ${copyBtn(ov.waLink)}` : 'Add the WhatsApp number in Setup to get the link.';
     if (ov.waLink) { $('wa-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(ov.waLink); $('wa-qr').hidden = false; }
-    $('widget-snippet').textContent = `<script src="${location.origin}${BASE ? BASE.replace(/\/admin\/atlas$/, '') : ''}/atlas-chat/widget.js" data-base="/atlas-chat"><\/script>`;
+    $('widget-snippet').textContent = `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"><\/script>`;
+    $('trips-snippet').textContent = `<div id="atlas-trips"></div>\n<script src="/atlas-chat/trips.js" data-base="/atlas-chat"><\/script>`;
+    if (LOCAL) $('demo-link').hidden = true;
     const sub = document.querySelector('.sub.active'); loadSub(sub ? sub.dataset.sub : 'today');
   }
   async function loadSub(name) {

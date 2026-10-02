@@ -89,7 +89,7 @@ const routes = {
   'GET /api/growth/content': async () => brain.growth.content(),
   'GET /api/growth/roi': async (q) => brain.growth.roi({ adSpend: +q.get('adSpend') || 0 }),
   'POST /atlas-chat/chat': async (q, body) => brain.growth.chat({ id: String(body.id || '').slice(0, 40), name: String(body.name || '').slice(0, 60), text: String(body.text || '').slice(0, 1000), source: 'web' }),
-  'GET /atlas-chat/profile': async () => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(3) }; },
+  'GET /atlas-chat/profile': async () => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(6).map(t => ({ name: t.name, date: t.date, days: t.days, price: t.price, seatsLeft: brain.growth.seatsLeft(t), from: t.from })) }; },
   'GET /api/growth/thread': async (q) => brain.growth.thread(q.get('id') || ''),
   'POST /api/reset': async (q, body) => {
     if (body.confirm !== 'RESET') return { ok: false, reason: 'send {"confirm":"RESET"}' };
@@ -119,7 +119,7 @@ const server = http.createServer(async (req, res) => {
   }
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not found' });
   // Static files.
-  let file = path.normalize(path.join(PUBLIC, url.pathname === '/' ? 'index.html' : url.pathname));
+  let file = path.normalize(path.join(PUBLIC, url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\/atlas-chat\//, '/')));
   if (!file.startsWith(PUBLIC)) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
