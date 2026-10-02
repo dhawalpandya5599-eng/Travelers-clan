@@ -158,7 +158,7 @@
     // Click a cluster in the legend: fly the camera to its hub and dim everything else for a moment.
     $('legend').addEventListener('click', (e) => { const el = e.target.closest('[data-hub]'); if (!el || !fg) return; const n = data.nodes.find(x => x.label === el.dataset.hub); if (!n || n.x == null) return; rotating = false; $('btn-rotate').textContent = 'Resume orbit'; const d = 90, r = d / Math.max(1, Math.hypot(n.x, n.y, n.z)); fg.cameraPosition({ x: n.x * r, y: n.y * r + 10, z: n.z * r }, n, 1000); hoverNode = n; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()); setTimeout(() => { hoverNode = null; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()); }, 2500); });
     function sprite(n) {
-      const s = new SpriteText(n.label); s.color = n.activation > 0.3 ? '#ffffff' : 'rgba(238,241,247,.85)'; s.textHeight = n.hub ? 4.5 : n.strength > 0.6 || n.activation > 0.3 ? 3.4 : 2.6; s.fontFace = 'Montserrat, sans-serif'; s.fontWeight = n.strength > 0.5 ? '600' : '400';
+      const s = new SpriteText(n.label); s.color = n.activation > 0.3 ? '#ffffff' : 'rgba(238,241,247,.85)'; s.textHeight = n.hub ? 5.5 : n.strength > 0.6 || n.activation > 0.3 ? 4 : 3; s.fontFace = 'Montserrat, sans-serif'; s.fontWeight = n.strength > 0.5 ? '600' : '400';
       s.backgroundColor = n.activation > 0.3 ? 'rgba(212,122,96,.55)' : 'rgba(11,18,32,.55)'; s.padding = 1.2; s.borderRadius = 2; s.position.set(0, 3 + n.strength * 3, 0); return s;
     }
     let fitted = false;
@@ -178,7 +178,7 @@
           .onNodeHover(n => { hoverNode = n || null; host.style.cursor = n ? 'pointer' : 'grab'; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()); })
           .onNodeClick(n => { const dist = 60; const r = dist / Math.hypot(n.x, n.y, n.z); fg.cameraPosition({ x: n.x * r, y: n.y * r, z: n.z * r }, n, 900); $('chat-input').value = `What is ${n.label}?`; })
           .onBackgroundClick(() => {}).warmupTicks(60).cooldownTicks(200);
-        fg.d3Force('charge').strength(-70); fg.d3Force('link').distance(l => 16 + (1 - l.w) * 40);
+        fg.d3Force('charge').strength(-55); fg.d3Force('link').distance(l => 22 + (1 - l.w) * 50);
         let dist = 420; fg.cameraPosition({ x: 0, y: 60, z: dist });
         const refit = (ms) => { fg.zoomToFit(ms || 600, 50); setTimeout(() => { const c = fg.cameraPosition(); dist = Math.max(200, Math.hypot(c.x, c.y, c.z)); angle = Math.atan2(c.x, c.z); }, (ms || 600) + 100); };
         fg.onEngineStop(() => { if (fitted || !data.nodes.length) return; fitted = true; refit(600); });
@@ -197,9 +197,16 @@
       if (fg) {
         // keep positions of nodes we already have, so the map breathes instead of jumping
         const prev = new Map(data.nodes.map(n => [n.id, n]));
-        const hubNames = new Set((g.clusters || []).map(c => c.name)); const nodes = g.nodes.map(n => Object.assign(prev.get(n.id) || {}, n, { hub: hubNames.has(n.label) }));
+        const hubNames = new Set((g.clusters || []).map(c => c.name)); const deg = new Map(); for (const l of g.links) { deg.set(l.source, (deg.get(l.source) || 0) + 1); deg.set(l.target, (deg.get(l.target) || 0) + 1); }
+        // Ideas with no connection yet would fly to the edges and shrink the real map: keep them off the 3D view until they link up.
+        // Small islands (a pair of ideas linked only to each other) would drift to the edges too: show the main continent and any island of 5+ ideas.
+        const parent = new Map(); const find = (x) => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+        for (const n of g.nodes) parent.set(n.id, n.id); for (const l of g.links) if (parent.has(l.source) && parent.has(l.target)) parent.set(find(l.source), find(l.target));
+        const compSize = new Map(); for (const n of g.nodes) { const r = find(n.id); compSize.set(r, (compSize.get(r) || 0) + 1); }
+        const biggest = Math.max(0, ...compSize.values());
+        const nodes = g.nodes.filter(n => g.nodes.length < 40 || (deg.get(n.id) && (compSize.get(find(n.id)) >= Math.min(5, biggest))) || hubNames.has(n.label)).map(n => Object.assign(prev.get(n.id) || {}, n, { hub: hubNames.has(n.label) }));
         if (host.__resize) host.__resize();
-        const links = g.links.map(l => ({ source: l.source, target: l.target, w: l.w }));
+        const keep = new Set(nodes.map(n => n.id)); const links = g.links.filter(l => keep.has(l.source) && keep.has(l.target)).map(l => ({ source: l.source, target: l.target, w: l.w }));
         data = { nodes, links, clusters: g.clusters || [] }; byId = new Map(nodes.map(n => [n.id, n]));
         const hadData = fitted; fg.graphData({ nodes, links });
         if (!hadData && nodes.length) { fitted = false; fg.d3ReheatSimulation(); }
