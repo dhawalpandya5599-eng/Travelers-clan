@@ -4,3 +4,6 @@ data/
 .env
 .DS_Store
 dist/
+mind/growth.json
+mind/autopilot.json
+MASTERY-REVIEW.md

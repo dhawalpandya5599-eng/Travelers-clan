@@ -1,6 +1,6 @@
 {
   "name": "travelers-clan-atlas",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "ATLAS: a self-learning, self-evolving cognitive agent for the Travelers Clan, with a live brain visualizer.",
   "main": "server.js",
   "type": "commonjs",
@@ -22,7 +22,8 @@
     "whatsapp": "node scripts/whatsapp.js",
     "universe": "node scripts/universe.js",
     "mastery": "node scripts/mastery.js",
-    "levels": "node scripts/levels.js"
+    "levels": "node scripts/levels.js",
+    "check": "npm test && npm run exam && node scripts/stress.js --n 200 && node scripts/universe.js --n 300"
   },
   "license": "MIT",
   "private": true

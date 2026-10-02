@@ -1,222 +1,113 @@
-# ATLAS — the mind of the Travelers Clan
+# ATLAS, the mind of Travelers Clan
 
-**Adaptive Traveler Learning & Awareness System.** A self-learning, self-evolving cognitive agent
-built from scratch in plain Node.js, with a live web visualizer of its brain. It is born knowing
-nothing, learns from every conversation, sleeps to consolidate, evolves its own neuro-parameters,
-and grows fastest when a frontier Claude model acts as its mentor.
+ATLAS runs the office of Travelers Clan, an Indian group-travel company: it answers customers on WhatsApp and the website in English, Hinglish, Hindi and Gujarati, keeps the lead sheet, holds seats, proposes the day's actions, writes the posts and campaigns, checks every trip plan, and reasons over everything it knows about destinations, prices, policies, people and risk. It is a self-learning mind built from scratch in plain Node.js with no dependencies, trained every six hours by a frontier model acting as its teacher, and it gets measurably better on a ladder of exams it is not allowed to fail.
 
-> Honest framing: this is a cognitive architecture, not a superintelligence. Its intelligence is the
-> sum of (a) what the clan teaches it, (b) the neuroscience-inspired machinery below, and (c) the
-> mentor model it distils from. It gets smarter every day you talk to it.
+> Honest framing: ATLAS is a cognitive architecture plus a reasoning agent, not a superintelligence. Its intelligence is what the clan teaches it, the machinery below, and the language model it thinks with when one is connected. Without a model it still works on rules and passes every exam in this repo; with one it reasons freely.
 
 ```
-npm start            # http://localhost:3000  (zero dependencies)
-npm test             # 9 tests on memory, reasoning, skills, sleep, evolution
-npm run train        # accelerated upbringing: study curriculum, self-quiz, sleep, evolve 10 generations
+npm start            # http://localhost:3000, zero dependencies
+npm test             # unit tests
+npm run exam         # the written exam and the six mastery levels (pass mark 100% each)
+npm run check        # tests + exam + stress test + customer universe
 ```
 
-## Language models (all optional, open-source first)
+Live preview of the dashboard: https://claude.ai/artifact/Fb9Q6asYMnTvANGbz6amfE
 
-| Where | How to switch it on | What it adds |
-|---|---|---|
-| Local, free | install [Ollama](https://ollama.com), `ollama pull llama3.2` (or `qwen2.5:7b`), start ATLAS | free-form understanding, replies polished in the customer's language, a second critic, learning from messy statements |
-| Any OpenAI-compatible server (LM Studio, llama.cpp, vLLM, Groq, OpenRouter, Together, Hugging Face) | `OPENAI_BASE_URL=https://api.groq.com/openai/v1 OPENAI_MODEL=llama-3.3-70b-versatile OPENAI_API_KEY=...` | same, with bigger open models |
-| In the browser | the **Load open model** button on your website or local file (WebLLM, ~0.7 GB, WebGPU) | same, no server at all |
-| claude.ai | nothing to do; the page uses Claude through your account | same |
-| Claude API | `ANTHROPIC_API_KEY` | same, with the frontier model |
+## 1. Daily use: the seven screens
 
-Without any model, every agent still runs on rules and memory; the model is the fluency layer, the mind is the memory.
-
-Optional mentor, two ways. Free and local: install [Ollama](https://ollama.com), run `ollama pull llama3.2`, start ATLAS; it finds the local model on its own (set `OLLAMA_MODEL` to use another). Or Claude Fable 5.1 with server-side refusal fallbacks:
-
-```
-npm install @anthropic-ai/sdk
-export ANTHROPIC_API_KEY=sk-ant-...
-npm start
-```
-
-## Where to run it
-
-ATLAS is a single Node.js process with no build step and no database (its mind is one JSON file).
-
-**Zero-install option:** `npm run build:web` bundles the whole brain into `dist/atlas-web.html`, a single page that runs entirely in the browser (memory lives in that browser's storage). Published as a claude.ai artifact it gains Claude as a mentor through the page's own ask-Claude capability.
-
-| Option | Steps |
+| Screen | What you do there |
 |---|---|
-| **Your laptop** (fastest) | Install Node 18+, then `git clone`, `cd Travelers-clan`, `npm start`, open http://localhost:3000 |
-| **Render** (free tier, always-on URL) | New → Blueprint → point at this repo; `render.yaml` sets everything, including a 1 GB disk so the mind survives restarts. Add `ANTHROPIC_API_KEY` in the dashboard to switch the mentor on. |
-| **Railway / Fly / any Docker host** | `docker build -t atlas . && docker run -p 3000:3000 -v atlas-data:/data atlas` |
-| **Hostinger Node.js hosting** | Upload the repo, start command `node server.js`, set env `ATLAS_DATA` to a persistent folder |
+| **Start here** | Ask ATLAS to do anything. Live numbers (seats, revenue, leads, next departure). What ATLAS proposes today, with the message written: approve and the WhatsApp connector sends it. The team of agents pulsing as they work. |
+| **Set up** | Business, trips (date, price, seats), the policies the agent quotes word for word, website snippets, connections (CSV in, CSV and calendar out), the WhatsApp connection. |
+| **Today's work** | Follow-ups due now with the message to send, seat and hold alerts, pipeline, add a lead by hand. |
+| **Reply to a customer** | Paste a conversation; the council writes the reply and lists every issue. Test the WhatsApp agent live. Reply to a Google review. The customer universe report. |
+| **Check a trip plan** | One line of requirements; operations and the critic return a day-by-day plan, price, season check, risks and fixes. Feed the risk desk headlines. |
+| **Marketing** | Google Business Profile audit and posts, keywords, festival campaign calendar, broadcast drafts, results, a week of Instagram content. |
+| **Teach ATLAS** | Ask anything, teach facts, correct it ("No, …"), import a WhatsApp chat export. |
+| **Advanced: inside the mind** | The 3D knowledge map, learning progress, skills, live activity. |
 
-Keep `ATLAS_DATA` on a persistent disk: that folder is ATLAS's memory.
+## 2. What ATLAS can do
 
-## Inside an existing Express website (travelersclan.in)
+**On WhatsApp and the website.** Grounded replies from real trips and written policies, with twenty-plus intents (price, inclusions, cancellation, pickup, safety, food, ages, medical, payment, stay, proof, reliability, trust, confusion, extension, weekday, competitor, grief, complaint, booking, affirm, greeting), an emotion layer (fear, joy, sarcasm), psyche adaptation (safety first for anxious families, proof for skeptics, pickup-to-drop for hands-off people, shorter for terse people), the price said once, every reply ending in one next step, 24-hour seat holds, handoff to a human for money and complaints.
 
-**Automatic (recommended):** on the PC that holds the site's source, double-click `ATLAS-install.bat` (Windows) or run `node scripts/integrate-site.js --zip`. It finds the site folder, copies ATLAS into `<site>/atlas`, inserts the mount lines into `server.js` (idempotent, marked `// ATLAS:begin`), smoke-tests the router, and writes `travelersclan_<timestamp>.zip` next to the site folder for the usual hPanel upload. Pass the site path explicitly if it lives somewhere unusual: `node scripts/integrate-site.js D:\sites\travelersclan --zip`.
+**For the chief (the reasoning agent).** With a model it thinks step by step through tools over everything below; without one it routes to the same tools by rules. Ask it for today's priorities, a push-or-merge decision, a Diwali campaign with all messages, a review reply, an incident plan at 2am, pricing strategy, pricing analytics, patterns in the leads, a news read, a destination brief, a personality read, a travel-as-therapy match, or a full understanding of one customer message.
 
-**Manual:** 
-Copy this repo as a folder named `atlas` into the site's source, then add two lines to the site's `server.js`:
+**Knowledge.** 79 destinations in India and abroad with seasons, costs, routes, permits, risks and who they suit; things to do with start times, durations, costs and best months for 35 of them; thirty curriculum lessons (policies, sales, operations, customer experience, marketing, India seasonality, visas, money and margins, safety, customer psychology, ground operations, the 2026-27 calendar, personalities, business strategy, pricing, travel as therapy, the world, activities and timings).
 
-```js
-const atlas = require('./atlas/integrations/express');
-app.use('/admin/atlas', atlas({ dataDir: __dirname + '/data/atlas', express }));
-```
+**People.** Every customer the company can face, generated by combination (life stage, geography, income, occasion, group, decision style, risk, price sensitivity, trust, style, control, language, channel, mood: over a billion kinds) and played against the agent before it meets them. Personality systems (Big Five, 16 MBTI types, DISC, Enneagram, generations, travel archetypes, attachment, money styles) with how to recognise and how to handle each.
 
-Put those lines after your admin authentication middleware so only admins reach `/admin/atlas`. The folder `data/atlas` must survive deploys (keep it out of the build output or point `dataDir` at a persistent path). The first boot seeds from `atlas/mind/state.json`, the mind trained by the parent. No new npm dependencies.
+**Business skills.** Ask in plain words: `14500 plus gst`, `tcs on 250000`, `cost 11000 at 20% margin`, `break even with fixed cost 60000 at price 14500 and variable 9000`, `14500 in 3 instalments`, `500 usd in inr`, `altitude in ladakh`, `what to pack for manali in december`, `long weekends`, `invoice for Riya Shah 4 seats 14500 for the Goa trip`, `utm link for whatsapp campaign diwali`, `organiser offer for 12 seats at 14500`, `estimate custom spiti for 8 people 7 days`, `things to do in goa`, `tell me everything about ladakh in july for 4 people`, `personality: <message>`, `understand: <message>`, `what should we do about no leads`, `pricing strategy for goa with competitor at 11999`.
 
-## The growing loop (nothing is ever lost)
+**The council of agents.** Sales, Operations, Customer experience, News and risk desk, Critic, Marketing, Strategy, Pricing, Wellbeing, Pattern analyst, Tester and teacher, Dialogue tester. Every agent teaches the mind after every run.
 
-Every copy of ATLAS keeps learning, and copies **merge** instead of overwrite. A merge is a union: all facts, memories, synapses, skills and the fittest genome from both sides survive.
+**The autopilot.** Every 30 minutes it looks at leads, holds, seats, departures, campaign windows, risk news, travelled customers and missing basics, and proposes actions with the message ready. Approve and the connector sends; dismiss with a reason and it learns; a switch lets follow-ups go out automatically.
 
-| Where it runs | How it learns | How its learning is kept |
-|---|---|---|
-| Cloud routine (nightly) | new lesson, train, interview | commits `mind/state.json`, republishes the link |
-| Local server (`npm start`) | conversation, daily self-upbringing | saves `data/state.json`; absorbs any newer `mind/state.json` after `git pull`; `npm run sync:push` folds local learning back into the repo |
-| Browser page | conversation, mentor | browser storage; **Export mind** → **Merge a mind** on any other copy |
-| Inside travelersclan.in | admin conversations | `data/atlas/state.json`; seeds from and merges with `atlas/mind/state.json` |
+## 3. Running it
 
-When cloud credits run out, run the local server: it continues from the last committed mind, keeps training itself daily, and `npm run sync:push` publishes what it learned so the cloud, the website and the browser page pick it up next time.
-
-## The council of agents
-
-Seven specialists, one duty each, all teaching the mind after every run:
-
-| Agent | Duty |
+| Where | How |
 |---|---|
-| Sales | cohort, funnel stage, next action with evidence, drafted reply |
-| Operations | feasibility (season, altitude, days, budget), routing, timing, permits, emotional fit, day-by-day itinerary |
-| Customer Experience | tone for the cohort, unanswered questions, negative signals, touchpoints |
-| News and risk desk | dated advisories (weather, security, political, visa, transport, health) and their impact; feed it headlines with `news: ...` |
-| Critic | gaps, unsatisfactory answers, itinerary loopholes (acclimatisation, buffer, pace, budget, permits, weather clauses), fixes |
-| Marketing | acquisition cost by campaign, budget shifts, creative refresh, seasonal calendar, hooks per cohort |
-| Tester and teacher | probes the mind, lists weak answers and contradictions, teaches missing destination, permit and risk facts |
+| **Your PC** | Node 18 or newer, `git clone`, `npm start`, open http://localhost:3000. The mind lives in `data/state.json`. |
+| **Inside travelersclan.in** | On the PC with the site source: `node scripts/integrate-site.js "C:\path\to\site" --zip --force`. It copies ATLAS into `<site>/atlas`, mounts `/admin/atlas` (admin) and `/atlas-chat` (public widget, trip cards, lead webhook) in the site's `server.js`, and packs the site's own staged release plus ATLAS into a zip for the usual hPanel upload. Manual mount: two lines, see `integrations/express.js`. Keep `data/atlas` on a persistent path. |
+| **Render, Railway, Docker** | `render.yaml`, `railway.json`, `Dockerfile` are included; set `ATLAS_DATA` to a persistent disk. |
+| **Browser only** | `npm run build:web` writes `dist/atlas-standalone.html`, a single page that runs the whole mind in the browser. |
 
-In chat: `council: <conversation>`, `plan: <requirements>`, `critic: <plan or conversation>`, `news: <headlines>`. API: `POST /api/council`, `/api/council/review`, `/api/council/ask`, `/api/news`. The dashboard's Council panel shows every agent's verdict, findings and fixes.
+**Website blocks.** Chat bubble: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. Live trip cards with seats left and a WhatsApp button: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js" data-base="/atlas-chat"></script>`. Preview at `/site-demo.html`.
 
-## The exam
+**The real WhatsApp number, free.** `npm install @whiskeysockets/baileys qrcode-terminal` once, then `npm run whatsapp` and scan the QR from WhatsApp Business → Linked devices. Customer messages reach the agent, approved messages go out, and your own number gets the day's plan at 9am.
 
-`npm run exam` runs a fixed 54-question exam (recall, teaching, corrections, inference, yes/no, context, comparison, counting, arithmetic over facts, negation, typos, honesty, aggregation). Every change to the mind's code is measured against it; the nightly routine refuses to commit a round that lowers the score.
+**A language model.** Install [Ollama](https://ollama.com) and `ollama pull llama3.2` (or `qwen2.5:7b` for better Hindi), or set `OPENAI_BASE_URL` for any open-source endpoint, or `ANTHROPIC_API_KEY` for Claude. The reasoning agent, the polish on every reply, the mastery grader and the universe translations switch on. Nothing breaks without one.
 
-## Upbringing (how the parent trains it)
+**Connections.** Import leads from any CSV export (Meta lead forms, Google Forms, Sheets) in Set up; webhook `POST /atlas-chat/lead` for Zapier, Make or a site form; lead sheet out as CSV; departures as an `.ics` calendar for Google Calendar.
 
-`mind/state.json` is the trained mind, versioned in git. A training round is:
+## 4. How it learns, and how it is examined
 
-```
-ATLAS_DATA=mind npm run train -- --generations 20 --cycles 3   # study curriculum, self-quiz, sleep, evolve
-ATLAS_DATA=mind npm run build:web                              # bake the mind into dist/atlas-web.html
-```
+**Nothing is ever lost.** Every copy keeps learning and copies merge instead of overwrite (union of facts, memories, synapses, skills, the fittest genome). The trained mind is `mind/state.json`, versioned in git; the local server absorbs a newer one after `git pull`, and `npm run sync:push` folds local learning back.
 
-Add lessons to `curriculum/` and rerun; the web page then opens already educated.
+**The examination ladder.** Each level must score 100% before the next counts, and the self-improvement routine adds one harder level per run.
 
-**Embedding in an existing website or admin panel:** the build also writes `dist/atlas-standalone.html`, a complete page with no server needs. Upload it anywhere (for example `/admin/atlas.html` on your host, or as a WordPress page via the file manager) and link to it from the admin menu, or embed it with `<iframe src="/admin/atlas.html" style="width:100%;height:90vh;border:0"></iframe>`. Memory lives in the browser of whoever opens it.
+| Suite | What it proves |
+|---|---|
+| `npm run exam` | the written exam (recall, teaching, corrections, inference, aggregation, cohorts, funnel, council, WhatsApp conversations, expressions, knowledge, skills) and the mastery levels: 1 basic facts, 2 multi-turn flow, 3 emotion and psyche, 4 complex requirements and reasoning, 5 business judgement, 6 expert mixed-language numbers and drafting |
+| `npm run stress` | hundreds of synthetic WhatsApp conversations (FAQ-heavy, bargainers, ghosts, group-size changers, script switchers, direct bookers, angry, thinkers); every weak reply is categorised |
+| `npm run universe` | hundreds of personas from the customer universe in sales, support, marketing and probing; a playbook of what works for whom, taught to the mind |
+| `npm run mastery` | the examiner sets questions, situations, requirements and expressions; the evaluator grades every answer and teaches the best one; passes only at 8.5 per category and nothing below 6 |
 
-## How the brain works
+**The self-improvement loop** runs every six hours in the cloud: measure, raise the bar with a new level, fix ATLAS generally until it passes, grade the mastery review by hand, teach a lesson, train, guard against any regression, publish, push. `LEARNING-LOG.md` records every run.
 
-| Region (neuroscience) | Module | What it does |
+**Teaching by hand.** Statements are learned, questions answered, "No, X is Y" corrects, 👍 and 👎 shape plasticity, curiosity questions appear when it keeps noticing something, WhatsApp exports become facts, lessons in `curriculum/` are studied on boot.
+
+## 5. How the brain works
+
+| Region | Module | What it does |
 |---|---|---|
-| Sensory cortex | `core/text.js` | Tokenising, stemming, entity spotting, sentence splitting, cosine similarity |
-| Hippocampus (episodic memory) | `core/memory.js` | Every experience stored with time, emotional valence, importance; a forgetting curve whose time constant grows with rehearsal (spacing effect) |
-| Neocortex (semantic memory) | `core/memory.js` | Concept graph with **Hebbian synapses** (co-activation strengthens links), spreading activation, capacity-limited **working memory** (7±2) |
-| Sleep / consolidation | `Memory.consolidate` | Replays salient episodes into semantic facts, prunes weak synapses, merges duplicates |
-| Dopamine (reward) | `Memory.reward` | 👍/👎 feedback potentiates or depresses the synapses that just fired (reward-modulated plasticity) |
-| Language areas | `core/learning.js` | Triple extraction (`X is in Y`, `X offers Y`, …), question parsing, answer composition with confidence, corrections ("no, X is Y") |
-| Basal ganglia (procedural memory) | `core/skills.js` | Built-in skills (arithmetic, percentages, per-person split, dates, unit conversion, **lead gate** scoring) plus **learned skills**: sandboxed JS admitted only if its tests pass |
-| Genome / evolution | `core/evolution.js` | Learning rate, decay, consolidation threshold, curiosity, working-memory size … tuned by an evolutionary loop whose fitness is recall on held-out facts + human approval |
-| The parent | `core/mentor.js` | Claude answers when ATLAS is unsure (and ATLAS memorises the answer), reflects on conversations into lessons, and writes new skills |
-| Executive loop | `core/brain.js` | perceive → recall → reason → act → learn, plus curiosity questions, sleep and evolution |
+| Sensory cortex | `core/text.js` | tokenising, stemming, entities, similarity |
+| Hippocampus | `core/memory.js` | episodes with time, valence, importance; a forgetting curve with the spacing effect |
+| Neocortex | `core/memory.js` | concept graph with Hebbian synapses, spreading activation, capacity-limited working memory, hub-based clusters for the map |
+| Sleep | `Memory.consolidate` | replays episodes into facts, prunes, merges, flags contradictions, dreams |
+| Dopamine | `Memory.reward` | reward-modulated plasticity on the synapses that just fired |
+| Language areas | `core/learning.js`, `core/reason.js` | fact extraction, question parsing, inheritance and transitive reasoning, corrections |
+| Procedural memory | `core/skills.js` | built-in and learned sandboxed skills |
+| Genome | `core/evolution.js` | learning rate, decay, consolidation, curiosity, working memory, tuned by evolution against held-out recall |
+| The teacher | `core/mentor.js` | Claude, Ollama or any open endpoint: answers when unsure, reflects, writes skills |
+| Executive loop | `core/brain.js` | perceive, recall, reason, act, learn; sleep and evolution |
+| The office | `core/growth.js`, `core/agent.js`, `core/autopilot.js`, `core/agents.js`, `core/council.js` | the WhatsApp agent, the reasoning agent, the autopilot, the council |
+| The world and the people | `core/destinations.js`, `core/world.js`, `core/universe.js`, `core/minds.js`, `core/strategy.js`, `core/risk.js` | destinations and activities, the customer universe, personalities and therapy, strategy and pricing, risk |
 
-## Teaching it
+## 6. API
 
-- **Statements** are learned: `The Ladakh trip costs 24000 per person.`
-- **Questions** are answered from facts, skills, or memories: `How much is the Ladakh trip?`
-- **Corrections** unlearn and relearn: `No, the Ladakh trip costs 26000.`
-- **Rewards** shape plasticity: press 👍 or 👎 after an answer.
-- **Curiosity**: ATLAS asks about entities it keeps noticing; answer and it learns.
-- **WhatsApp**: paste an exported chat; staff messages become facts, lead questions become training signal, and ATLAS reports the most-asked topics. Try `score this lead: <message>`.
-- **Curriculum**: drop `.md`/`.txt` lesson files into `curriculum/`; they are studied once on boot.
-- **Sleep** every ~30 messages or 20 minutes; **evolve** hourly, or on demand from the UI.
+Admin routes are under `/api/` (mounted at `/admin/atlas` inside the site); public routes under `/atlas-chat/`.
 
-Everything persists in `data/state.json`. Export the whole mind from the UI.
+| Route | Purpose |
+|---|---|
+| `POST /api/agent` `{request}` · `/api/agent/approve` · `/api/agent/correct` | the reasoning agent, with approval and correction |
+| `GET /api/autopilot` · `POST /api/autopilot/approve` · `/dismiss` · `/auto` · `GET /api/outbox` · `POST /api/outbox/sent` | proposals, outbox for the connector |
+| `GET/POST /api/growth/*` | profile, settings, gbp, review, chat, leads, today, campaigns, content, digest, roi, thread |
+| `POST /api/council` · `/api/council/review` · `/api/council/ask` · `/api/news` | the council |
+| `POST /api/chat` · `/api/feedback` · `/api/teach` · `/api/import/whatsapp` · `/api/import/mind` | the mind |
+| `POST /api/connections/leads-csv` · `GET /api/connections/leads.csv` · `GET /api/connections/trips.ics` · `POST /api/webhooks/lead` | connections |
+| `GET /api/snapshot` · `/api/graph` · `/api/facts` · `/api/export` · `/api/events` · `/api/universe` | state and the event stream |
+| `POST /atlas-chat/chat` · `GET /atlas-chat/profile` · `/atlas-chat/widget.js` · `/atlas-chat/trips.js` · `POST /atlas-chat/lead` | public: widget, cards, lead webhook |
 
-## API
+## 7. Development
 
-| Route | Body | Purpose |
-|---|---|---|
-| `POST /api/chat` | `{message}` | Talk to ATLAS |
-| `POST /api/feedback` | `{good: true/false}` | Reward or punish the last answer |
-| `POST /api/teach` | `{text}` | Bulk lesson |
-| `POST /api/import/whatsapp` | `{text, staff}` | Learn from an exported chat |
-| `POST /api/sleep` | | Consolidate now |
-| `POST /api/evolve` | `{generations}` | Run evolution now |
-| `POST /api/grow` | | Ask the mentor to synthesize a skill for recurring unanswered questions |
-| `GET /api/snapshot` · `/api/graph` · `/api/facts` · `/api/export` | | State for the UI |
-| `GET /api/events` | | Server-Sent Events stream of cognitive activity |
-| `POST /api/reset` | `{confirm:"RESET"}` | Rebirth |
-
-## Grow tab: our own Google-profile, WhatsApp and marketing agents (free)
-
-The paid "AI agents for local business" products sell three things. ATLAS now has all three inside the admin panel, no subscription:
-
-| Agent | What it does | Where |
-|---|---|---|
-| Google profile | Audit score with the 10 things that matter, 20 local keywords, this week's posts, review replies (angry reviews are flagged "call them first") | Grow → Google profile |
-| WhatsApp chat | Answers in seconds in English or Hinglish, grounded on your real trips (date, price, seats, total for the group, advance), keeps a lead sheet, hands booking/payment/complaints to a human | Grow → WhatsApp agent, website widget, `scripts/whatsapp.js` |
-| Marketing | Indian festival/season campaign calendar with start dates, broadcast drafts per segment (past travellers, warm leads, referral, review ask, organisers), 5-touch follow-up sequence, ROI from the lead sheet | Grow → Today, Marketing & ROI |
-
-Setup once in **Grow → Setup**: phone number, city, and your upcoming trips with fixed dates, prices and seats. Then open **Today** every morning, send what it drafted, press Done.
-
-- **Live trip cards** on travelersclan.in: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js" data-base="/atlas-chat"></script>`. Fixed date, price, real seats left (holds counted), a WhatsApp button per trip, waitlist when full. Change a trip in Setup and the website changes. Preview at `/site-demo.html`.
-- **Website widget** on travelersclan.in: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. `scripts/integrate-site.js` now mounts the public routes for you (`app.use('/atlas-chat', atlasRouter.widget)`), so run it again with `--force` on an older install.
-- **Real WhatsApp number, free**: `npm install @whiskeysockets/baileys qrcode-terminal && node scripts/whatsapp.js`, scan the QR from WhatsApp Business → Linked devices. Replies are drafted by default; flip "Auto-send" in the Grow tab to send them automatically. Money and complaint messages always wait for you.
-- **Open-source model**: install [Ollama](https://ollama.com), run `ollama pull llama3.2` (or `qwen2.5:7b` for better Hindi), start ATLAS; every post, reply and broadcast gets polished in the customer's own language. Nothing breaks without it.
-
-### Testing the WhatsApp agent
-
-- `npm run exam` includes 18 WhatsApp conversations in English, Hinglish, Hindi and Gujarati script.
-- `npm run stress` throws 200 synthetic customers at the agent (FAQ-heavy, bargainers, ghosts, group-size changers, script switchers, direct bookers, angry, thinkers) and reports every weak reply by category: empty, repeated, over-long, unanswered, wrong language, silent handoff. The weaknesses are taught to the mind as critic lessons and saved to `synth/stress-report.json`.
-- Seats: a "hold" through the agent reserves seats for 24 hours. Mark the lead **advance** (or enter a booking value) when the money arrives and the hold becomes a booking; mark **lost** to release it.
-- Daily digest: with `scripts/whatsapp.js` connected, your own number receives the day's follow-ups, seat alerts and the campaign to run at 9:00 IST (`WA_DIGEST_TO=91XXXXXXXXXX` to send it elsewhere).
-
-### The customer universe
-
-`npm run universe` generates every kind of customer a travel company can face by combination (life stage × geography × income × occasion × group × decision style × risk attitude × price sensitivity × trust × communication style × control need × language × channel × mood: over a billion kinds), samples hundreds with full coverage of every dimension, gives each a behaviour model (what they ask, how they react to price, scarcity, proof, holds), and plays them against the WhatsApp agent in four scenarios: sales, support complaint, marketing reaction, probing a vague lead. A judge scores each conversation; the playbook aggregates success by segment, lists failure reasons, teaches the mind lessons about who needs what, and saves `synth/universe-report.json` (shown on Reply to a customer). First run: 78% handled well; after fixing what it found (complaints in Hinglish, "handle everything", "any reviews?"): 99%.
-
-### The mastery loop (exam → answer → evaluate → teach → repeat)
-
-`npm run mastery` runs the loop: an examiner sets a battery of questions (policies, prices, seats, visas, what to post, who to call), situations (customers from the universe), requirements (trip plans) and expressions (fear, anger, grief, sarcasm, slang, joy, confusion, distrust, guilt, urgency, Hinglish fear, Gujarati joy). ATLAS answers all of them. With a model connected, the evaluator grades every answer 1-10 on accuracy, specificity, tone fit, empathy and growth impact, writes the best answer and what to prefer next time, teaches each weak item to the mind as a preference lesson, and repeats up to `--rounds`; it PASSES only when every category averages 8.5 and nothing scores below 6. Without a model it writes `MASTERY-REVIEW.md` for the master teacher to grade by hand. The 6-hourly routine runs it and does not pass ATLAS until it is satisfied.
-
-### Mastery levels (pass mark 100% each, easiest to hardest)
-
-`npm run levels` (also part of `npm run exam`): six levels, each a battery of checks that encode the evaluator's standard for a best-in-class reply. A level must score 100% before the next one counts.
-
-| Level | What it proves | Items |
-|---|---|---|
-| 1 | Basic facts in one turn: price, dates, seats, inclusions, cancellation, pickup, food, advance | 16 |
-| 2 | Conversation flow: requirements collected across turns, group changes, trip switching, language sticks, no repeats, paid confirmation | 12 |
-| 3 | Emotion and psyche: fear, grief, anger, sarcasm, guilt, urgency, confusion, distrust, medical, first-timers, women travelling alone, bad past experience | 16 |
-| 4 | Complex requirements: off-season, kids and altitude, unknown places, comparisons against budget, cheapest fit for a large group, seniors, destination questions, documents | 14 |
-| 5 | Business judgement: push or merge, campaigns with messages, review replies, how to close a skeptic, incident SOPs, zero-budget lead generation | 10 |
-| 6 | Expert: mixed-language constraints, couples-and-kids groups with total budgets, Gujarati multi-turn to a hold, instalments, extensions, weekday reasoning, competitor pricing, price-change maths, drafting broadcasts, run rate | 12 |
-
-Current: all six levels 100%.
-
-### Business skills (ask in plain words, in Teach ATLAS or through the agent)
-
-`14500 plus gst` · `gst on 14500 including` · `tcs on 250000` · `cost 11000 at 20% margin` · `cost 11000 price 13750 margin` · `break even with fixed cost 60000 at price 14500 and variable 9000` · `14500 in 3 instalments` · `500 usd in inr` · `altitude in ladakh` · `what to pack for manali in december` · `long weekends` · `invoice for Riya Shah 4 seats 14500 for the Goa trip` · `utm link for whatsapp campaign diwali` · `organiser offer for 12 seats at 14500` · `estimate custom spiti for 8 people 7 days`
-
-Knowledge lessons 17 to 24 add India and international destination deep-dives, money and margins, safety and emergencies, customer psychology by segment, ground operations and vendors, marketing and content, and the 2026-27 travel calendar (277 facts, all parse-checked).
-
-### The full skill set (this build)
-
-- **Destinations:** 79 places in India and abroad with season, cost, route, permits, risks, who it suits, plus **things to do with start times, durations, costs and best months** for 35 of them (`things to do in goa`, `activities in bali`).
-- **5W1H brief:** `tell me everything about ladakh in july for 4 people` → what, why, who, where, when, whom (permits, risks), which (activities), how (money).
-- **Personalities:** Big Five, 16 MBTI types, DISC, Enneagram 9, generations, 10 travel archetypes, attachment styles, money styles, each with how to recognise and how to handle (`personality: <message>`).
-- **Travel as therapy:** burnout, grief, heartbreak, anxiety, loneliness, low confidence, creative block, family distance, couple strain, retirement → trip, pace, group, do, avoid, with helpline numbers and the honest limit.
-- **Business techniques:** ten situations (no leads, low conversion, cancellations, low fill, low margin, bad reviews, seasonality, competition, cash flow, growth) with the moves that fix them (`what should we do about no leads`).
-- **Pricing strategy and analytics:** price ladder (early bird, standard, last seats, premium decoy), floors, when to move, competitor rule; per-trip price per day vs ground benchmark, implied margin, quote-to-book, revenue open (`pricing strategy for goa with competitor at 11999`, `pricing analytics`).
-- **Patterns:** hours, days, sources, funnel, demand, touches-to-book from the real lead sheet (`patterns in the leads`).
-- **News reading:** paste headlines → destination, severity, topic, action; high and medium items go to the risk desk (`news: ...`).
-- **Ultimate understanding:** `understand: <message>` → intent, emotion, requirements, psyche cues, personality, therapy cues, and the one right move.
-- **Council agents added:** Strategy, Pricing, Wellbeing, Pattern analyst (the lead pass now includes Wellbeing when a state of mind is detected).
-- **Connections:** import leads from any CSV export (Meta lead forms, Google Forms, Sheets), webhook `/atlas-chat/lead` for Zapier, Make or a site form, lead sheet out as CSV, departures as an .ics calendar for Google Calendar.
-- **Lessons 25 to 30:** personalities, business strategy, pricing, travel as therapy, more of the world, activities and timings (203 parse-checked facts). Mind at generation 104 with 1,247 facts.
+`core/` is the mind and the office, `scripts/` the training and examination tools, `curriculum/` the lessons, `public/` the dashboard and the website blocks, `integrations/` the Express mount, `mind/` the trained mind, `synth/` generated data and reports, `test/` unit tests. All checks: `npm run check`. Before pushing anything that touches `core/` run it; the routine refuses to keep any change that lowers a score.
