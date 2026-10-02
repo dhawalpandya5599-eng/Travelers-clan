@@ -1,401 +1,401 @@
 {
- "at": "2026-10-02T10:16:24.986Z",
+ "at": "2026-10-02T10:25:05.452Z",
  "space": 1051066368,
- "n": 300,
- "ok": 300,
+ "n": 400,
+ "ok": 400,
  "table": {
   "lifeStage": [
    {
     "value": "student",
-    "n": 58,
+    "n": 76,
     "rate": 1
    },
    {
     "value": "young professional",
-    "n": 28,
+    "n": 38,
     "rate": 1
    },
    {
     "value": "newly married",
-    "n": 55,
+    "n": 66,
     "rate": 1
    },
    {
     "value": "parent of young kids",
-    "n": 43,
+    "n": 53,
     "rate": 1
    },
    {
     "value": "parent of teens",
-    "n": 34,
+    "n": 50,
     "rate": 1
    },
    {
     "value": "empty nester",
-    "n": 29,
+    "n": 39,
     "rate": 1
    },
    {
     "value": "retired",
-    "n": 30,
+    "n": 45,
     "rate": 1
    },
    {
     "value": "single mid-career",
-    "n": 23,
+    "n": 33,
     "rate": 1
    }
   ],
   "geo": [
    {
     "value": "tier-1 metro",
-    "n": 50,
+    "n": 67,
     "rate": 1
    },
    {
     "value": "tier-2 city",
-    "n": 48,
+    "n": 68,
     "rate": 1
    },
    {
     "value": "tier-3 town",
-    "n": 47,
+    "n": 65,
     "rate": 1
    },
    {
     "value": "NRI in the Gulf",
-    "n": 44,
+    "n": 58,
     "rate": 1
    },
    {
     "value": "NRI in the West",
-    "n": 52,
+    "n": 71,
     "rate": 1
    },
    {
     "value": "foreign tourist",
-    "n": 59,
+    "n": 71,
     "rate": 1
    }
   ],
   "income": [
    {
     "value": "middle",
-    "n": 88,
+    "n": 123,
     "rate": 1
    },
    {
     "value": "comfortable",
-    "n": 63,
+    "n": 87,
     "rate": 1
    },
    {
     "value": "affluent",
-    "n": 66,
+    "n": 87,
     "rate": 1
    },
    {
     "value": "tight",
-    "n": 83,
+    "n": 103,
     "rate": 1
    }
   ],
   "occasion": [
    {
     "value": "weekend escape",
-    "n": 36,
+    "n": 44,
     "rate": 1
    },
    {
     "value": "long vacation",
-    "n": 31,
+    "n": 40,
     "rate": 1
    },
    {
     "value": "honeymoon",
-    "n": 24,
+    "n": 29,
     "rate": 1
    },
    {
     "value": "family reunion",
-    "n": 30,
+    "n": 40,
     "rate": 1
    },
    {
     "value": "corporate offsite",
-    "n": 17,
+    "n": 21,
     "rate": 1
    },
    {
     "value": "college trip",
-    "n": 35,
+    "n": 50,
     "rate": 1
    },
    {
     "value": "pilgrimage",
-    "n": 33,
+    "n": 50,
     "rate": 1
    },
    {
     "value": "adventure",
-    "n": 24,
+    "n": 34,
     "rate": 1
    },
    {
     "value": "birthday or anniversary",
-    "n": 22,
+    "n": 33,
     "rate": 1
    },
    {
     "value": "bachelor trip",
-    "n": 26,
+    "n": 31,
     "rate": 1
    },
    {
     "value": "workation",
-    "n": 22,
+    "n": 28,
     "rate": 1
    }
   ],
   "group": [
    {
     "value": "solo",
-    "n": 28,
+    "n": 41,
     "rate": 1
    },
    {
     "value": "couple",
-    "n": 46,
+    "n": 63,
     "rate": 1
    },
    {
     "value": "large friends group",
-    "n": 72,
+    "n": 91,
     "rate": 1
    },
    {
     "value": "colleagues",
-    "n": 48,
+    "n": 62,
     "rate": 1
    },
    {
     "value": "women only",
-    "n": 33,
+    "n": 42,
     "rate": 1
    },
    {
     "value": "small friends group",
-    "n": 25,
+    "n": 36,
     "rate": 1
    },
    {
     "value": "family with kids",
-    "n": 18,
+    "n": 24,
     "rate": 1
    },
    {
     "value": "family with seniors",
-    "n": 30,
+    "n": 41,
     "rate": 1
    }
   ],
   "decision": [
    {
     "value": "impulsive",
-    "n": 84,
+    "n": 108,
     "rate": 1
    },
    {
     "value": "analytical",
-    "n": 69,
+    "n": 95,
     "rate": 1
    },
    {
     "value": "consensus seeker",
-    "n": 67,
+    "n": 89,
     "rate": 1
    },
    {
     "value": "defers to spouse or parent",
-    "n": 80,
+    "n": 108,
     "rate": 1
    }
   ],
   "risk": [
    {
     "value": "anxious",
-    "n": 111,
+    "n": 151,
     "rate": 1
    },
    {
     "value": "cautious",
-    "n": 93,
+    "n": 121,
     "rate": 1
    },
    {
     "value": "bold",
-    "n": 96,
+    "n": 128,
     "rate": 1
    }
   ],
   "price": [
    {
     "value": "very price sensitive",
-    "n": 77,
+    "n": 108,
     "rate": 1
    },
    {
     "value": "value seeker",
-    "n": 120,
+    "n": 158,
     "rate": 1
    },
    {
     "value": "price insensitive",
-    "n": 103,
+    "n": 134,
     "rate": 1
    }
   ],
   "trust": [
    {
     "value": "skeptical",
-    "n": 116,
+    "n": 155,
     "rate": 1
    },
    {
     "value": "neutral",
-    "n": 93,
+    "n": 131,
     "rate": 1
    },
    {
     "value": "trusting",
-    "n": 91,
+    "n": 114,
     "rate": 1
    }
   ],
   "style": [
    {
     "value": "terse",
-    "n": 79,
+    "n": 100,
     "rate": 1
    },
    {
     "value": "chatty",
-    "n": 84,
+    "n": 109,
     "rate": 1
    },
    {
     "value": "formal",
-    "n": 78,
+    "n": 108,
     "rate": 1
    },
    {
     "value": "emoji and slang",
-    "n": 59,
+    "n": 83,
     "rate": 1
    }
   ],
   "control": [
    {
     "value": "wants control of every detail",
-    "n": 142,
+    "n": 198,
     "rate": 1
    },
    {
     "value": "wants it all handled",
-    "n": 158,
+    "n": 202,
     "rate": 1
    }
   ],
   "language": [
    {
     "value": "english",
-    "n": 114,
+    "n": 145,
     "rate": 1
    },
    {
     "value": "hinglish",
-    "n": 58,
+    "n": 79,
     "rate": 1
    },
    {
     "value": "hindi script",
-    "n": 65,
+    "n": 80,
     "rate": 1
    },
    {
     "value": "gujarati script",
-    "n": 63,
+    "n": 96,
     "rate": 1
    }
   ],
   "channel": [
    {
     "value": "whatsapp",
-    "n": 93,
+    "n": 131,
     "rate": 1
    },
    {
     "value": "website chat",
-    "n": 107,
+    "n": 137,
     "rate": 1
    },
    {
     "value": "instagram dm",
-    "n": 100,
+    "n": 132,
     "rate": 1
    }
   ],
   "mood": [
    {
     "value": "curious",
-    "n": 51,
+    "n": 66,
     "rate": 1
    },
    {
     "value": "rushed",
-    "n": 54,
+    "n": 75,
     "rate": 1
    },
    {
     "value": "anxious",
-    "n": 51,
+    "n": 69,
     "rate": 1
    },
    {
     "value": "bargaining",
-    "n": 50,
+    "n": 59,
     "rate": 1
    },
    {
     "value": "confused",
-    "n": 48,
+    "n": 68,
     "rate": 1
    },
    {
     "value": "angry",
-    "n": 46,
+    "n": 63,
     "rate": 1
    }
   ],
   "scenario": [
    {
     "value": "sales",
-    "n": 90,
+    "n": 115,
     "rate": 1
    },
    {
     "value": "marketing",
-    "n": 85,
+    "n": 114,
     "rate": 1
    },
    {
     "value": "support",
-    "n": 46,
+    "n": 63,
     "rate": 1
    },
    {
     "value": "probing",
-    "n": 79,
+    "n": 108,
     "rate": 1
    }
   ]

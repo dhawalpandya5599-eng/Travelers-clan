@@ -22,6 +22,7 @@ Blank means the default. Change a number and every reply, draft, exam and the au
 
 ## 3. The daily loop (10 minutes)
 
+0. Read the **Trip board** at the top of Today's work: per departure, booked, held, left, seats needed per day, leads by stage, lost reasons, money booked and open, and red flags (balance pending, pickup point not set, captain not assigned, waiting list with a seat open, under half full inside 10 days). Anyone shown as waiting for a human gets answered first.
 1. Open **Today's work**. Follow-ups due now are listed with a ready draft; send or edit.
 2. Holds expiring today: call, convert or release.
 3. **OYE proposes** on Start here: approve, edit or dismiss each card (a follow-up, a seat push, a fill decision, a review ask, a referral ask).
@@ -33,6 +34,24 @@ Blank means the default. Change a number and every reply, draft, exam and the au
 2. Ask: "which of our trips should get the marketing budget this week and why" and "write a 7-day instagram content calendar for <trip> with hooks".
 3. Update trips and seats in Set up; add next month's batch 45 days out.
 4. Check the Google profile score and the campaign calendar in **Marketing**.
+
+## 4b. Sales operations OYE now runs by itself
+
+| Moment | What OYE does | Where it shows |
+|---|---|---|
+| Lead writes in | replies in seconds, qualifies (trip, date, people, budget), quotes with total, advance, seats left and one next step | WhatsApp, widget |
+| Hold | 24-hour hold (rule), capped at seats left, partial hold plus waiting list when short | reply, Trip board |
+| Hold expiring | proposal with the message, 4 hours before | OYE proposes |
+| Advance paid | founder marks "advance"; hold becomes a booking | Today's work |
+| Balance due | proposal per traveller with the exact amount, inside the balance window (rule) | OYE proposes, Trip board flag |
+| Pre-departure | one brief per trip, inside the pickup window (rule), with pickup, captain, carry list, group link | OYE proposes |
+| Seat opens | first right to the waiting list, 4 hours each | OYE proposes |
+| Hand-off | booking, complaint, incident, "talk to a person" flagged; 30 minutes without a human reply becomes a red card | Trip board, OYE proposes |
+| Lost | reason recorded (price, competitor, timing, dates, silent) and counted per trip | Trip board |
+| After the trip | review ask the day after, referral offer, rebook campaigns by calendar | OYE proposes, Marketing |
+| Source | every lead carries where it came from (WhatsApp, website page, Instagram, referral) | Trip board |
+
+Trip rows accept optional `pickup`, `captain`, `hotel` and `groupLink`; set them and the flags clear and the brief fills itself.
 
 ## 5. How OYE gets better
 

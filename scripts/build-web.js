@@ -158,6 +158,7 @@ const glue = `
           case 'GET /api/growth/leads': return brain.growth.state.leads.slice().sort(function (a, b) { return a.next - b.next; });
           case 'POST /api/growth/leads': return body.id && brain.growth.state.leads.some(function (l) { return l.id === body.id; }) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {});
           case 'GET /api/growth/today': return brain.growth.today();
+          case 'GET /api/growth/board': return brain.growth.tripBoard();
           case 'GET /api/growth/campaigns': return brain.growth.broadcasts().then(function (b) { b.campaigns = brain.growth.campaigns(); return b; });
           case 'GET /api/growth/digest': return brain.growth.digest();
           case 'GET /api/growth/content': return brain.growth.content();

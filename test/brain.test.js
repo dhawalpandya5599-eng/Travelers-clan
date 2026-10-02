@@ -253,3 +253,23 @@ test('rules: numbers the founder sets in Set up change what OYE quotes', async (
   b.growth.setProfile({ rules: { advancePct: '', advanceCap: '' } }); assert.equal(b.growth.advance(b.growth.profile.trips[0]), 4500);
   const ov = await b.growth.overview(); assert.equal(ov.profile.rules.kidsPct, 50); assert.ok(ov.profile.ruleLabels.kidsPct);
 });
+
+test('sales ops: trip board, balance due, waiting list, and a human owed a reply', async () => {
+  const b = new Brain({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'oye-ops-')), autosave: false }); b.evolution.genome.curiosity = 0;
+  const soon = new Date(Date.now() + 5 * 86400e3).toISOString().slice(0, 10);
+  b.growth.setProfile({ phone: '9876543210', upi: 'tc@upi', trips: [{ name: 'Goa', date: soon, days: 4, price: 14500, seats: 16, booked: 15 }] });
+  const g = b.growth;
+  await g.chat({ id: 'ops-1', name: 'Asha Patel', text: 'goa for 2', source: 'web', page: '/goa' }); await g.chat({ id: 'ops-1', text: 'ok hold', source: 'web' });
+  g.updateLead('ops-1', { stage: 'advance' });
+  await g.chat({ id: 'ops-2', name: 'Ravi', text: 'goa for 1', source: 'whatsapp' }); await g.chat({ id: 'ops-2', text: 'hold 1 seat', source: 'whatsapp' });
+  const board = g.tripBoard(); const row = board.trips[0];
+  assert.equal(row.name, 'Goa'); assert.ok(row.days <= 5); assert.equal(row.leads.advance, 1);
+  assert.ok(row.balancePending.length >= 1, 'balance pending inside the balance window'); assert.ok(row.flags.some(f => /balance/.test(f)));
+  assert.ok(g.state.leads.find(l => l.id === 'ops-1').page === '/goa');
+  const r2 = await g.chat({ id: 'ops-3', name: 'Meera', text: 'i want to talk to a team member', source: 'web' }); assert.equal(r2.handoff, true);
+  b.growth.state.log.find(e => e.id === 'ops-3').t -= 45 * 60000;
+  assert.ok(g.tripBoard().humanWait.some(w => w.id === 'ops-3'), 'a hand-off nobody answered shows up');
+  await b.autopilot.run(); const kinds = b.autopilot.state.proposals.map(p => p.kind);
+  assert.ok(kinds.includes('balance_due')); assert.ok(kinds.includes('pre_departure') || row.days > b.growth.rules.pickupShareDays); assert.ok(kinds.includes('human_wait'));
+  g.updateLead('ops-2', { stage: 'lost' }); assert.ok(g.state.leads.find(l => l.id === 'ops-2').lostReason);
+});
