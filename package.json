@@ -13,7 +13,7 @@
     "test": "node --test test/*.test.js",
     "train": "node scripts/train.js",
     "build:web": "node scripts/build-web.js",
-    "exam": "node scripts/eval.js",
+    "exam": "node scripts/eval.js && node scripts/levels.js",
     "synth": "node scripts/synth-customers.js && node scripts/synth-journeys.js",
     "sync": "node scripts/sync.js",
     "sync:push": "node scripts/sync.js --commit",
@@ -21,7 +21,8 @@
     "stress": "node scripts/stress.js",
     "whatsapp": "node scripts/whatsapp.js",
     "universe": "node scripts/universe.js",
-    "mastery": "node scripts/mastery.js"
+    "mastery": "node scripts/mastery.js",
+    "levels": "node scripts/levels.js"
   },
   "license": "MIT",
   "private": true

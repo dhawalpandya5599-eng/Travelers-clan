@@ -184,3 +184,18 @@ Setup once in **Grow → Setup**: phone number, city, and your upcoming trips wi
 ### The mastery loop (exam → answer → evaluate → teach → repeat)
 
 `npm run mastery` runs the loop: an examiner sets a battery of questions (policies, prices, seats, visas, what to post, who to call), situations (customers from the universe), requirements (trip plans) and expressions (fear, anger, grief, sarcasm, slang, joy, confusion, distrust, guilt, urgency, Hinglish fear, Gujarati joy). ATLAS answers all of them. With a model connected, the evaluator grades every answer 1-10 on accuracy, specificity, tone fit, empathy and growth impact, writes the best answer and what to prefer next time, teaches each weak item to the mind as a preference lesson, and repeats up to `--rounds`; it PASSES only when every category averages 8.5 and nothing scores below 6. Without a model it writes `MASTERY-REVIEW.md` for the master teacher to grade by hand. The 6-hourly routine runs it and does not pass ATLAS until it is satisfied.
+
+### Mastery levels (pass mark 100% each, easiest to hardest)
+
+`npm run levels` (also part of `npm run exam`): six levels, each a battery of checks that encode the evaluator's standard for a best-in-class reply. A level must score 100% before the next one counts.
+
+| Level | What it proves | Items |
+|---|---|---|
+| 1 | Basic facts in one turn: price, dates, seats, inclusions, cancellation, pickup, food, advance | 16 |
+| 2 | Conversation flow: requirements collected across turns, group changes, trip switching, language sticks, no repeats, paid confirmation | 12 |
+| 3 | Emotion and psyche: fear, grief, anger, sarcasm, guilt, urgency, confusion, distrust, medical, first-timers, women travelling alone, bad past experience | 16 |
+| 4 | Complex requirements: off-season, kids and altitude, unknown places, comparisons against budget, cheapest fit for a large group, seniors, destination questions, documents | 14 |
+| 5 | Business judgement: push or merge, campaigns with messages, review replies, how to close a skeptic, incident SOPs, zero-budget lead generation | 10 |
+| 6 | Expert: mixed-language constraints, couples-and-kids groups with total budgets, Gujarati multi-turn to a hold, instalments, extensions, weekday reasoning, competitor pricing, price-change maths, drafting broadcasts, run rate | 12 |
+
+Current: all six levels 100%.

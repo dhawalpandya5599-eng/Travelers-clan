@@ -1,0 +1,48 @@
+{
+ "at": "2026-10-02T08:04:20.064Z",
+ "report": [
+  {
+   "level": 1,
+   "name": "Basic facts, one turn",
+   "pass": 16,
+   "total": 16,
+   "pct": 100
+  },
+  {
+   "level": 2,
+   "name": "Conversation flow, multi-turn",
+   "pass": 12,
+   "total": 12,
+   "pct": 100
+  },
+  {
+   "level": 3,
+   "name": "Emotion and psyche",
+   "pass": 16,
+   "total": 16,
+   "pct": 100
+  },
+  {
+   "level": 4,
+   "name": "Complex requirements and reasoning",
+   "pass": 14,
+   "total": 14,
+   "pct": 100
+  },
+  {
+   "level": 5,
+   "name": "Business judgement for Travelers Clan growth",
+   "pass": 10,
+   "total": 10,
+   "pct": 100
+  },
+  {
+   "level": 6,
+   "name": "Expert: mixed languages, constraints, numbers, drafting",
+   "pass": 12,
+   "total": 12,
+   "pct": 100
+  }
+ ],
+ "allPass": true
+}
