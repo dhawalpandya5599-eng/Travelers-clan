@@ -11,7 +11,7 @@
   const fmt = (n, d = 3) => (n == null ? '–' : typeof n === 'number' ? +n.toFixed(d) : n);
 
   // ---------- Tabs ----------
-  const showTab = (name) => { document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name)); document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name)); try { localStorage.setItem('atlas-tab', name); } catch (e) {} if (name === 'mind') setTimeout(() => window.dispatchEvent(new Event('resize')), 50); window.scrollTo(0, 0); if (typeof loadPage === 'function') loadPage(name); };
+  const showTab = (name) => { document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name)); document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name)); try { localStorage.setItem('atlas-tab', name); } catch (e) {} if (name === 'mind') setTimeout(() => { window.dispatchEvent(new Event('resize')); const h = document.getElementById('graph3d'); if (h && h.__refit) h.__refit(); }, 50); window.scrollTo(0, 0); if (typeof loadPage === 'function') loadPage(name); };
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) showTab(b.dataset.go); });
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
   try { const t = localStorage.getItem('atlas-tab'); if (t && document.getElementById('page-' + t)) showTab(t); } catch (e) {}
@@ -154,11 +154,14 @@
     const host = $('graph3d'); const canvas = $('graph');
     let data = { nodes: [], links: [], clusters: [] }, byId = new Map(), fg = null, rotating = true, angle = 0, hoverNode = null, flashUntil = 0;
     const color = (n) => n.group < 0 ? '#8a94a8' : PALETTE[n.group % PALETTE.length];
-    function legend(cl) { $('legend').innerHTML = cl.slice(0, 8).map(c => `<span><i style="background:${PALETTE[c.id % PALETTE.length]}"></i>${esc(c.name)} <b>${c.size}</b></span>`).join('') || ''; }
+    function legend(cl) { $('legend').innerHTML = cl.slice(0, 8).map(c => `<span class="lg" data-hub="${esc(c.name)}" title="Fly to this cluster"><i style="background:${PALETTE[c.id % PALETTE.length]}"></i>${esc(c.name)} <b>${c.size}</b></span>`).join('') || '<span class="muted">The map fills as OYE learns. Teach it something or ask a question.</span>'; }
+    // Click a cluster in the legend: fly the camera to its hub and dim everything else for a moment.
+    $('legend').addEventListener('click', (e) => { const el = e.target.closest('[data-hub]'); if (!el || !fg) return; const n = data.nodes.find(x => x.label === el.dataset.hub); if (!n || n.x == null) return; rotating = false; $('btn-rotate').textContent = 'Resume orbit'; const d = 90, r = d / Math.max(1, Math.hypot(n.x, n.y, n.z)); fg.cameraPosition({ x: n.x * r, y: n.y * r + 10, z: n.z * r }, n, 1000); hoverNode = n; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()); setTimeout(() => { hoverNode = null; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()); }, 2500); });
     function sprite(n) {
       const s = new SpriteText(n.label); s.color = n.activation > 0.3 ? '#ffffff' : 'rgba(238,241,247,.85)'; s.textHeight = n.hub ? 4.5 : n.strength > 0.6 || n.activation > 0.3 ? 3.4 : 2.6; s.fontFace = 'Montserrat, sans-serif'; s.fontWeight = n.strength > 0.5 ? '600' : '400';
       s.backgroundColor = n.activation > 0.3 ? 'rgba(212,122,96,.55)' : 'rgba(11,18,32,.55)'; s.padding = 1.2; s.borderRadius = 2; s.position.set(0, 3 + n.strength * 3, 0); return s;
     }
+    let fitted = false;
     function init3d() {
       if (!window.ForceGraph3D || !window.SpriteText) return false;
       try {
@@ -177,11 +180,14 @@
           .onBackgroundClick(() => {}).warmupTicks(60).cooldownTicks(200);
         fg.d3Force('charge').strength(-70); fg.d3Force('link').distance(l => 16 + (1 - l.w) * 40);
         let dist = 420; fg.cameraPosition({ x: 0, y: 60, z: dist });
-        let fitted = false; fg.onEngineStop(() => { if (fitted) return; fitted = true; fg.zoomToFit(600, 50); setTimeout(() => { const c = fg.cameraPosition(); dist = Math.max(200, Math.hypot(c.x, c.y, c.z)); angle = Math.atan2(c.x, c.z); }, 700); });
+        const refit = (ms) => { fg.zoomToFit(ms || 600, 50); setTimeout(() => { const c = fg.cameraPosition(); dist = Math.max(200, Math.hypot(c.x, c.y, c.z)); angle = Math.atan2(c.x, c.z); }, (ms || 600) + 100); };
+        fg.onEngineStop(() => { if (fitted || !data.nodes.length) return; fitted = true; refit(600); });
+        // The map is drawn inside a tab that may be hidden (zero size) when the data arrives: refit whenever it is shown.
+        host.__refit = () => { if (host.__resize) host.__resize(); if (data.nodes.length) setTimeout(() => refit(500), 80); };
         const resize = () => { const w = host.getBoundingClientRect().width || host.parentElement.clientWidth - 24; if (w > 50) fg.width(w).height(host.clientHeight || 620); }; resize(); window.addEventListener('resize', resize); host.__resize = resize;
         (function orbit() { if (rotating && !hoverNode && fitted) { angle += 0.0015; const d = dist; fg.cameraPosition({ x: d * Math.sin(angle), y: d * 0.22 + d * 0.08 * Math.sin(angle * 0.5), z: d * Math.cos(angle) }); } requestAnimationFrame(orbit); })();
         $('btn-rotate').onclick = () => { rotating = !rotating; $('btn-rotate').textContent = rotating ? 'Pause orbit' : 'Resume orbit'; };
-        $('btn-fit').onclick = () => { fg.zoomToFit(800, 50); setTimeout(() => { const c = fg.cameraPosition(); dist = Math.max(200, Math.hypot(c.x, c.y, c.z)); angle = Math.atan2(c.x, c.z); }, 900); };
+        $('btn-fit').onclick = () => refit(800);
         return true;
       } catch (e) { console.warn('3D view unavailable, using 2D', e); fg = null; return false; }
     }
@@ -195,7 +201,8 @@
         if (host.__resize) host.__resize();
         const links = g.links.map(l => ({ source: l.source, target: l.target, w: l.w }));
         data = { nodes, links, clusters: g.clusters || [] }; byId = new Map(nodes.map(n => [n.id, n]));
-        fg.graphData({ nodes, links });
+        const hadData = fitted; fg.graphData({ nodes, links });
+        if (!hadData && nodes.length) { fitted = false; fg.d3ReheatSimulation(); }
       } else draw2d(g);
     }
     function flash() { flashUntil = performance.now() + 900; }

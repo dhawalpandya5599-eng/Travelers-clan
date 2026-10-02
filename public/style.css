@@ -109,7 +109,7 @@ button:disabled { opacity: .5; cursor: progress; }
 .brain { padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
 #graph3d > div, #graph3d canvas { max-width: 100%; }
 .brain-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 2px 6px; } .brain-bar .actions { margin: 0 0 0 auto; }
-.legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--muted); } .legend span { display: inline-flex; align-items: center; gap: 5px; } .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--muted); } .legend span { display: inline-flex; align-items: center; gap: 5px; } .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; } .legend .lg { cursor: pointer; padding: 2px 6px; border-radius: 999px; } .legend .lg:hover { background: rgba(198,104,79,.12); color: var(--ink, #0b1220); }
 #graph3d { width: 100%; height: 620px; border-radius: 12px; overflow: hidden; background: radial-gradient(900px 500px at 50% 40%, #16213a 0%, #0b1220 70%); position: relative; }
 #graph3d canvas { outline: none; }
 #graph { width: 100%; height: 620px; display: block; border-radius: 12px; background: #0b1220; }

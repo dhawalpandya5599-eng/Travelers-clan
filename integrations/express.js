@@ -109,6 +109,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   const pub = express.Router();
   pub.use(express.json({ limit: '64kb' }));
   pub.get('/trips.js', (req, res) => { res.type('text/javascript'); res.send(fs.readFileSync(path.join(ROOT, 'public', 'trips.js'), 'utf8')); });
+  pub.get('/logo-mark.png', (req, res) => res.type('image/png').set('Cache-Control', 'public, max-age=86400').send(fs.readFileSync(path.join(ROOT, 'public', 'logo-mark.png'))));
   pub.get('/widget.js', (req, res) => { res.type('text/javascript'); res.send(fs.readFileSync(path.join(ROOT, 'public', 'widget.js'), 'utf8')); });
   pub.post('/chat', wrap(req => brain.growth.chat({ id: String(req.body.id || '').slice(0, 40), name: String(req.body.name || '').slice(0, 60), text: String(req.body.text || '').slice(0, 1000), source: 'web' })));
   pub.get('/profile', wrap(() => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(6).map(t => ({ name: t.name, date: t.date, days: t.days, price: t.price, seatsLeft: brain.growth.seatsLeft(t), from: t.from })) }; }));

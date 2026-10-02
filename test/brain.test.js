@@ -182,7 +182,7 @@ test('open-source model backend: understanding, polishing, critique and learning
     if (/extract travel requirements/i.test(sys)) content = '{"destination":"Spiti","month":"August","days":8,"group":5,"budgetPerPerson":28000,"needs":["adventure"],"language":"hinglish","mood":"excited"}';
     else if (/strict quality critic/i.test(sys)) content = '{"problems":["No acclimatisation mentioned"],"fixes":["Add acclimatisation line"]}';
     else if (/turn a message into simple facts/i.test(sys)) content = '{"facts":["Spiti trip costs 28000 per person."]}';
-    else if (/salesperson/i.test(sys)) content = 'Arre bhai, August mein Spiti best hai! Plan bhej raha hoon.';
+    else if (/salesperson|trip buddy/i.test(sys)) content = 'Arre bhai, August mein Spiti best hai! Plan bhej raha hoon.';
     else content = 'ok';
     res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ choices: [{ message: { content } }] }));
   }); });
