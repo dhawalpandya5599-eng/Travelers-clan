@@ -208,8 +208,10 @@
         if (host.__resize) host.__resize();
         const keep = new Set(nodes.map(n => n.id)); const links = g.links.filter(l => keep.has(l.source) && keep.has(l.target)).map(l => ({ source: l.source, target: l.target, w: l.w }));
         data = { nodes, links, clusters: g.clusters || [] }; byId = new Map(nodes.map(n => [n.id, n]));
-        const hadData = fitted; fg.graphData({ nodes, links });
-        if (!hadData && nodes.length) { fitted = false; fg.d3ReheatSimulation(); }
+        // graphData() restarts the layout by itself; in the web bundle the data arrives before the engine's first frame, so
+        // nothing else may touch the engine here (an early reheat threw and left the scene empty).
+        const hadData = fitted; try { fg.graphData({ nodes, links }); } catch (e) { console.warn('3D update failed, using 2D', e); fg = null; return draw2d(g); }
+        if (!hadData && nodes.length) fitted = false;
       } else draw2d(g);
     }
     function flash() { flashUntil = performance.now() + 900; }
