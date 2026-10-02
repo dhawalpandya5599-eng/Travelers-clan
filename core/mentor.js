@@ -2,10 +2,10 @@
 /**
  * mentor.js — the parent.
  *
- * ATLAS learns on its own, but it grows fastest with a mentor: a frontier Claude model that
- *  1. answers when ATLAS is unsure, and ATLAS then *learns the answer* (distillation),
- *  2. reflects on recent experience and writes lessons ATLAS consolidates into semantic memory,
- *  3. synthesizes new skills as sandboxed code with tests, which ATLAS admits only if they pass.
+ * OYE learns on its own, but it grows fastest with a mentor: a frontier Claude model that
+ *  1. answers when OYE is unsure, and OYE then *learns the answer* (distillation),
+ *  2. reflects on recent experience and writes lessons OYE consolidates into semantic memory,
+ *  3. synthesizes new skills as sandboxed code with tests, which OYE admits only if they pass.
  *
  * The mentor is optional. Without `@anthropic-ai/sdk` + credentials, every method returns null
  * and the agent still learns from the humans it talks to.
@@ -17,7 +17,7 @@
 let Anthropic = null;
 try { Anthropic = require('@anthropic-ai/sdk'); } catch { /* optional */ }
 
-const MODEL = process.env.ATLAS_MENTOR_MODEL || 'claude-fable-5-1';
+const MODEL = (process.env.OYE_MENTOR_MODEL || process.env.ATLAS_MENTOR_MODEL) || 'claude-fable-5-1';
 
 /**
  * Local mentor: Ollama (https://ollama.com) running on the same machine, no key and no credits.
@@ -63,7 +63,7 @@ class Mentor {
 
   /** Is a local Ollama server answering? If so, use it. */
   async probeOllama() {
-    if (process.env.ATLAS_NO_OLLAMA || typeof window !== 'undefined') return false; // browsers use the page's own mentor
+    if ((process.env.OYE_NO_OLLAMA || process.env.ATLAS_NO_OLLAMA) || typeof window !== 'undefined') return false; // browsers use the page's own mentor
     try {
       const r = await fetch(OLLAMA_URL + '/api/tags', { signal: AbortSignal.timeout(1500) });
       if (!r.ok) throw new Error('status ' + r.status);
@@ -117,10 +117,10 @@ class Mentor {
 
   /** Answer a question using the agent's own memories as context, so the answer is grounded. */
   async answer(question, context) {
-    const system = 'You are the mentor of ATLAS, a young learning agent that serves the Travelers Clan, a travel company. ' +
+    const system = 'You are the mentor of OYE, a young learning agent that serves the Travelers Clan, a travel company. ' +
       'Answer the question briefly (max 3 sentences) using the provided memories when relevant. ' +
       'If the memories do not cover it and it is clan-specific, say you do not know yet and suggest what to ask the chief. ' +
-      'Then on a new line write FACTS: followed by up to 3 short declarative sentences ATLAS should memorise, each of the form "<subject> is/has/offers <object>".';
+      'Then on a new line write FACTS: followed by up to 3 short declarative sentences OYE should memorise, each of the form "<subject> is/has/offers <object>".';
     const user = `Memories:\n${context}\n\nQuestion: ${question}`;
     const out = await this.ask(system, user, { maxTokens: 600 });
     if (!out) return null;
@@ -131,7 +131,7 @@ class Mentor {
 
   /** Reflect on recent episodes and produce lessons (declarative sentences) worth consolidating. */
   async reflect(recentEpisodes) {
-    const system = 'You are the mentor of ATLAS, a learning agent for the Travelers Clan. Read the recent conversation log and ' +
+    const system = 'You are the mentor of OYE, a learning agent for the Travelers Clan. Read the recent conversation log and ' +
       'extract the durable knowledge in it as 3-8 short declarative sentences ("X is Y", "X offers Y", "Customers need Y"). ' +
       'Skip pleasantries. Output one sentence per line, nothing else.';
     const out = await this.ask(system, recentEpisodes.map(e => `[${e.role}] ${e.text}`).join('\n'), { maxTokens: 800 });
@@ -140,7 +140,7 @@ class Mentor {
 
   /** Synthesize a new skill as sandboxed JS. Returns {name, description, source, tests} or null. */
   async synthesizeSkill(need, examples) {
-    const system = 'You write small JavaScript skills for ATLAS, a learning agent. A skill is a CommonJS module that sets ' +
+    const system = 'You write small JavaScript skills for OYE, a learning agent. A skill is a CommonJS module that sets ' +
       '`module.exports = { match, run }`. `match(input)` returns null when the skill does not apply, else an args value. ' +
       '`run(args, input)` returns a string. No require, no IO, no async, pure functions only. ' +
       'Respond with JSON only: {"name": "kebab-case", "description": "...", "source": "<module code>", "tests": [{"input": "...", "expect": "<substring of expected output>"}]} with at least 2 tests.';

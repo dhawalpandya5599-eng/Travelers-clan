@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * build-web.js — bundles ATLAS into one self-contained HTML page that runs the whole brain
+ * build-web.js — bundles OYE into one self-contained HTML page that runs the whole brain
  * in the browser: no server, no install. The mind persists in the viewer's browser storage,
  * and when the page is published as a claude.ai artifact, Claude becomes the mentor through the
  * page's "sample" capability.
- *   node scripts/build-web.js  →  dist/atlas-web.html
+ *   node scripts/build-web.js  →  dist/oye-web.html
  */
 const fs = require('fs');
 const path = require('path');
@@ -16,7 +16,7 @@ const modules = ['text', 'memory', 'learning', 'skills', 'evolution', 'mentor', 
 const curriculum = fs.readdirSync(path.join(root, 'curriculum')).filter(f => /\.(md|txt)$/.test(f)).sort()
   .map(f => [f, read('curriculum/' + f)]);
 
-const stateFile = [process.env.ATLAS_DATA && path.join(process.env.ATLAS_DATA, 'state.json'), path.join(root, 'mind', 'state.json'), path.join(root, 'data', 'state.json')].filter(Boolean).find(f => fs.existsSync(f));
+const stateFile = [(process.env.OYE_DATA || process.env.ATLAS_DATA) && path.join((process.env.OYE_DATA || process.env.ATLAS_DATA), 'state.json'), path.join(root, 'mind', 'state.json'), path.join(root, 'data', 'state.json')].filter(Boolean).find(f => fs.existsSync(f));
 const pretrained = stateFile ? fs.readFileSync(stateFile, 'utf8') : null;
 if (stateFile) console.log('embedding mind from', path.relative(root, stateFile));
 const shims = `
@@ -85,18 +85,18 @@ const glue = `
     status: function () { return { enabled: this.enabled, model: this.model, calls: this.calls, lastError: this.lastError }; },
     ask: function (system, user) { var self = this; return samplePromise.then(function (sample) { if (!sample) return null; self.calls++; return sample([{ role: 'user', content: system + '\\n\\n' + user }], { modelTier: 'default', cache: false }).then(function (r) { return r.text; }).catch(function (e) { self.lastError = e && e.message || 'declined'; return null; }); }); },
     answer: function (question, context) {
-      var sys = 'You are the mentor of ATLAS, a young learning agent that serves the Travelers Clan, a travel company. Answer the question briefly (max 3 sentences) using the provided memories when relevant. If the memories do not cover it and it is clan-specific, say you do not know yet and suggest what to ask the chief. Then on a new line write FACTS: followed by up to 3 short declarative sentences ATLAS should memorise, each of the form "<subject> is/has/offers <object>".';
+      var sys = 'You are the mentor of OYE, a young learning agent that serves the Travelers Clan, a travel company. Answer the question briefly (max 3 sentences) using the provided memories when relevant. If the memories do not cover it and it is clan-specific, say you do not know yet and suggest what to ask the chief. Then on a new line write FACTS: followed by up to 3 short declarative sentences OYE should memorise, each of the form "<subject> is/has/offers <object>".';
       return this.ask(sys, 'Memories:\\n' + context + '\\n\\nQuestion: ' + question).then(function (out) {
         if (!out) return null; var parts = out.split(/\\nFACTS:\\s*/i);
         return { text: parts[0].trim(), facts: parts[1] ? parts[1].split(/\\n+/).map(function (s) { return s.replace(/^[-*\\d.\\s]+/, '').trim(); }).filter(Boolean) : [] };
       });
     },
     reflect: function (eps) {
-      var sys = 'You are the mentor of ATLAS, a learning agent for the Travelers Clan. Read the recent conversation log and extract the durable knowledge in it as 3-8 short declarative sentences ("X is Y", "X offers Y"). Skip pleasantries. Output one sentence per line, nothing else.';
+      var sys = 'You are the mentor of OYE, a learning agent for the Travelers Clan. Read the recent conversation log and extract the durable knowledge in it as 3-8 short declarative sentences ("X is Y", "X offers Y"). Skip pleasantries. Output one sentence per line, nothing else.';
       return this.ask(sys, eps.map(function (e) { return '[' + e.role + '] ' + e.text; }).join('\\n')).then(function (out) { return out ? out.split(/\\n+/).map(function (s) { return s.replace(/^[-*\\d.\\s]+/, '').trim(); }).filter(function (s) { return s.length > 8; }) : []; });
     },
     synthesizeSkill: function (need, examples) {
-      var sys = 'You write small JavaScript skills for ATLAS. A skill is a CommonJS module that sets module.exports = { match, run }. match(input) returns null when the skill does not apply, else an args value. run(args, input) returns a string. No require, no IO, no async, pure functions only. Respond with JSON only: {"name": "kebab-case", "description": "...", "source": "<module code>", "tests": [{"input": "...", "expect": "<substring of expected output>"}]} with at least 2 tests.';
+      var sys = 'You write small JavaScript skills for OYE. A skill is a CommonJS module that sets module.exports = { match, run }. match(input) returns null when the skill does not apply, else an args value. run(args, input) returns a string. No require, no IO, no async, pure functions only. Respond with JSON only: {"name": "kebab-case", "description": "...", "source": "<module code>", "tests": [{"input": "...", "expect": "<substring of expected output>"}]} with at least 2 tests.';
       return this.ask(sys, 'Need: ' + need + '\\nExample inputs:\\n' + examples.join('\\n')).then(function (out) { if (!out) return null; var m = out.match(/\\{[\\s\\S]*\\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e) { return null; } });
     } };
   samplePromise.then(function (s) { mentor.enabled = !!s; mentor.lastError = s ? null : 'No model yet: open this page on claude.ai, or load the open-source model below.'; });
@@ -119,9 +119,9 @@ const glue = `
   var sinceSleep = 0, lastSleep = Date.now(), lastEvolve = Date.now();
   setInterval(function () { brain.tick(1 / 60); if (sinceSleep >= 30 || Date.now() - lastSleep > 20 * 60e3) { sinceSleep = 0; lastSleep = Date.now(); brain.sleep(); } if (Date.now() - lastEvolve > 60 * 60e3) { lastEvolve = Date.now(); brain.evolve(1); } }, 60e3);
 
-  window.ATLAS_LOCAL = {
+  window.OYE_LOCAL = window.ATLAS_LOCAL = {
     brain: brain,
-    onEvent: function (f) { listeners.push(f); f({ t: Date.now(), kind: 'system', text: 'The mind of ATLAS is running inside this page. It remembers in this browser.' }); },
+    onEvent: function (f) { listeners.push(f); f({ t: Date.now(), kind: 'system', text: 'The mind of OYE is running inside this page. It remembers in this browser.' }); },
     request: function (method, url, body) {
       body = body || {};
       var u = new URL(url, 'http://local'); var key = method + ' ' + u.pathname;
@@ -172,7 +172,7 @@ const glue = `
       brain.saveNow();
       var data = __require('fs').readFileSync('/atlas/data/state.json');
       var dl = (window.claude && window.claude.use) ? window.claude.use('downloads').catch(function () { return null; }) : Promise.resolve(null);
-      dl.then(function (d) { if (d) return d.save({ filename: 'atlas-mind.json', data: data }); try { navigator.clipboard.writeText(data); } catch (e) {} });
+      dl.then(function (d) { if (d) return d.save({ filename: 'oye-mind.json', data: data }); try { navigator.clipboard.writeText(data); } catch (e) {} });
     },
   };
 })();
@@ -182,7 +182,7 @@ const html = read('public/index.html');
 const body = html.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, '').replace(/<script src="\/app.js"><\/script>/, '')
   .replace(/src="\/logo-mark.png"/g, 'src="data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '..', 'public', 'logo-mark.png')).toString('base64') + '"').replace('src="/vendor/three.min.js"', 'src="https://unpkg.com/three@0.160.0/build/three.min.js"').replace('src="/vendor/three-spritetext.min.js"', 'src="https://unpkg.com/three-spritetext@1.8.2/dist/three-spritetext.min.js"').replace('src="/vendor/3d-force-graph.min.js"', 'src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"');
 const css = read('public/style.css').replace(':root {', ':root { color-scheme: dark;');
-const page = `<title>ATLAS Clan Mind</title>
+const page = `<title>OYE Clan Mind</title>
 <style>${css}
 html, body { height: 100%; }
 body { padding: 0; }
@@ -198,8 +198,8 @@ ${read('public/app.js')}
 </script>
 `;
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
-fs.writeFileSync(path.join(root, 'dist', 'atlas-web.html'), page);
+fs.writeFileSync(path.join(root, 'dist', 'oye-web.html'), page);
 // Standalone build: a complete document you can upload to any website or admin panel as-is.
 const standalone = `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="robots" content="noindex">\n</head>\n<body>\n${page}\n</body>\n</html>\n`;
-fs.writeFileSync(path.join(root, 'dist', 'atlas-standalone.html'), standalone);
-console.log(`dist/atlas-web.html: ${(page.length / 1024).toFixed(0)} KB · dist/atlas-standalone.html: ${(standalone.length / 1024).toFixed(0)} KB`);
+fs.writeFileSync(path.join(root, 'dist', 'oye-standalone.html'), standalone);
+console.log(`dist/oye-web.html: ${(page.length / 1024).toFixed(0)} KB · dist/oye-standalone.html: ${(standalone.length / 1024).toFixed(0)} KB`);

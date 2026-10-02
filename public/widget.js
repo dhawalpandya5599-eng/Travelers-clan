@@ -1,4 +1,4 @@
-/* ATLAS chat widget for travelersclan.in. One script tag:
+/* OYE chat widget for travelersclan.in. One script tag:
    <script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>
    Answers in seconds from the clan's mind, keeps the lead, and hands off to WhatsApp for booking. */
 (function () {

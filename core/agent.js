@@ -1,7 +1,7 @@
 'use strict';
 /**
- * agent.js — ATLAS as a reasoning agent. A language model (Claude through the page, Ollama, or any open model
- * endpoint) thinks step by step and acts through tools that expose everything ATLAS knows and can do: its memory,
+ * agent.js — OYE as a reasoning agent. A language model (Claude through the page, Ollama, or any open model
+ * endpoint) thinks step by step and acts through tools that expose everything OYE knows and can do: its memory,
  * the trips and seats, the written policies, the destinations table, the risk desk, the council of agents, the lead
  * sheet, holds, campaigns and content. Every run ends with facts the mind memorises, so the agent learns from use,
  * and every answer can be corrected by the chief, which becomes a lesson for the next time.
@@ -15,7 +15,7 @@ const MAX_STEPS = 8;
 function tools(brain) {
   const g = brain.growth; const m = brain.memory;
   const T = {
-    recall: { desc: 'Search what ATLAS remembers (facts, lessons, policies, people). args: {query}', run: async ({ query }) => { const r = await brain.respond(String(query || ''), { user: 'agent' }); const facts = m.recall(String(query || ''), 8).map(f => f.text || `${f.s} ${f.p} ${f.o}`); return { answer: r.text, facts }; } },
+    recall: { desc: 'Search what OYE remembers (facts, lessons, policies, people). args: {query}', run: async ({ query }) => { const r = await brain.respond(String(query || ''), { user: 'agent' }); const facts = m.recall(String(query || ''), 8).map(f => f.text || `${f.s} ${f.p} ${f.o}`); return { answer: r.text, facts }; } },
     trips: { desc: 'Upcoming trips with date, price, seats left, holds. args: {}', run: async () => g.upcoming(10).map(t => ({ name: t.name, date: t.date, days: t.days, price: t.price, seats: t.seats, booked: t.booked, seatsLeft: g.seatsLeft(t), holds: (t.holds || []).length })) },
     policies: { desc: 'The written policies (included, excluded, payment, cancellation, pickup, safety, food, age) and business profile. args: {}', run: async () => ({ business: { name: g.profile.name, city: g.profile.city, phone: g.profile.phone, upi: g.profile.upi, usp: g.profile.usp }, policies: g.profile.policies }) },
     destination: { desc: 'Facts about a destination: season months, min/ideal days, cost per day, altitude, permits, risks, route. args: {name}', run: async ({ name }) => { const d = DEST.find(String(name || '')); return d ? { ...d, now: DEST.seasonStatus(d, new Date().getMonth() + 1) } : { error: 'unknown destination; known: ' + Object.values(DEST.DESTINATIONS).map(x => x.name).join(', ') }; } },
@@ -47,7 +47,7 @@ function tools(brain) {
   return T;
 }
 
-const SYSTEM = (names) => `You are ATLAS, the operating mind of Travelers Clan, an Indian group-travel company. You think step by step and act through tools. You never invent prices, dates, seats or policies: fetch them with tools. Be concrete, short, and commercially sharp. Money in INR.
+const SYSTEM = (names) => `You are OYE, the operating mind of Travelers Clan, an Indian group-travel company. You think step by step and act through tools. You never invent prices, dates, seats or policies: fetch them with tools. Be concrete, short, and commercially sharp. Money in INR.
 Protocol: reply with JSON only. Either {"thought": "...", "tool": "<name>", "args": {...}} to use a tool, or {"thought": "...", "final": "<answer for the chief, plain text, may be multi-line>", "facts": ["durable fact to memorise", ...], "todo": ["one next action for the chief", ...]} when done.
 Tools: ${names}. Use at most ${MAX_STEPS} tool calls. Prefer trips/policies/today before answering anything about the business. If the request is a message to a customer, produce the exact text to send.`;
 

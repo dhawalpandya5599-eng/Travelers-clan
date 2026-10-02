@@ -4,7 +4,7 @@
  * synth-customers.js — synthetic customers from around the globe, generated from the cohort model.
  *   node scripts/synth-customers.js [--count 600] [--seed 7]
  * Writes synth/customers.json (people, requirements, first messages, cohort labels) and
- * curriculum/06-customer-cohorts.md (what ATLAS should know about each cohort).
+ * curriculum/06-customer-cohorts.md (what OYE should know about each cohort).
  */
 const fs = require('fs');
 const path = require('path');

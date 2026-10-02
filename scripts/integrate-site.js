@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * integrate-site.js — put ATLAS inside an existing Express website, automatically.
+ * integrate-site.js — put OYE inside an existing Express website, automatically.
  *
  *   node scripts/integrate-site.js [path/to/site] [--zip] [--mount /admin/atlas]
  *
  * With no path it searches the usual places on this machine for the travelersclan source
  * (a folder with package.json named "travelers-clan", or a server.js that uses express).
  * It then: copies this repo into <site>/atlas, inserts the mount lines into server.js
- * (idempotent, marked with ATLAS comments), creates data/atlas, and with --zip writes
+ * (idempotent, marked with OYE comments), creates data/atlas, and with --zip writes
  * travelersclan_<timestamp>.zip next to the site folder, ready to upload to Hostinger.
  */
 const fs = require('fs');
@@ -21,7 +21,7 @@ const args = process.argv.slice(2);
 const flag = (k) => { const i = args.indexOf(k); return i > -1 ? args[i + 1] : null; };
 const MOUNT = flag('--mount') || '/admin/atlas';
 const ZIP = args.includes('--zip');
-const FORCE = args.includes('--force'); // remove an earlier ATLAS block and re-insert it at the best spot
+const FORCE = args.includes('--force'); // remove an earlier OYE block and re-insert it at the best spot
 const given = args.find(a => !a.startsWith('--') && a !== MOUNT);
 
 const SKIP = new Set(['node_modules', '.git', 'atlas', 'dist', 'hbuilds', 'AppData', 'Library', 'Program Files', 'Program Files (x86)', 'ProgramData', 'Windows', '$Recycle.Bin', 'System Volume Information', 'Intel', 'PerfLogs']);
@@ -76,21 +76,21 @@ function copyDir(src, dst) {
 
 function patchServer(file) {
   let src = fs.readFileSync(file, 'utf8');
-  if (src.includes('// ATLAS:begin')) {
-    if (!FORCE) { console.log('server.js already mounts ATLAS; leaving it as is (use --force to re-place it).'); return false; }
-    src = src.replace(/\n?\/\/ ATLAS:begin[\s\S]*?\/\/ ATLAS:end\n?/, '\n');
+  if (src.includes('// OYE:begin')) {
+    if (!FORCE) { console.log('server.js already mounts OYE; leaving it as is (use --force to re-place it).'); return false; }
+    src = src.replace(/\n?\/\/ OYE:begin[\s\S]*?\/\/ OYE:end\n?/, '\n');
   }
-  const block = `\n// ATLAS:begin — the clan's learning mind, mounted at ${MOUNT} (keep after your admin auth middleware)\nconst atlas = require('./atlas/integrations/express');\nconst atlasRouter = atlas({ dataDir: __dirname + '/data/atlas', express });\napp.use('${MOUNT}', atlasRouter);\n// Public, no auth: the website chat widget (/atlas-chat/widget.js) and the live trips block (/atlas-chat/trips.js)\napp.use('/atlas-chat', atlasRouter.widget);\n// ATLAS:end\n`;
+  const block = `\n// OYE:begin — the clan's learning mind, mounted at ${MOUNT} (keep after your admin auth middleware)\nconst atlas = require('./atlas/integrations/express');\nconst atlasRouter = atlas({ dataDir: __dirname + '/data/atlas', express });\napp.use('${MOUNT}', atlasRouter);\n// Public, no auth: the website chat widget (/atlas-chat/widget.js) and the live trips block (/atlas-chat/trips.js)\napp.use('/atlas-chat', atlasRouter.widget);\n// OYE:end\n`;
   // Insert above the first catch-all handler (a 404 page or error handler registered with app.use and no
   // path), otherwise before app.listen(...). Either way every middleware above (auth, parsers) is already registered.
   const catchAll = src.match(/^[ \t]*app\.use\(\s*(?:async\s*)?(?:function\s*)?\(\s*(?:req|request|_req|_)\s*,\s*(?:res|response)\b/m)
     || src.match(/^[ \t]*app\.(?:use|all|get)\(\s*['"]\*['"]|^[ \t]*app\.use\(\s*\/\^?\.\*/m);
   const listen = src.match(/^[ \t]*(?:const\s+\w+\s*=\s*)?(?:app|server|http)\.listen\s*\(/m);
   const m = catchAll && (!listen || catchAll.index < listen.index) ? catchAll : listen;
-  if (m) { src = src.slice(0, m.index) + block + src.slice(m.index); console.log(`Inserted the ATLAS mount ${m === catchAll ? 'above the catch-all 404 handler' : 'before app.listen'}.`); }
+  if (m) { src = src.slice(0, m.index) + block + src.slice(m.index); console.log(`Inserted the OYE mount ${m === catchAll ? 'above the catch-all 404 handler' : 'before app.listen'}.`); }
   else if (/const\s+app\s*=\s*express\(\)/.test(src)) { src = src.replace(/(const\s+app\s*=\s*express\(\)\s*;?)/, `$1${block}`); }
   else throw new Error('could not find app.listen( or const app = express() in server.js');
-  if (!/\bexpress\b\s*=\s*require\(['"]express['"]\)/.test(src)) console.warn('warning: server.js does not require express under the name "express"; adjust the ATLAS block if needed.');
+  if (!/\bexpress\b\s*=\s*require\(['"]express['"]\)/.test(src)) console.warn('warning: server.js does not require express under the name "express"; adjust the OYE block if needed.');
   fs.writeFileSync(file, src);
   return true;
 }
@@ -106,8 +106,8 @@ function patchServer(file) {
   copyDir(root, path.join(site, 'atlas'));
   fs.mkdirSync(path.join(site, 'data', 'atlas'), { recursive: true });
   const patched = patchServer(path.join(site, 'server.js'));
-  // Keep ATLAS's live memory out of the deploy archive if the site has a .gitignore-like list.
-  console.log(patched ? `Mounted ATLAS at ${MOUNT} in server.js.` : 'server.js unchanged.');
+  // Keep OYE's live memory out of the deploy archive if the site has a .gitignore-like list.
+  console.log(patched ? `Mounted OYE at ${MOUNT} in server.js.` : 'server.js unchanged.');
   // Smoke test: require the router in a sandboxed child process from the site folder.
   try {
     execSync(`node -e "const r=require('./atlas/integrations/express');const express=require('express');const router=r({dataDir:require('path').join(require('os').tmpdir(),'atlas-smoke'),express});console.log('router ok, facts:', router.brain.memory.facts.length)"`, { cwd: site, stdio: 'inherit', timeout: 60000 });
@@ -116,7 +116,7 @@ function patchServer(file) {
     const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
     let out = path.join(path.dirname(site), `travelersclan_${stamp}.zip`);
     // If the site has its own packer (releases/latest.json → a staged source folder), pack exactly what it staged
-    // plus ATLAS and the patched server.js, so nothing the site needs is missed and nothing extra goes in.
+    // plus OYE and the patched server.js, so nothing the site needs is missed and nothing extra goes in.
     let src = site;
     try {
       const latest = JSON.parse(fs.readFileSync(path.join(site, 'releases', 'latest.json'), 'utf8'));
@@ -128,7 +128,7 @@ function patchServer(file) {
         fs.copyFileSync(path.join(site, 'server.js'), path.join(src, 'server.js'));
         fs.mkdirSync(path.join(src, 'data', 'atlas'), { recursive: true });
         out = path.join(site, 'releases', `travelersclan_${stamp.slice(0, 8)}_${stamp.slice(8)}.zip`);
-        console.log(`Using the site's own staged release (${stage}) + ATLAS.`);
+        console.log(`Using the site's own staged release (${stage}) + OYE.`);
       }
     } catch { /* no packer; pack the site folder */ }
     const site0 = site; site = src;
@@ -157,6 +157,6 @@ function patchServer(file) {
     if (size < 1000) throw new Error('archive came out empty');
     console.log(`Deploy archive: ${out} (${(size / 1048576).toFixed(1)} MB, ${files.length} files, atlas folder ${files.some(f => f.startsWith('atlas/')) ? 'included' : 'MISSING'})`);
     site = site0;
-    console.log('Upload it in hPanel → Websites → travelersclan.in → Deploy (same as your usual zip). ATLAS will be at https://travelersclan.in' + MOUNT);
+    console.log('Upload it in hPanel → Websites → travelersclan.in → Deploy (same as your usual zip). OYE will be at https://travelersclan.in' + MOUNT);
   }
 })();

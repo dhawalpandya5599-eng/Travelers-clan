@@ -1,8 +1,8 @@
-# ATLAS, the mind of Travelers Clan
+# OYE, the mind of Travelers Clan
 
-ATLAS runs the office of Travelers Clan, an Indian group-travel company: it answers customers on WhatsApp and the website in English, Hinglish, Hindi and Gujarati, keeps the lead sheet, holds seats, proposes the day's actions, writes the posts and campaigns, checks every trip plan, and reasons over everything it knows about destinations, prices, policies, people and risk. It is a self-learning mind built from scratch in plain Node.js with no dependencies, trained every six hours by a frontier model acting as its teacher, and it gets measurably better on a ladder of exams it is not allowed to fail.
+OYE runs the office of Travelers Clan, an Indian group-travel company: it answers customers on WhatsApp and the website in English, Hinglish, Hindi and Gujarati, keeps the lead sheet, holds seats, proposes the day's actions, writes the posts and campaigns, checks every trip plan, and reasons over everything it knows about destinations, prices, policies, people and risk. It is a self-learning mind built from scratch in plain Node.js with no dependencies, trained every six hours by a frontier model acting as its teacher, and it gets measurably better on a ladder of exams it is not allowed to fail.
 
-> Honest framing: ATLAS is a cognitive architecture plus a reasoning agent, not a superintelligence. Its intelligence is what the clan teaches it, the machinery below, and the language model it thinks with when one is connected. Without a model it still works on rules and passes every exam in this repo; with one it reasons freely.
+> Honest framing: OYE is a cognitive architecture plus a reasoning agent, not a superintelligence. Its intelligence is what the clan teaches it, the machinery below, and the language model it thinks with when one is connected. Without a model it still works on rules and passes every exam in this repo; with one it reasons freely.
 
 ```
 npm start            # http://localhost:3000, zero dependencies
@@ -17,16 +17,16 @@ Live preview of the dashboard: https://claude.ai/artifact/Fb9Q6asYMnTvANGbz6amfE
 
 | Screen | What you do there |
 |---|---|
-| **Start here** | Ask ATLAS to do anything. Live numbers (seats, revenue, leads, next departure). What ATLAS proposes today, with the message written: approve and the WhatsApp connector sends it. The team of agents pulsing as they work. |
+| **Start here** | Ask OYE to do anything. Live numbers (seats, revenue, leads, next departure). What OYE proposes today, with the message written: approve and the WhatsApp connector sends it. The team of agents pulsing as they work. |
 | **Set up** | Business, trips (date, price, seats), the policies the agent quotes word for word, website snippets, connections (CSV in, CSV and calendar out), the WhatsApp connection. |
 | **Today's work** | Follow-ups due now with the message to send, seat and hold alerts, pipeline, add a lead by hand. |
 | **Reply to a customer** | Paste a conversation; the council writes the reply and lists every issue. Test the WhatsApp agent live. Reply to a Google review. The customer universe report. |
 | **Check a trip plan** | One line of requirements; operations and the critic return a day-by-day plan, price, season check, risks and fixes. Feed the risk desk headlines. |
 | **Marketing** | Google Business Profile audit and posts, keywords, festival campaign calendar, broadcast drafts, results, a week of Instagram content. |
-| **Teach ATLAS** | Ask anything, teach facts, correct it ("No, …"), import a WhatsApp chat export. |
+| **Teach OYE** | Ask anything, teach facts, correct it ("No, …"), import a WhatsApp chat export. |
 | **Advanced: inside the mind** | The 3D knowledge map, learning progress, skills, live activity. |
 
-## 2. What ATLAS can do
+## 2. What OYE can do
 
 **On WhatsApp and the website.** Grounded replies from real trips and written policies, with twenty-plus intents (price, inclusions, cancellation, pickup, safety, food, ages, medical, payment, stay, proof, reliability, trust, confusion, extension, weekday, competitor, grief, complaint, booking, affirm, greeting), an emotion layer (fear, joy, sarcasm), psyche adaptation (safety first for anxious families, proof for skeptics, pickup-to-drop for hands-off people, shorter for terse people), the price said once, every reply ending in one next step, 24-hour seat holds, handoff to a human for money and complaints.
 
@@ -47,9 +47,9 @@ Live preview of the dashboard: https://claude.ai/artifact/Fb9Q6asYMnTvANGbz6amfE
 | Where | How |
 |---|---|
 | **Your PC** | Node 18 or newer, `git clone`, `npm start`, open http://localhost:3000. The mind lives in `data/state.json`. |
-| **Inside travelersclan.in** | On the PC with the site source: `node scripts/integrate-site.js "C:\path\to\site" --zip --force`. It copies ATLAS into `<site>/atlas`, mounts `/admin/atlas` (admin) and `/atlas-chat` (public widget, trip cards, lead webhook) in the site's `server.js`, and packs the site's own staged release plus ATLAS into a zip for the usual hPanel upload. Manual mount: two lines, see `integrations/express.js`. Keep `data/atlas` on a persistent path. |
-| **Render, Railway, Docker** | `render.yaml`, `railway.json`, `Dockerfile` are included; set `ATLAS_DATA` to a persistent disk. |
-| **Browser only** | `npm run build:web` writes `dist/atlas-standalone.html`, a single page that runs the whole mind in the browser. |
+| **Inside travelersclan.in** | On the PC with the site source: `node scripts/integrate-site.js "C:\path\to\site" --zip --force`. It copies OYE into `<site>/atlas`, mounts `/admin/atlas` (admin) and `/atlas-chat` (public widget, trip cards, lead webhook) in the site's `server.js`, and packs the site's own staged release plus OYE into a zip for the usual hPanel upload. Manual mount: two lines, see `integrations/express.js`. Keep `data/atlas` on a persistent path. |
+| **Render, Railway, Docker** | `render.yaml`, `railway.json`, `Dockerfile` are included; set `OYE_DATA` (or `ATLAS_DATA`) to a persistent disk. |
+| **Browser only** | `npm run build:web` writes `dist/oye-standalone.html`, a single page that runs the whole mind in the browser. |
 
 **Website blocks.** Chat bubble: `<script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>`. Live trip cards with seats left and a WhatsApp button: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js" data-base="/atlas-chat"></script>`. Preview at `/site-demo.html`.
 
@@ -72,7 +72,7 @@ Live preview of the dashboard: https://claude.ai/artifact/Fb9Q6asYMnTvANGbz6amfE
 | `npm run universe` | hundreds of personas from the customer universe in sales, support, marketing and probing; a playbook of what works for whom, taught to the mind |
 | `npm run mastery` | the examiner sets questions, situations, requirements and expressions; the evaluator grades every answer and teaches the best one; passes only at 8.5 per category and nothing below 6 |
 
-**The self-improvement loop** runs every six hours in the cloud: measure, raise the bar with a new level, fix ATLAS generally until it passes, grade the mastery review by hand, teach a lesson, train, guard against any regression, publish, push. `LEARNING-LOG.md` records every run.
+**The self-improvement loop** runs every six hours in the cloud: measure, raise the bar with a new level, fix OYE generally until it passes, grade the mastery review by hand, teach a lesson, train, guard against any regression, publish, push. `LEARNING-LOG.md` records every run.
 
 **Teaching by hand.** Statements are learned, questions answered, "No, X is Y" corrects, 👍 and 👎 shape plasticity, curiosity questions appear when it keeps noticing something, WhatsApp exports become facts, lessons in `curriculum/` are studied on boot.
 

@@ -1,6 +1,6 @@
 'use strict';
 /**
- * funnel.js — what ATLAS learns from journeys: where deals are, what to do next, and why deals die.
+ * funnel.js — what OYE learns from journeys: where deals are, what to do next, and why deals die.
  *
  *  - detectStage(transcript): which funnel stage a conversation is at, from the last few messages.
  *  - Funnel.train(journeys): for every (traveler type, stage, action) the downstream booking rate, revenue,

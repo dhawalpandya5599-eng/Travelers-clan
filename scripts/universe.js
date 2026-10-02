@@ -6,7 +6,7 @@ const path = require('path'); const os = require('os'); const fs = require('fs')
 const { Brain } = require('../core/brain'); const U = require('../core/universe');
 const args = process.argv.slice(2); const N = +(args[args.indexOf('--n') + 1]) || 400; const verbose = args.includes('--verbose');
 (async () => {
-  const dir = process.env.ATLAS_DATA || fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-universe-'));
+  const dir = (process.env.OYE_DATA || process.env.ATLAS_DATA) || fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-universe-'));
   const b = new Brain({ dataDir: dir, autosave: false }); b.evolution.genome.curiosity = 0; b.studyCurriculum(path.join(__dirname, '..', 'curriculum'));
   const g = b.growth; const hadProfile = g.profile.phone && g.upcoming(1).length;
   if (!hadProfile) g.setProfile({ city: 'Ahmedabad', phone: '9876543210', upi: 'tc@upi', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }, { name: 'Manali', date: '2099-12-20', days: 5, price: 12500, seats: 20, booked: 3 }] });
@@ -19,7 +19,7 @@ const args = process.argv.slice(2); const N = +(args[args.indexOf('--n') + 1]) |
   console.log('Failure reasons:'); for (const f of pb.fails.slice(0, 8)) console.log(`  ${String(f.n).padStart(4)}  ${f.reason}`);
   if (verbose) for (const r of results.filter(r => !r.verdict.ok).slice(0, 6)) { console.log(`\n--- ${r.persona.lifeStage} · ${r.persona.geo} · ${r.persona.decision} · ${r.persona.risk} · ${r.persona.trust} · ${r.persona.language} · ${r.persona.scenario} → ${r.verdict.reason}`); for (const l of r.log) console.log(`  ${l.who === 'customer' ? '>' : ' '} ${l.text.slice(0, 140)}`); }
   const taught = b.teach(pb.lessons.join('\n'), { source: 'universe', importance: 0.75 }); console.log(`Taught ${taught} lesson(s) to the mind.`);
-  if (process.env.ATLAS_DATA) b.saveNow();
+  if ((process.env.OYE_DATA || process.env.ATLAS_DATA)) b.saveNow();
   // forget the synthetic leads so the real lead sheet stays clean
   g.state.leads = g.state.leads.filter(l => !String(l.id).startsWith('universe-')); for (const k of Object.keys(g.state.threads)) if (k.startsWith('universe-')) delete g.state.threads[k]; g.state.log = g.state.log.filter(x => x.source !== 'universe'); for (const t of g.profile.trips) t.holds = (t.holds || []).filter(h => !String(h.lead).startsWith('universe-')); g.save();
   fs.mkdirSync(path.join(__dirname, '..', 'synth'), { recursive: true });

@@ -16,7 +16,7 @@ const generations = arg('generations', 10);
 const cycles = arg('cycles', 2);
 
 (async () => {
-  const brain = new Brain({ dataDir: process.env.ATLAS_DATA || path.join(__dirname, '..', 'data') });
+  const brain = new Brain({ dataDir: (process.env.OYE_DATA || process.env.ATLAS_DATA) || path.join(__dirname, '..', 'data') });
   brain.on('event', e => { if (['evolve', 'sleep', 'learn', 'error'].includes(e.kind)) console.log(`[${e.kind}] ${e.text}`); });
   const n = brain.studyCurriculum(path.join(__dirname, '..', 'curriculum'));
   console.log(`Curriculum: ${n} new sentences.`);

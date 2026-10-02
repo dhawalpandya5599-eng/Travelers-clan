@@ -2,7 +2,7 @@
 /**
  * evolution.js — the agent's genome and the evolutionary loop that improves it.
  *
- * The genome is the set of neuro-parameters that shape how ATLAS learns:
+ * The genome is the set of neuro-parameters that shape how OYE learns:
  * plasticity, forgetting, working memory capacity, consolidation threshold, curiosity.
  * Each generation, a population of mutated genomes is scored on a fitness function that
  * combines (a) a self-test of recall on facts the agent has learned and (b) the running

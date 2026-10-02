@@ -2,7 +2,7 @@
 /**
  * agents.js — the clan's departments. Each agent is a specialist with one duty and a strict output:
  *   { agent, verdict: 'ok'|'warn'|'block', findings: [...], suggestions: [...], output: {...}, lessons: [...] }
- * `lessons` are declarative sentences the brain learns after every run, so every agent trains ATLAS constantly.
+ * `lessons` are declarative sentences the brain learns after every run, so every agent trains OYE constantly.
  * Agents reason with data and rules first; when a mentor (Claude or a local Ollama model) is present they
  * add free-form judgement through `ctx.mentor`.
  */
@@ -265,7 +265,7 @@ const tester = {
 /**
  * Plays synthetic customers against the clan's own replies for several turns, scores each dialogue, and
  * teaches from the failures. The customer is simulated from a cohort with latent traits (journeys.js); the
- * clan side is what ATLAS would send: the Sales draft after the council has reviewed it.
+ * clan side is what OYE would send: the Sales draft after the council has reviewed it.
  * Score (0-100): qualified (asked dates, group, budget) 25 · every question answered 25 · objection answered with
  * proof 20 · tone matched 10 · reached a next step (itinerary, call, or payment) 20.
  */

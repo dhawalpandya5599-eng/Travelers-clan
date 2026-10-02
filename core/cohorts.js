@@ -4,7 +4,7 @@
  *
  * A cohort is a recurring kind of customer: where they come from, how they decide (personality,
  * modelled loosely on the Big Five), what they need from a trip, what makes them hesitate, and how
- * to talk to them. The data is small and explicit so ATLAS can explain its reasoning, and it feeds
+ * to talk to them. The data is small and explicit so OYE can explain its reasoning, and it feeds
  * three things: synthetic customers for training, a cohort classifier skill, and reply drafting.
  */
 

@@ -20,22 +20,22 @@
     <button class="tab" data-tab="customers"><i>4</i>Reply to a customer</button>
     <button class="tab" data-tab="trips"><i>5</i>Check a trip plan</button>
     <button class="tab" data-tab="marketing"><i>6</i>Marketing</button>
-    <button class="tab" data-tab="teach"><i>7</i>Teach ATLAS</button>
+    <button class="tab" data-tab="teach"><i>7</i>Teach OYE</button>
     <button class="tab small" data-tab="mind">Advanced: inside the mind</button>
   </nav>
-  <div class="status"><span class="pulse" id="pulse"></span><span>ATLAS knows <b id="v-facts">–</b> facts · version <b id="v-gen">–</b></span><span class="muted">language model: <b id="v-mentor">–</b></span></div>
+  <div class="status"><span class="pulse" id="pulse"></span><span>OYE knows <b id="v-facts">–</b> facts · version <b id="v-gen">–</b></span><span class="muted">language model: <b id="v-mentor">–</b></span></div>
 </aside>
 
 <main class="content">
   <!-- HOME -->
   <section class="page active" id="page-home">
-    <header class="ph"><span class="eyebrow">Welcome back</span><h1>Ask ATLAS to do anything</h1><p>It thinks, uses what it knows (trips, seats, policies, leads, destinations, risks) and acts. Correct it once and it remembers.</p></header>
+    <header class="ph"><span class="eyebrow">Welcome back</span><h1>Ask OYE to do anything</h1><p>It thinks, uses what it knows (trips, seats, policies, leads, destinations, risks) and acts. Correct it once and it remembers.</p></header>
     <div class="card command">
       <form id="agent-form"><textarea id="agent-input" rows="2" placeholder="e.g. Which leads should I message today and what exactly do I say?  ·  Plan a Diwali campaign for the Goa batch with all messages  ·  A customer wrote: 'bhai 6 log ke liye goa december, budget 12k' — reply  ·  Is Spiti in November a good idea for a family with a 7-year-old?"></textarea>
       <div class="actions"><button type="submit" class="btn primary big" id="btn-agent">Do it</button><span id="agent-status" class="muted"></span></div></form>
       <div id="agent-out" hidden>
         <div class="agent reply"><h4>Answer <span class="v" id="agent-model"></span></h4><div class="draft" id="agent-final"></div><div class="actions"><button class="btn" id="agent-copy">Copy</button><button class="btn" id="agent-good">👍 Good</button><button class="btn" id="agent-bad">👎 Correct it</button></div>
-          <div id="agent-correct" hidden><textarea id="agent-correction" rows="2" placeholder="Say what the right answer was. ATLAS learns it for next time."></textarea><div class="actions"><button class="btn primary" id="agent-correct-send">Teach the correction</button></div></div>
+          <div id="agent-correct" hidden><textarea id="agent-correction" rows="2" placeholder="Say what the right answer was. OYE learns it for next time."></textarea><div class="actions"><button class="btn primary" id="agent-correct-send">Teach the correction</button></div></div>
           <ul id="agent-todo" class="list"></ul></div>
         <details class="steps-detail"><summary class="muted">How it got there</summary><ol id="agent-steps" class="trace"></ol></details>
       </div>
@@ -43,7 +43,7 @@
     <div class="kpis" id="kpis"></div>
     <div class="two">
       <div class="card">
-        <h2>ATLAS proposes <span class="muted" id="ap-count"></span></h2>
+        <h2>OYE proposes <span class="muted" id="ap-count"></span></h2>
         <p class="muted">It watches leads, holds, seats, campaigns, risks and reviews on its own. Approve and the connector sends; dismiss with a reason and it learns.</p>
         <label class="checkrow"><input type="checkbox" id="ap-auto"> Send follow-up messages automatically without asking</label>
         <div id="ap-list" class="stack"><div class="empty">Nothing to propose yet. Add the number and trips in Set up.</div></div>
@@ -61,7 +61,7 @@
       <li data-step="today"><b>Every morning, open Today's work</b><span>Send what it drafted, press Done. Ninety minutes a day.</span><button class="btn" data-go="today">Open Today's work</button></li>
     </ol>
     <div class="cards3">
-      <div class="card"><h3>A customer wrote to you</h3><p>Paste the chat. ATLAS writes the reply and tells you how hot the lead is.</p><button class="btn primary" data-go="customers">Reply to a customer</button></div>
+      <div class="card"><h3>A customer wrote to you</h3><p>Paste the chat. OYE writes the reply and tells you how hot the lead is.</p><button class="btn primary" data-go="customers">Reply to a customer</button></div>
       <div class="card"><h3>Planning a trip</h3><p>One line of requirements. You get a day-by-day plan, a price, and every risk.</p><button class="btn primary" data-go="trips">Check a trip plan</button></div>
       <div class="card"><h3>This week's posts</h3><p>Google posts, Instagram reels, WhatsApp broadcasts, all written from your trips.</p><button class="btn primary" data-go="marketing">Open Marketing</button></div>
     </div>
@@ -109,8 +109,8 @@ Riya Shah,9876543210,Goa,instagram"></textarea><div class="actions"><input id="c
       </div>
     </div>
     <div class="card"><h2>6. Connect the real WhatsApp number (free)</h2>
-      <p>On your PC, in the Travelers-clan folder, run <code>npm install @whiskeysockets/baileys qrcode-terminal</code> once, then <code>npm run whatsapp</code>. Scan the QR with WhatsApp Business → Linked devices. Customer messages reach ATLAS; your own number gets the day's list at 9am.</p>
-      <label class="checkrow"><input type="checkbox" id="s-auto"> Send replies automatically. Off means ATLAS drafts and you send. Booking, payment and complaint messages always wait for you.</label>
+      <p>On your PC, in the Travelers-clan folder, run <code>npm install @whiskeysockets/baileys qrcode-terminal</code> once, then <code>npm run whatsapp</code>. Scan the QR with WhatsApp Business → Linked devices. Customer messages reach OYE; your own number gets the day's list at 9am.</p>
+      <label class="checkrow"><input type="checkbox" id="s-auto"> Send replies automatically. Off means OYE drafts and you send. Booking, payment and complaint messages always wait for you.</label>
     </div>
   </section>
 
@@ -135,7 +135,7 @@ Riya Shah,9876543210,Goa,instagram"></textarea><div class="actions"><input id="c
 
   <!-- CUSTOMERS -->
   <section class="page" id="page-customers">
-    <header class="ph"><span class="eyebrow">Master control</span><h1>Reply to a customer</h1><p>Paste the conversation. ATLAS tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team checks the plan, the tone and the risks.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Reply to a customer</h1><p>Paste the conversation. OYE tells you who they are, how hot the lead is, what to do next, and writes the reply. Its team checks the plan, the tone and the risks.</p></header>
     <div class="two">
       <div class="card">
         <label for="council-text">Customer conversation <span class="muted">one message per line; start our replies with <code>clan:</code></span></label>
@@ -150,7 +150,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
       <div><div id="council-out" class="stack"><div class="empty">The reply to send, the plan, the price, and every issue found appear here.</div></div></div>
     </div>
     <div class="card"><h2>Every customer it has already met <span class="muted" id="uni-score"></span></h2>
-      <p class="muted">ATLAS generates every kind of customer a travel company can face (life stage × city × income × occasion × group × psyche × language × mood, over a billion combinations), plays hundreds of them against its own WhatsApp agent in sales, support, marketing and probing, and learns what works for whom. Weakest segments right now:</p>
+      <p class="muted">OYE generates every kind of customer a travel company can face (life stage × city × income × occasion × group × psyche × language × mood, over a billion combinations), plays hundreds of them against its own WhatsApp agent in sales, support, marketing and probing, and learns what works for whom. Weakest segments right now:</p>
       <div id="uni-table" class="chips"></div><ul id="uni-lessons" class="list"></ul></div>
     <h2>Test the WhatsApp agent <span class="muted">write as a customer would, in any language</span></h2>
     <div class="two">
@@ -172,7 +172,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
         <textarea id="plan-text" rows="4" placeholder="family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10, veg food"></textarea>
         <div class="actions"><button class="btn primary" id="btn-review">Check this plan</button><span id="plan-verdict" class="muted"></span></div>
         <p class="muted">Try: <a href="#" data-fill-plan="6 friends, Spiti in August, 9 days, budget 35k per person, want a trek">Spiti in August</a> · <a href="#" data-fill-plan="2 of us, Ladakh in January, 4 days, budget 20k per person">Ladakh in January</a> · <a href="#" data-fill-plan="honeymoon couple, Bali in July, 6 days, budget 80k per person, private villa">Bali honeymoon</a></p>
-        <h3>World and risk news <span class="muted">paste headlines, one per line; ATLAS warns on affected trips</span></h3>
+        <h3>World and risk news <span class="muted">paste headlines, one per line; OYE warns on affected trips</span></h3>
         <textarea id="news-text" rows="3" placeholder="Cyclone warning for Andaman islands, ferries suspended"></textarea>
         <div class="actions"><button class="btn" id="btn-news">Add news</button><span id="news-result" class="muted"></span></div>
       </div>
@@ -204,7 +204,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- TEACH -->
   <section class="page" id="page-teach">
-    <header class="ph"><span class="eyebrow">Master control</span><h1>Teach ATLAS</h1><p>Type a question and it answers from what it knows. Type a fact and it remembers it. If it is wrong, say "No, …" and it corrects itself. Use the thumbs to reward answers.</p></header>
+    <header class="ph"><span class="eyebrow">Master control</span><h1>Teach OYE</h1><p>Type a question and it answers from what it knows. Type a fact and it remembers it. If it is wrong, say "No, …" and it corrects itself. Use the thumbs to reward answers.</p></header>
     <div class="two">
       <div class="card chatcol">
         <div class="messages" id="messages"></div>
@@ -227,7 +227,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
 
   <!-- MIND -->
   <section class="page" id="page-mind">
-    <header class="ph"><span class="eyebrow">God's eye view</span><h1>Inside the mind</h1><p>Everything ATLAS knows, as one living map. Each sphere is an idea, each line a connection it learned, each colour a cluster of ideas that belong together. Bright spheres are what it is thinking about right now. Drag to orbit, scroll to zoom, click a sphere to ask about it.</p></header>
+    <header class="ph"><span class="eyebrow">God's eye view</span><h1>Inside the mind</h1><p>Everything OYE knows, as one living map. Each sphere is an idea, each line a connection it learned, each colour a cluster of ideas that belong together. Bright spheres are what it is thinking about right now. Drag to orbit, scroll to zoom, click a sphere to ask about it.</p></header>
     <div class="card brain">
       <div class="brain-bar"><div class="legend" id="legend"></div><div class="wm" id="wm"></div><div class="actions"><button class="btn" id="btn-rotate">Pause orbit</button><button class="btn" id="btn-fit">Reset view</button></div></div>
       <div id="graph3d"></div><canvas id="graph" hidden></canvas>
@@ -236,7 +236,7 @@ lead: hmm is it safe for them?">senior couple, Ladakh in January</a> · <a href=
       <div class="card"><h3>How well it learns <span class="muted">score per version</span></h3><canvas id="evo" height="140"></canvas><div class="genome" id="genome"></div>
         <div class="actions">
           <button class="btn" id="btn-sleep">Sleep</button><button class="btn" id="btn-evolve">Evolve</button><button class="btn" id="btn-grow">Grow skill</button>
-          <a class="btn" id="btn-export" href="/api/export" download="atlas-mind.json">Export mind</a>
+          <a class="btn" id="btn-export" href="/api/export" download="oye-mind.json">Export mind</a>
           <label class="btn" for="mind-file">Merge a mind</label><input id="mind-file" type="file" accept="application/json,.json" hidden>
           <button class="btn" id="btn-openmodel" hidden>Load open model</button>
         </div></div>

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * eval.js — measures ATLAS's intelligence on a fixed exam, so improvements are real, not felt.
+ * eval.js — measures OYE's intelligence on a fixed exam, so improvements are real, not felt.
  * Each case: a fresh mind studies the curriculum (+ optional extra lessons), then answers.
  *   node scripts/eval.js            # run the exam
  *   node scripts/eval.js --verbose  # show every failure

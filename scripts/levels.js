@@ -2,7 +2,7 @@
 'use strict';
 /**
  * levels.js — mastery by levels, easiest to hardest, pass mark 100% per level. The evaluator's standard is written
- * as checks: what a best-in-class reply MUST contain (and must not). ATLAS cannot move to the next level until the
+ * as checks: what a best-in-class reply MUST contain (and must not). OYE cannot move to the next level until the
  * current one is perfect.   node scripts/levels.js [--level N] [--verbose]
  */
 const path = require('path'); const os = require('os'); const fs = require('fs');

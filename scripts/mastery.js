@@ -4,7 +4,7 @@
  * mastery.js — the exam-and-teach loop.
  *   1. An examiner sets a battery: questions (policy, prices, recall), situations (customer messages built from the
  *      customer universe), requirements (trip plans to check), expressions (fear, anger, grief, sarcasm, slang, joy).
- *   2. ATLAS answers every item (WhatsApp agent, reasoning agent, council).
+ *   2. OYE answers every item (WhatsApp agent, reasoning agent, council).
  *   3. An evaluator grades each answer 1-10 on accuracy, specificity, next step, tone fit and growth impact, writes the
  *      best answer and why, and names what to prefer next time. With a model present the evaluator is the model; without
  *      one, the battery and answers are written to MASTERY-REVIEW.md for the master teacher to grade by hand.
@@ -58,7 +58,7 @@ async function grade(b, item, ans) {
   return out && typeof out.score === 'number' ? out : null;
 }
 (async () => {
-  const dir = process.env.ATLAS_DATA || fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-mastery-'));
+  const dir = (process.env.OYE_DATA || process.env.ATLAS_DATA) || fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-mastery-'));
   const b = new Brain({ dataDir: dir, autosave: false }); b.evolution.genome.curiosity = 0; b.studyCurriculum(path.join(ROOT, 'curriculum'));
   const g = b.growth; if (!(g.profile.phone && g.upcoming(1).length)) g.setProfile({ city: 'Ahmedabad', phone: '9876543210', upi: 'tc@upi', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }, { name: 'Manali', date: '2099-12-20', days: 5, price: 12500, seats: 20, booked: 3 }] });
   const trips = g.upcoming(2); const hasModel = b.mentor && b.mentor.enabled;
@@ -78,14 +78,14 @@ async function grade(b, item, ans) {
     fs.writeFileSync(path.join(ROOT, 'synth', 'mastery.json'), JSON.stringify({ ...report, last: graded }, null, 1));
     if (!hasModel) {
       const md = ['# Mastery review (hand grading)', '', `Generated ${report.at}. No model was connected, so the master teacher grades these: for each item, score 1-10, write the best answer, and teach the preference (brain.teach or a curriculum lesson). Do not pass until every category averages 8.5 and nothing is below 6.`, ''];
-      for (const x of graded) md.push(`## [${x.cat}${x.expression ? ' · ' + x.expression : ''}] ${x.text.replace(/\n/g, ' / ')}`, x.persona ? `_${x.persona}_` : '', '', '**ATLAS:** ' + String(x.answer).replace(/\n/g, ' '), '', '**Score:** _ /10  **Best answer:** _  **Prefer:** _', '');
+      for (const x of graded) md.push(`## [${x.cat}${x.expression ? ' · ' + x.expression : ''}] ${x.text.replace(/\n/g, ' / ')}`, x.persona ? `_${x.persona}_` : '', '', '**OYE:** ' + String(x.answer).replace(/\n/g, ' '), '', '**Score:** _ /10  **Best answer:** _  **Prefer:** _', '');
       fs.writeFileSync(path.join(ROOT, 'MASTERY-REVIEW.md'), md.join('\n')); break;
     }
     if (passed) { report.passed = true; break; }
   }
   // clean synthetic leads out of the sheet
   g.state.leads = g.state.leads.filter(l => !String(l.id).startsWith('mastery-')); for (const k of Object.keys(g.state.threads)) if (k.startsWith('mastery-')) delete g.state.threads[k]; for (const t of g.profile.trips) t.holds = (t.holds || []).filter(h => !String(h.lead).startsWith('mastery-')); g.save();
-  if (process.env.ATLAS_DATA) b.saveNow();
+  if ((process.env.OYE_DATA || process.env.ATLAS_DATA)) b.saveNow();
   console.log(report.passed ? 'MASTERY: PASSED' : hasModel ? 'MASTERY: NOT PASSED (keep teaching)' : 'MASTERY: awaiting hand grading in MASTERY-REVIEW.md');
   process.exitCode = report.passed || !hasModel ? 0 : 2;
 })();

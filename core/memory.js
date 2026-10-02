@@ -1,6 +1,6 @@
 'use strict';
 /**
- * memory.js — hippocampus + neocortex of ATLAS.
+ * memory.js — hippocampus + neocortex of OYE.
  *
  * Three stores, modelled on the neuroscience of memory:
  *  - Episodic memory: every experience, time-stamped, with emotional valence and importance.

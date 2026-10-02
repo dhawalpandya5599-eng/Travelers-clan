@@ -7,7 +7,7 @@
  * write: Hinglish, lowercase, typos, emoji, voice-note bursts, formal emails. A journey walks the funnel
  *   enquiry → qualified → quoted → objection → negotiation → advance paid → balance paid → travelled → reviewed → referred
  * and at every step the clan chooses an action; the person's response depends on their traits and the
- * action's fit. The simulator holds the ground truth; ATLAS never sees it, only the transcripts and outcomes.
+ * action's fit. The simulator holds the ground truth; OYE never sees it, only the transcripts and outcomes.
  */
 const { COHORTS, TYPES, REGIONS, get } = require('./cohorts');
 
@@ -117,7 +117,7 @@ const OBJECTIONS = {
   senior: ['too much walking', 'altitude and health', 'long drives'], corporate: ['need approval from management', 'GST invoice and vendor docs', 'liability and insurance'], adventure: ['difficulty level', 'guide certification', 'gear included'], luxury: ['hotel names', 'is it truly private', 'transfers'], nomad: ['wifi speed', 'monthly rate', 'noise'], student: ['too expensive', 'can we pay later', 'parents permission'],
 };
 
-/** Simulate one journey. The truth lives here; the transcript is what ATLAS learns from. */
+/** Simulate one journey. The truth lives here; the transcript is what OYE learns from. */
 function journey(p, policy = null) {
   const T = p.traits; const steps = []; const log = [];
   const say = (who, text, minutesLater = 0) => log.push({ who, text, minutesLater });

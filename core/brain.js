@@ -1,6 +1,6 @@
 'use strict';
 /**
- * brain.js — ATLAS: Adaptive Traveler Learning & Awareness System.
+ * brain.js — OYE: Adaptive Traveler Learning & Awareness System.
  *
  * The cognitive loop, modelled on a cortical "perceive → recall → reason → act → learn" cycle
  * with a reward system (dopamine) and a sleep cycle (consolidation), wrapped in an evolutionary
@@ -24,7 +24,7 @@ const { RiskDesk } = require('./risk');
 const VERSION = '0.1.0';
 
 class Brain extends EventEmitter {
-  constructor({ dataDir = path.join(__dirname, '..', 'data'), name = 'ATLAS', autosave = true } = {}) {
+  constructor({ dataDir = path.join(__dirname, '..', 'data'), name = 'OYE', autosave = true } = {}) {
     super();
     this.name = name;
     this.dataDir = dataDir;
@@ -434,7 +434,7 @@ class Brain extends EventEmitter {
     return n;
   }
 
-  /** Try to grow a new skill for a class of questions ATLAS keeps failing. */
+  /** Try to grow a new skill for a class of questions OYE keeps failing. */
   async growSkill() {
     if (!this.mentor.enabled || this.unknowns.length < 3) return null;
     const examples = this.unknowns.slice(-6).map(u => u.q);

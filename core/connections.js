@@ -19,7 +19,7 @@ function importLeadsCSV(growth, text, { source = 'csv' } = {}) {
 function tripsICS(growth) {
   const P = growth.profile; const esc = (s) => String(s || '').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n'); const d8 = (d) => d.toISOString().slice(0, 10).replace(/-/g, '');
   const ev = growth.upcoming(20).filter(t => t.date).map(t => { const start = new Date(t.date); const end = new Date(start.getTime() + Math.max(1, t.days || 1) * 864e5); return ['BEGIN:VEVENT', `UID:${t.name.toLowerCase().replace(/\s+/g, '-')}-${d8(start)}@travelersclan`, `DTSTAMP:${d8(new Date())}T000000Z`, `DTSTART;VALUE=DATE:${d8(start)}`, `DTEND;VALUE=DATE:${d8(end)}`, `SUMMARY:${esc(t.name)} batch · ${t.booked || 0}/${t.seats || '?'} booked`, `DESCRIPTION:${esc(`₹${t.price} per person, ${growth.seatsLeft(t)} seats left. Balance due ${new Date(start.getTime() - 7 * 864e5).toDateString()}. Pickup shared 3 days before.`)}`, 'END:VEVENT'].join('\r\n'); });
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//${esc(P.name)}//ATLAS//EN`, `X-WR-CALNAME:${esc(P.name)} departures`, ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//${esc(P.name)}//OYE//EN`, `X-WR-CALNAME:${esc(P.name)} departures`, ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
 /** Lead sheet as CSV for Google Sheets or Excel. */
 function leadsCSV(growth) { const cols = ['id', 'name', 'phone', 'trip', 'stage', 'source', 'value', 'touches', 'created', 'next', 'notes']; const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; return cols.join(',') + '\n' + growth.state.leads.map(l => cols.map(c => q(c === 'created' || c === 'next' ? (l[c] ? new Date(l[c]).toISOString() : '') : l[c])).join(',')).join('\n') + '\n'; }

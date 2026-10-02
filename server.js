@@ -1,6 +1,6 @@
 'use strict';
 /**
- * server.js — ATLAS web app. Zero dependencies: Node's http module serves the UI and a JSON API,
+ * server.js — OYE web app. Zero dependencies: Node's http module serves the UI and a JSON API,
  * and streams the brain's cognitive events over Server-Sent Events.
  */
 
@@ -12,18 +12,18 @@ const { importWhatsApp } = require('./core/importers');
 
 const PORT = +(process.env.PORT || 3000);
 const PUBLIC = path.join(__dirname, 'public');
-const brain = new Brain({ dataDir: process.env.ATLAS_DATA || path.join(__dirname, 'data') });
+const brain = new Brain({ dataDir: (process.env.OYE_DATA || process.env.ATLAS_DATA) || path.join(__dirname, 'data') });
 const studied = brain.studyCurriculum(path.join(__dirname, 'curriculum'));
 // Absorb the mind shipped in the repo (trained elsewhere) once per version: git pull = smarter, never dumber.
 const SEED = path.join(__dirname, 'mind', 'state.json');
 const absorbed = brain.absorbSeed(SEED);
-if (absorbed) console.log(`ATLAS absorbed mind/state.json: facts ${absorbed.before.facts}→${absorbed.after.facts}, generation ${absorbed.before.generation}→${absorbed.after.generation}.`);
+if (absorbed) console.log(`OYE absorbed mind/state.json: facts ${absorbed.before.facts}→${absorbed.after.facts}, generation ${absorbed.before.generation}→${absorbed.after.generation}.`);
 // Snapshot the live mind back into the repo folder so it can be committed and shared (ATLAS_SNAPSHOT=0 disables).
 function snapshot() {
-  if (process.env.ATLAS_SNAPSHOT === '0') return;
+  if ((process.env.OYE_SNAPSHOT || process.env.ATLAS_SNAPSHOT) === '0') return;
   try { fs.mkdirSync(path.dirname(SEED), { recursive: true }); brain.saveNow(); fs.copyFileSync(brain.file, SEED); brain.absorbedSeeds.push(require('./core/text').hash(fs.readFileSync(SEED, 'utf8'))); } catch (e) { console.error('snapshot failed:', e.message); }
 }
-if (studied) console.log(`ATLAS studied ${studied} new curriculum sentences.`);
+if (studied) console.log(`OYE studied ${studied} new curriculum sentences.`);
 let lastUpbringing = Date.now();
 
 // Heartbeat: a minute of wall-clock = a minute of brain time. Sleep every ~30 interactions or 20 min; evolve every hour.
@@ -34,7 +34,7 @@ setInterval(async () => {
   if (Date.now() - lastEvolve > 60 * 60e3) { lastEvolve = Date.now(); brain.evolve(1); }
   if (Date.now() - (brain.autopilot.state.lastRun || 0) > 30 * 60e3) brain.autopilot.run().catch(() => {});
   // The growing loop: once a day the local server raises itself and snapshots the result (ATLAS_UPBRINGING_HOURS to tune).
-  if (Date.now() - lastUpbringing > (+process.env.ATLAS_UPBRINGING_HOURS || 24) * 3600e3) { lastUpbringing = Date.now(); await brain.upbringing({ generations: 5 }); snapshot(); }
+  if (Date.now() - lastUpbringing > (+(process.env.OYE_UPBRINGING_HOURS || process.env.ATLAS_UPBRINGING_HOURS) || 24) * 3600e3) { lastUpbringing = Date.now(); await brain.upbringing({ generations: 5 }); snapshot(); }
 }, 60e3).unref();
 
 const clients = new Set();
@@ -122,7 +122,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/api/events') {
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
-    res.write(`data: ${JSON.stringify({ t: Date.now(), kind: 'system', text: 'Connected to the mind of ATLAS.' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ t: Date.now(), kind: 'system', text: 'Connected to the mind of OYE.' })}\n\n`);
     clients.add(res);
     req.on('close', () => clients.delete(res));
     return;
@@ -145,7 +145,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 if (require.main === module) {
-  server.listen(PORT, () => console.log(`ATLAS is awake at http://localhost:${PORT}  (mentor: ${brain.mentor.enabled ? brain.mentor.status().model : 'offline — ' + brain.mentor.lastError})`));
+  server.listen(PORT, () => console.log(`OYE is awake at http://localhost:${PORT}  (mentor: ${brain.mentor.enabled ? brain.mentor.status().model : 'offline — ' + brain.mentor.lastError})`));
   const bye = () => { brain.saveNow(); process.exit(0); };
   process.on('SIGINT', bye); process.on('SIGTERM', bye);
 }

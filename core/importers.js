@@ -1,6 +1,6 @@
 'use strict';
 /**
- * importers.js — feeding ATLAS real experience.
+ * importers.js — feeding OYE real experience.
  *
  * WhatsApp exports are the clan's richest record of how leads talk, what they ask, what converts.
  * This parser turns an exported chat (.txt) into episodes with speaker, time and valence, and

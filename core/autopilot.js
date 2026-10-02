@@ -1,6 +1,6 @@
 'use strict';
 /**
- * autopilot.js — initiative. ATLAS watches the business on its own and proposes concrete actions with the message or
+ * autopilot.js — initiative. OYE watches the business on its own and proposes concrete actions with the message or
  * post already written. The chief approves with one tap; approved messages go to the outbox the WhatsApp connector
  * sends, posts and decisions are marked done when the chief does them. Everything proposed is explained, nothing is
  * sent without approval unless the chief turns auto-send on for a kind.

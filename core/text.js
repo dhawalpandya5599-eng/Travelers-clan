@@ -1,6 +1,6 @@
 'use strict';
 /**
- * text.js — the sensory cortex of ATLAS.
+ * text.js — the sensory cortex of OYE.
  * Turns raw language into tokens, stems, sentences and sparse vectors.
  * Zero dependencies; deterministic.
  */

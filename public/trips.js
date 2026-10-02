@@ -1,4 +1,4 @@
-/* ATLAS live trips block for travelersclan.in. Put this where the trips should appear:
+/* OYE live trips block for travelersclan.in. Put this where the trips should appear:
    <div id="atlas-trips"></div><script src="/atlas-chat/trips.js" data-base="/atlas-chat"></script>
    Cards come from Grow → Setup: fixed date, price, real seats left (holds included), WhatsApp button per trip. */
 (function () {

@@ -1,8 +1,8 @@
-/* ATLAS front-end: chat, live knowledge-graph (force layout), evolution chart, event stream. */
+/* OYE front-end: chat, live knowledge-graph (force layout), evolution chart, event stream. */
 (() => {
   const $ = (id) => document.getElementById(id);
-  const LOCAL = window.ATLAS_LOCAL || null; // set when the brain runs inside this page (no server)
-  const BASE = window.ATLAS_BASE || '';     // set when mounted under a prefix inside another site
+  const LOCAL = (window.OYE_LOCAL || window.ATLAS_LOCAL) || null; // set when the brain runs inside this page (no server)
+  const BASE = (window.OYE_BASE || window.ATLAS_BASE) || '';     // set when mounted under a prefix inside another site
   const api = async (method, url, body) => {
     if (LOCAL) return LOCAL.request(method, url, body);
     const r = await fetch(BASE + url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -224,7 +224,7 @@
   if (LOCAL && LOCAL.loadOpenModel) { const bm = $('btn-openmodel'); bm.hidden = false; bm.onclick = async () => { bm.disabled = true; bm.textContent = 'Loading model…'; try { const m = await LOCAL.loadOpenModel(t => { bm.textContent = t.slice(0, 40); }); bm.textContent = '✓ ' + m; addMsg('atlas', 'Open-source model loaded in this browser. I now understand free-form messages and polish replies with it.'); refresh(); } catch (e) { bm.textContent = '🧠 Load open model'; bm.disabled = false; addMsg('atlas', 'Could not load the open model here: ' + (e.message || e) + '. It works when this page is served from your website or opened as a local file with WebGPU.'); } }; }
   if (LOCAL) { const ex = document.getElementById('btn-export'); if (ex) { ex.addEventListener('click', (e) => { e.preventDefault(); LOCAL.exportMind(); }); } }
   // ---------- Boot ----------
-  addMsg('atlas', 'Hi, I am ATLAS. Ask me anything about the clan, our trips, prices, policies or customers. Tell me a fact and I will remember it. If I am wrong, start your message with "No," and I will correct myself.');
+  addMsg('atlas', 'Hi, I am OYE. Ask me anything about the clan, our trips, prices, policies or customers. Tell me a fact and I will remember it. If I am wrong, start your message with "No," and I will correct myself.');
   connect();
   refresh();
   setInterval(refresh, 15000);
@@ -312,13 +312,13 @@
     const k = a.kpis; const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
     $('kpis').innerHTML = [['Seats left', k.seatsLeft, `${k.booked}/${k.seats} booked · ${k.fill}% full`], ['Booked revenue', inr(k.revenueBooked), `${inr(k.revenueOpen)} still open`], ['Open leads', k.leadsOpen, `${k.holds} on hold · ${k.leadsTotal} total`], ['Next departure', k.nextTrip ? k.nextTrip.days + ' days' : '–', k.nextTrip ? `${k.nextTrip.name} · ${k.nextTrip.left} left` : 'add a trip'], ['Replies 24h', k.replies24, `${k.sentToday} sent today`], ['To approve', k.pending, 'proposals waiting']].map(([t, v, s]) => `<div class="kpi"><div class="k">${t}</div><b>${v}</b><small>${esc(s)}</small></div>`).join('');
     $('ap-count').textContent = a.pending.length ? `${a.pending.length} waiting` : ''; $('ap-auto').checked = !!(a.auto && a.auto.follow_up);
-    $('ap-list').innerHTML = a.pending.length ? a.pending.map(p => `<div class="prop p${p.priority}"><h4>${esc(p.title)}</h4><div class="why">${esc(p.why || '')}</div>${p.message ? `<div class="msg">${esc(p.message)}</div>` : ''}${p.options ? `<ul class="opts">${p.options.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}<div class="actions"><button class="btn primary" data-ap="${p.id}">${p.to && p.message ? 'Approve & send' : p.action ? 'Done: ' + esc(p.action) : 'Approve'}</button>${p.message ? copyBtn(p.message) : ''}<button class="btn" data-apx="${p.id}">Dismiss</button></div></div>`).join('') : '<div class="empty">Nothing to propose right now. ATLAS checks again every 30 minutes.</div>';
+    $('ap-list').innerHTML = a.pending.length ? a.pending.map(p => `<div class="prop p${p.priority}"><h4>${esc(p.title)}</h4><div class="why">${esc(p.why || '')}</div>${p.message ? `<div class="msg">${esc(p.message)}</div>` : ''}${p.options ? `<ul class="opts">${p.options.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}<div class="actions"><button class="btn primary" data-ap="${p.id}">${p.to && p.message ? 'Approve & send' : p.action ? 'Done: ' + esc(p.action) : 'Approve'}</button>${p.message ? copyBtn(p.message) : ''}<button class="btn" data-apx="${p.id}">Dismiss</button></div></div>`).join('') : '<div class="empty">Nothing to propose right now. OYE checks again every 30 minutes.</div>';
     $('ap-recent').innerHTML = (a.recent || []).map(r => `<li>${esc(r.title)}<span>${r.status}${r.reason ? ': ' + esc(r.reason) : ''}</span></li>`).join('') || '<li>Nothing yet.</li>';
     $('ap-list').querySelectorAll('[data-ap]').forEach(b => b.onclick = () => api('POST', '/api/autopilot/approve', { id: b.dataset.ap }).then(loadAutopilot));
-    $('ap-list').querySelectorAll('[data-apx]').forEach(b => b.onclick = () => { const reason = prompt('Why not? (optional, ATLAS learns from it)') || ''; api('POST', '/api/autopilot/dismiss', { id: b.dataset.apx, reason }).then(loadAutopilot); });
+    $('ap-list').querySelectorAll('[data-apx]').forEach(b => b.onclick = () => { const reason = prompt('Why not? (optional, OYE learns from it)') || ''; api('POST', '/api/autopilot/dismiss', { id: b.dataset.apx, reason }).then(loadAutopilot); });
   }
   $('ap-auto').onchange = () => api('POST', '/api/autopilot/auto', { kind: 'follow_up', on: $('ap-auto').checked });
-  // ---------- The agent: ask ATLAS to do anything ----------
+  // ---------- The agent: ask OYE to do anything ----------
   let lastRun = null;
   $('agent-form').addEventListener('submit', async (e) => {
     e.preventDefault(); const q = $('agent-input').value.trim(); if (!q) return;

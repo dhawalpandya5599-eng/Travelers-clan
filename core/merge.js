@@ -2,7 +2,7 @@
 /**
  * merge.js — combining two minds without losing either.
  *
- * ATLAS can be trained in several places at once: the cloud routine, a local server, a browser.
+ * OYE can be trained in several places at once: the cloud routine, a local server, a browser.
  * mergeMinds(base, other) returns a new state that keeps everything both learned:
  *  - episodes: union by id (deduplicated by text when ids differ), most-accessed wins
  *  - concepts: union; strength = max, count = sum, tau = max (the better-rehearsed trace survives)

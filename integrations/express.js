@@ -1,6 +1,6 @@
 'use strict';
 /**
- * integrations/express.js — mount ATLAS inside an existing Express site in two lines:
+ * integrations/express.js — mount OYE inside an existing Express site in two lines:
  *
  *   const atlas = require('./atlas/integrations/express');
  *   app.use('/admin/atlas', atlas({ dataDir: __dirname + '/data/atlas' }));
@@ -43,7 +43,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.get('/api/snapshot', wrap(() => brain.snapshot()));
   router.get('/api/graph', wrap(req => brain.memory.graph(+req.query.limit || 120)));
   router.get('/api/facts', wrap(() => brain.memory.facts.slice().sort((a, b) => b.t - a.t).slice(0, 300)));
-  router.get('/api/export', (req, res) => { brain.saveNow(); res.download(stateFile, 'atlas-mind.json'); });
+  router.get('/api/export', (req, res) => { brain.saveNow(); res.download(stateFile, 'oye-mind.json'); });
   router.post('/api/chat', wrap(req => { sinceSleep++; return brain.respond(req.body.message, { user: req.body.user || 'admin' }); }));
   router.post('/api/feedback', wrap(req => { brain.feedback(!!req.body.good, req.body.note || ''); return { ok: true, dopamine: brain.memory.dopamine }; }));
   router.post('/api/teach', wrap(req => ({ facts: brain.teach(String(req.body.text || ''), { source: req.body.source || 'admin' }) })));
@@ -87,7 +87,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   // Public chat widget (no admin auth): mount `atlas.widget` on your site, e.g. app.use('/atlas-chat', atlas.widget)
   router.get('/api/events', (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
-    res.write(`data: ${JSON.stringify({ t: Date.now(), kind: 'system', text: 'Connected to the mind of ATLAS.' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ t: Date.now(), kind: 'system', text: 'Connected to the mind of OYE.' })}\n\n`);
     clients.add(res); req.on('close', () => clients.delete(res));
   });
 

@@ -1,4 +1,4 @@
-# ATLAS learning log
+# OYE learning log
 
 Every self-improvement run appends an entry: what was measured, what was weakest and why, what changed, before/after numbers, next target. The routine runs every 6 hours.
 
