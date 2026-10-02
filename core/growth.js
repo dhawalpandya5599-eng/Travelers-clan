@@ -256,6 +256,26 @@ class Growth {
     return got && names.includes(got.intent) ? got.intent : guess;
   }
 
+  /** A grounded reply for a pasted conversation (lead:/clan: lines) with no side effects on the lead sheet.
+   *  Used by the council so the Reply screen and the WhatsApp agent say the same thing. Returns null when there is
+   *  nothing grounded to say (no trips set up, no destination, no intent). */
+  draftFor(conversation, { name = '' } = {}) {
+    const lines = String(conversation || '').split('\n').map(l => l.trim()).filter(Boolean);
+    const leadLines = lines.filter(l => !/^clan:/i.test(l)).map(l => l.replace(/^lead:\s*/i, ''));
+    const clanLines = lines.filter(l => /^clan:/i.test(l)).map(l => l.replace(/^clan:\s*/i, ''));
+    const text = leadLines[leadLines.length - 1] || ''; if (!text) return null;
+    const leadText = leadLines.map(l => latinise(l)).join('\n');
+    const req = parseRequirements(leadText);
+    { const all = [...leadText.matchAll(/\b(?:we are|hum|now|ab)\s+(\d{1,2})\b|\b(\d{1,2})\s*(?:people|pax|persons|of us|friends|members|log|logon|jan|janta|guys|ppl)\b/gi)]; if (all.length) req.group = +(all[all.length - 1][1] || all[all.length - 1][2]); }
+    if (!req.group && /\b(couple|hum dono|dono|my wife and i|me and my husband)\b/i.test(leadText)) req.group = 2;
+    const lead = { id: 'draft', name, trip: req.destination ? (this.matchTrip(req.destination.name) || req.destination.name) : '', stage: 'new', touches: leadLines.length, language: scriptOf(text) || (isHinglish(text) ? 'hinglish' : 'english') };
+    const said = { price: clanLines.some(c => /₹|\d{4,}|per person/i.test(c)), group: req.group };
+    const scored = this.intent(text); const intent = scored.intent;
+    const hi = lead.language !== 'english';
+    if (!this.upcoming(1).length && !req.destination) return null;
+    const reply = this.composeGrounded({ text, req, lead, draft: '', intent, said, hi, stage: null });
+    return { reply, intent, handoff: intent === 'book' || intent === 'escalate', language: lead.language };
+  }
   /** One incoming WhatsApp / web-chat message. Returns the reply, whether a human must take over, and the lead row. */
   async chat({ id, name = '', text, source = 'whatsapp' }) {
     id = String(id || 'web-' + Math.random().toString(36).slice(2, 8));

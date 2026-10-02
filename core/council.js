@@ -25,6 +25,8 @@ class Council {
       if (got) { task.llm = got; if (got.destination && !req.destination) { const DEST = require('./destinations'); const d = DEST.find(got.destination); if (d) req.destination = d; } if (got.month && !req.month) req.month = require('./destinations').monthNum(got.month); if (got.group && !req.group) req.group = +got.group; if (got.budgetPerPerson && !req.budget) req.budget = +got.budgetPerPerson; if (got.days && !req.days) req.days = +got.days; }
     }
     out.sales = AGENTS.sales.run(task, ctx);
+    // The same grounded reply the WhatsApp agent would send, when the growth profile can ground it.
+    try { const g = this.brain.growth; const d = g.draftFor(text, { name: task.name || '' }); if (d && d.reply && out.sales && out.sales.output) { out.sales.output.draftRules = out.sales.output.draft; out.sales.output.draft = d.reply; out.sales.output.intent = d.intent; if (d.handoff) out.sales.output.nextAction = 'handoff_to_human'; } } catch (e) { /* keep the rules draft */ }
     out.operations = AGENTS.operations.run({ ...task, requirements: req }, ctx);
     out.cx = AGENTS.cx.run(task, ctx);
     out.news = AGENTS.news.run({ ...task, requirements: req }, ctx);
