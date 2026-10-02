@@ -1,5 +1,5 @@
 {
- "at": "2026-10-02T09:39:47.324Z",
+ "at": "2026-10-02T09:48:04.461Z",
  "report": [
   {
    "level": 1,
@@ -46,6 +46,13 @@
   {
    "level": 7,
    "name": "Master: crises mid-trip, corporate groups, multi-day negotiation, numbers under pressure",
+   "pass": 12,
+   "total": 12,
+   "pct": 100
+  },
+  {
+   "level": 8,
+   "name": "Grandmaster: negotiations that keep changing, two customers in one chat, refund maths with dates, typos, cash flow",
    "pass": 12,
    "total": 12,
    "pct": 100

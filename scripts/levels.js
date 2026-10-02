@@ -117,6 +117,20 @@ const LEVELS = [
     { agent: 'the manali bus operator wants 20% more at the last minute, do we absorb it or raise the price, 3 seats sold', must: [/absorb|margin/i, /raise|price/i, /\d/] },
     { agent: 'which of our two trips should get the marketing budget this week and why', must: [/Goa|Manali/, /seats|left|fill/i] },
   ] },
+  { level: 8, name: 'Grandmaster: negotiations that keep changing, two customers in one chat, refund maths with dates, typos, cash flow', items: [
+    { chat: ['goa for 4 in dec', 'actually manali, 20 dec', 'and we are 6 now not 4', 'ok hold'], must: [/6 seats/i, /Manali/, /tc@upi/], not: [/Goa/] },
+    { chat: ['hi this is Priya, me and my friend Riya want goa, she will pay separately, can you hold 1 each?'], must: [/2 seats|two seats|1 each|one each|separately/i, /advance/i, /tc@upi/] },
+    { chat: ['i paid 4500 advance on 1 nov for goa 12 dec, cancelling today 20 nov, how much do i get back?'], must: [/advance/i, /transfer/i, /6 months/i, /22 days|more than 15|15\+ days|before the 15/i] },
+    { chat: ['goa ke liye 2 log 12 dec, 29000 total paid, ab 5 dec ko cancel kar rahe hain, kitna wapas milega?'], must: [/refund nahi|wapas nahi|no refund|nahi milega/i, /7 din|7 days|15 din|15 days/i, /transfer/i] },
+    { chat: ['goa 2 ppl dec 12 kitna, veg khana milega, bus ya train, pickup ahm se?'], must: [/14,500/, /veg|Jain/i, /pickup|fixed point|city centre/i, /bus|train|Volvo|AC/i] },
+    { chat: ['મનાલી ૨૦ ડિસેમ્બર ૪ જણ, ભાવ?'], must: [/12,500/, /50,000/, /4 (log|seats|people)/i] },
+    { chat: ['we are 2 adults and 2 kids aged 4 and 7 for goa, kids price?'], must: [/free/i, /70%|10,150/, /under 5|below 5|4-year|age 4|aged 4/i] },
+    { agent: 'cash flow: goa 12 dec and manali 20 dec, hotel advances due 1 dec 60000 total, do we have enough from advances collected?', must: [/advance/i, /\d{1,2},\d{3}/, /enough|short|shortfall|cover/i, /Goa/, /Manali/] },
+    { agent: 'a customer says the captain was rude on the manali trip and wants 50% back, what do we offer', must: [/captain/i, /apolog|sorry/i, /credit|refund|offer/i, /%|₹/] },
+    { agent: 'write the pre-departure message for goa 12 dec with pickup 6am from ahmedabad', must: [/Goa/, /12 Dec/, /6 ?am/i, /Ahmedabad/i, /ID|carry|bring/i, /captain/i] },
+    { agent: 'if we add a kerala batch in feb at 18,500 for 6 days, what margin do we need and what should the advance be', must: [/advance/i, /\d{1,2},\d{3}/, /margin/i, /Kerala/] },
+    { chat: ['hi', 'hello?', 'anyone there??'], must: [/here|yes|Hi|which trip|Which trip|right here|with you/i], not: [/founder|24 hours/i] },
+  ] },
 ];
 
 async function run() {
