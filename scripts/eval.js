@@ -123,6 +123,8 @@ const CASES = [
   // --- council of agents ---
   { q: 'council: lead: family of 4, Kerala in May, 6 days, budget 30k per person, kids aged 6 and 10\nclan: 32000 per person\nlead: is it safe for kids? veg food?', expect: /Verdict: WARN[\s\S]*(unanswered|Draft reply does not answer)/i, kind: 'council' },
   { q: 'plan: 2 of us, Ladakh in January, 4 days, budget 20k per person', expect: /off season[\s\S]*too short|minimum/i, kind: 'council' },
+  { q: 'plan: corporate offsite 40 people, Lonavala, 2 days, budget 6k per person', expect: /Lonavala[\s\S]*in season|Lonavala/i, notExpect: /not recognised|Pokhara|Gulf/i, kind: 'council' },
+  { q: 'plan: retired couple, Rann of Kutch in May, 3 days', expect: /Rann of Kutch[\s\S]*off season/i, notExpect: /not recognised/i, kind: 'council' },
   { q: 'ops: 6 friends, Spiti in August, 9 days, budget 35k per person', expect: /in season[\s\S]*Itinerary: D1/i, kind: 'council' },
   { q: 'news: Curfew imposed in Srinagar after unrest, tourists advised to avoid Kashmir', expect: /Logged 1 advisory.*Kashmir \[high/i, kind: 'council' },
   { journeys: true, q: 'What is the most common reason a lead is lost?', expect: /no reply|ghosted|slow|price|objection|decide|quiet/i, kind: 'funnel' },
@@ -145,6 +147,19 @@ const CASES = [
   { growth: ['manali for 3 in jan'], expect: /do not have a fixed batch for Manali[\s\S]*Goa/i, kind: 'whatsapp' },
   { growth: ['hi'], expect: /which trip[\s\S]*Goa 12 Dec/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'veg food available?'], expect: /vegetarian|jain/i, kind: 'whatsapp' },
+  // --- expressions: emotion first, then the fact, then one step ---
+  { growth: ['my mother is 71 and has never travelled without my father who passed last year. is this trip really ok for her? i am scared'], expect: /understand the worry[\s\S]*seniors[\s\S]*call/i, notExpect: /sorry for your loss|hold/i, kind: 'expression' },
+  { growth: ['we had booked for my brother too but he passed away last week. what do we do about his seat'], expect: /sorry for your loss[\s\S]*refund|transferred/i, notExpect: /15 days|hold/i, kind: 'expression', handoff: false },
+  { growth: ['THIRD time asking. nobody replies. is this how you treat customers??'], expect: /founder[\s\S]*24 hours/i, kind: 'expression', handoff: true },
+  { growth: ['goa for 2', 'wow 14500 for goa, is the hotel made of gold or what'], expect: /no gold[\s\S]*all-inclusive/i, kind: 'expression' },
+  { growth: ['honestly i cant afford it but my friends are all going, any way to make it work'], expect: /I get it[\s\S]*two parts/i, kind: 'expression' },
+  { growth: ['leaving tomorrow morning can you still add me, will pay full now'], expect: /last minute works[\s\S]*which trip/i, kind: 'expression' },
+  { growth: ['i dont understand, is 14500 for everyone or per person, and what is advance, i am new to this'], expect: /for one person[\s\S]*advance is the first/i, kind: 'expression' },
+  { growth: ['how do i know you wont run away with my advance, lot of fraud these days'], expect: /fair question[\s\S]*GST invoice[\s\S]*traveller/i, notExpect: /founder will personally call/i, kind: 'expression', handoff: false },
+  { growth: ['papa ko BP hai, ladakh unke liye theek rahega? dar lag raha hai'], expect: /fikar[\s\S]*5360 m[\s\S]*doctor/i, kind: 'expression' },
+  { growth: ['yo bro goa trip lit or nah? squad of 5, dec, budget tight af'], expect: /I get it[\s\S]*two parts[\s\S]*72,500/i, kind: 'expression' },
+  { growth: ['WE GOT OUR LEAVES APPROVED!!! 4 of us, goa, 12 dec, what next???'], expect: /Congratulations[\s\S]*58,000[\s\S]*hold 4/i, kind: 'expression' },
+  { growth: ['this is not what was promised, the captain was rude. i want a refund', 'what exactly is included?'], expect: /Included[\s\S]*founder will call/i, notExpect: /reply "hold"|Tell me the dates/i, kind: 'expression' },
 ];
 
 async function run() {

@@ -167,7 +167,7 @@ const news = {
   run(task, ctx) {
     const req = task.requirements || parseRequirements(task.conversation || task.message || '');
     const d = req.destination; const findings = [], suggestions = [], lessons = [];
-    const items = ctx.risk ? ctx.risk.relevant(d ? d.name : null, d ? d.country : null) : [];
+    const items = ctx.risk && d ? ctx.risk.relevant(d.name, d.country) : [];
     let verdict = 'ok';
     for (const it of items) { if (it.severity === 'high') verdict = 'block'; else if (it.severity === 'medium' && verdict !== 'block') verdict = 'warn'; findings.push(`[${it.severity}] ${it.headline} (${it.date}, ${it.source || 'desk'}): ${it.impact}`); if (it.advice) suggestions.push(it.advice); }
     if (d && !items.length) findings.push(`No current advisories on file for ${d.name}. Last desk update: ${ctx.risk ? ctx.risk.updated : 'never'}.`);

@@ -20,7 +20,8 @@
     "evolve": "node scripts/train.js --generations 20",
     "stress": "node scripts/stress.js",
     "whatsapp": "node scripts/whatsapp.js",
-    "universe": "node scripts/universe.js"
+    "universe": "node scripts/universe.js",
+    "mastery": "node scripts/mastery.js"
   },
   "license": "MIT",
   "private": true
