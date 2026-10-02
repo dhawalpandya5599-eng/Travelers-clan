@@ -121,11 +121,13 @@ function patchServer(file) {
     const walk = (dir, rel) => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         const r = rel ? rel + '/' + e.name : e.name;
-        if (e.isDirectory()) { if (!['node_modules', '.git', 'data'].includes(e.name) && !(rel === '' && e.name === 'data')) walk(path.join(dir, e.name), r); }
-        else if (e.isFile()) { const st = fs.statSync(path.join(dir, e.name)); if (st.size === 0) empty.push(r); else if (!/\.zip$/i.test(e.name)) files.push(r); }
+        if (e.isDirectory()) { if (!['node_modules', '.git', 'data', 'releases', '.cache', 'hbuilds', 'logs', 'tmp', '.tmp'].includes(e.name)) walk(path.join(dir, e.name), r); }
+        else if (e.isFile()) { const st = fs.statSync(path.join(dir, e.name)); if (st.size === 0) empty.push(r); else if (!/\.(zip|tar|tgz|gz|7z|rar|log)$/i.test(e.name)) files.push(r); }
       }
     };
     walk(site, '');
+    const total = files.reduce((n, f) => n + fs.statSync(path.join(site, f)).size, 0);
+    console.log(`Packing ${files.length} files, ${(total / 1048576).toFixed(1)} MB before compression (releases, caches, logs and old archives skipped).`);
     if (empty.length) console.log(`Skipping ${empty.length} empty file(s): ${empty.slice(0, 8).join(', ')}${empty.length > 8 ? ', …' : ''}`);
     const list = path.join(os.tmpdir(), `atlas-files-${stamp}.txt`);
     fs.writeFileSync(list, files.join('\n') + '\n');
