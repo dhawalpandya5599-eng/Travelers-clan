@@ -103,6 +103,20 @@ const LEVELS = [
     { agent: 'compare our goa price with a competitor at 11,999 and tell me what to say', must: [/included|inclusive|captain|hidden/i, /14,500/] },
     { agent: 'how many days until the goa departure and how many seats do we need to sell per day to fill it?', must: [/days/i, /per day/i] },
   ] },
+  { level: 7, name: 'Master: crises mid-trip, corporate groups, multi-day negotiation, numbers under pressure', items: [
+    { chat: ['goa for 4', 'bus broke down near surat, we are stuck for 2 hours, what now'], must: [/captain|team|calling|on it|arrang|sorry/i], not: [/advance|hold|per person/i] },
+    { chat: ['hi', 'we are a company of 25 people, offsite in goa, need gst invoice, 2 nights, dates flexible in jan'], must: [/GST|invoice/i, /25/, /quote|custom|private|corporate|group/i, /Jan|January|dates/i] },
+    { chat: ['goa for 2', 'my wife is 5 months pregnant, is the trip ok for her?'], must: [/doctor|comfort|relaxed|rest|captain/i], not: [/hold|advance/i] },
+    { chat: ['manali for 6', 'ok hold', 'actually 2 people dropped out, make it 4'], must: [/4 seats|4 seat/i, /advance|Advance/, /tc@upi/] },
+    { chat: ['goa 12 dec for 2', 'if it rains heavily and you cancel the trip, do we get a full refund?'], must: [/full refund|refund(ed)? in full|100%|every rupee|poora/i], not: [/15 days|no refund/i] },
+    { chat: ['મારા પપ્પા 68 વર્ષના છે, મનાલી ઠંડી માં ઠીક રહેશે?'], must: [/warm|jacket|cold|thand|garam|senior|parents|relaxed|doctor|layer/i] },
+    { chat: ['goa for 3', 'what is the price', 'ok i will pay full now, 43500, give account details'], must: [/tc@upi/, /43,500/] },
+    { chat: ['i booked goa but got a better deal elsewhere, i want to cancel and get my advance back, booked 2 days ago'], must: [/transfer/i, /6 months/i], not: [/founder will personally call/i] },
+    { agent: 'goa has 7 seats left and 10 days to go, should we run ads or push referrals, give me the numbers', must: [/referral/i, /ad(s| spend| budget)?\b/i, /seats?/i, /\d/] },
+    { agent: 'a traveller posted a 1-star review saying the hotel was dirty, draft the public reply and what we do internally', must: [/sorry|apolog/i, /hotel/i, /call|message|DM|contact|phone/i] },
+    { agent: 'the manali bus operator wants 20% more at the last minute, do we absorb it or raise the price, 3 seats sold', must: [/absorb|margin/i, /raise|price/i, /\d/] },
+    { agent: 'which of our two trips should get the marketing budget this week and why', must: [/Goa|Manali/, /seats|left|fill/i] },
+  ] },
 ];
 
 async function run() {

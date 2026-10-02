@@ -1,5 +1,5 @@
 {
- "at": "2026-10-02T09:24:39.038Z",
+ "at": "2026-10-02T09:39:47.324Z",
  "report": [
   {
    "level": 1,
@@ -39,6 +39,13 @@
   {
    "level": 6,
    "name": "Expert: mixed languages, constraints, numbers, drafting",
+   "pass": 12,
+   "total": 12,
+   "pct": 100
+  },
+  {
+   "level": 7,
+   "name": "Master: crises mid-trip, corporate groups, multi-day negotiation, numbers under pressure",
    "pass": 12,
    "total": 12,
    "pct": 100

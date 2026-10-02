@@ -33,7 +33,7 @@ npm run check
 |---|---|---|
 | Unit tests | `npm test` | 19/19 |
 | Eval | `node scripts/eval.js` | 173/173 |
-| Levels 1 to 6 | `node scripts/levels.js` | 80/80, all 100% |
+| Levels 1 to 7 | `node scripts/levels.js` | 92/92, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
 | Customer universe (400 personas) | `node scripts/universe.js` | 400/400 |
 | Mastery (needs a model) | `node scripts/mastery.js` | writes `MASTERY-REVIEW.md` when no model is connected |
@@ -95,7 +95,7 @@ Environment variables accept `OYE_*` or the older `ATLAS_*` names. `ATLAS_NO_OLL
 
 1. **Deploy**: run the integrate line above, upload, check `/admin/atlas` and the floating OYE on the home page.
 2. **Connect a model** in Set up (Claude key, or Ollama locally) so the council polishes replies and `npm run mastery` can grade itself.
-3. **Level 7 and 8** in `scripts/levels.js`: harder than 6 (multi-trip group negotiations across days, corporate offsites, crisis during a trip, mixed Gujarati/Hindi/English with typos, pricing decisions with numbers). Fix until 100%, same loop as before.
+3. **Level 8** in `scripts/levels.js`: harder than 7 (level 7 added: crises mid-trip, corporate groups, regroup after a hold, company-side cancellation, weather packing in Gujarati, full payment totals, competitor-driven cancellation, ads vs referrals maths, operator price hikes, marketing budget choice, 1-star review handling). Ideas for 8: a 5-turn negotiation that changes trip, date and group each turn; two customers in one chat; a refund dispute with dates to compute; a Gujarati voice-note transcript with typos; a cash-flow question across three batches.
 4. **WhatsApp bridge**: `npm run whatsapp` on a PC that stays on, scan the QR, enable auto-reply in Marketing → settings once replies look right.
 5. **Website**: add the widget tag and `data-oye` buttons on trip pages; put the trip cards block on the trips page.
 6. **Teach OYE** real data: import past leads (CSV in Set up), real trips with seats, policies and UPI id in the profile.
