@@ -145,6 +145,20 @@ const LEVELS = [
     { agent: 'compare manali 20 dec and goa 12 dec on margin per seat if transport is 30% and stay 35% of price', must: [/Manali/, /Goa/, /margin/i, /4,375|5,075/] },
     { agent: 'draft the google business profile post for manali with a hook, body and CTA under 80 words', must: [/Manali/, /20 Dec/, /12,500/, /WhatsApp|DM|reply|call|link/i] },
   ] },
+  { level: 10, name: 'Chief: terse six-turn chats, first-time women travellers, name changes, self-drive joins, flights, chat summaries, Gujarati date changes, merge-or-cancel with money, content calendars, weekly review, lost passport, press', items: [
+    { chat: ['hi', 'goa', 'for 3', 'dec', 'hmm costly', 'ok ok hold 3'], must: [/3 seats/i, /tc@upi/, /Goa/] },
+    { chat: ['My name is Hetal. 2 ladies, first time travelling without family, Manali 20 Dec, parents worried, what to tell them?'], must: [/Hetal/, /parents/i, /women|ladies|roomed/i, /captain/i, /call|number|photos|reviews/i] },
+    { chat: ['I booked 2 seats goa, now my friend backed out, can my cousin take her place?'], must: [/name change|change the name|replace|take her place|transfer/i, /free|no charge|no cost|nothing extra/i, /ID/] },
+    { chat: ['goa for 2', 'we will come by our own car and join at the hotel, discount?'], must: [/own car|self-drive|join at|drive/i, /₹|less|minus|reduce|adjust/i] },
+    { chat: ['Manali for 4', 'can we get a flight option instead of bus? delhi to manali is 14 hours'], must: [/flight|fly/i, /Bhuntar|Kullu|Chandigarh|Delhi/i, /₹|extra|cost|price|own/i] },
+    { chat: ['goa for 2 people, 12 dec', 'veg', 'ok hold', 'send me a summary of everything we discussed'], must: [/Goa/, /12 Dec/, /2 seats/i, /veg|Jain/i, /4,500|advance/i] },
+    { chat: ['ઓકે ભાઈ, ૨ સીટ ગોવા, પણ મારી પત્ની જૈન છે અને ૧૨ ડિસેમ્બર ને બદલે જાન્યુઆરી માં છે?'], must: [/Jain/i, /Jan|January|agla|next batch|batch/i, /2 (seats|log|seat)/i] },
+    { agent: 'the manali batch has 17 seats empty 18 days out, run the full decision: keep, merge with goa, or cancel, with the money', must: [/keep/i, /merge/i, /cancel/i, /17/, /₹/] },
+    { agent: 'write a 7-day instagram content calendar for goa 12 dec with hooks', must: [/Day 1/i, /Day 7/i, /Goa/, /hook/i] },
+    { agent: 'summarise this week: leads, holds, bookings, and what to do monday morning', must: [/leads?/i, /hold/i, /Monday/i] },
+    { agent: 'a traveller lost her passport in goa on day 2, what does the captain do, step by step', must: [/police|FIR/i, /passport office|RPO|embassy|Passport Seva/i, /captain/i] },
+    { agent: 'a journalist asks why a traveller got hurt on our trek, what is our statement', must: [/statement|safe|sorry|family|recover/i, /captain|first aid|insurance|hospital/i], not: [/(say|reply|respond|answer|give)[^.]{0,20}"?no comment/i, /^no comment/i] },
+  ] },
 ];
 
 async function run() {
