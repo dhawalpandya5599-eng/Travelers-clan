@@ -19,7 +19,8 @@
     "sync:push": "node scripts/sync.js --commit",
     "evolve": "node scripts/train.js --generations 20",
     "stress": "node scripts/stress.js",
-    "whatsapp": "node scripts/whatsapp.js"
+    "whatsapp": "node scripts/whatsapp.js",
+    "universe": "node scripts/universe.js"
   },
   "license": "MIT",
   "private": true

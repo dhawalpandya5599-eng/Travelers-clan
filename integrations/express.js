@@ -62,6 +62,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/autopilot/auto', wrap(req => brain.autopilot.setAuto(String(req.body.kind || 'follow_up'), !!req.body.on)));
   router.get('/api/outbox', wrap(() => brain.autopilot.outbox()));
   router.post('/api/outbox/sent', wrap(req => brain.autopilot.sent(req.body.id, !!req.body.ok, req.body.error) || { error: 'no such message' }));
+  router.get('/api/universe', wrap(() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'synth', 'universe-report.json'), 'utf8')); } catch { return { error: 'not run yet: npm run universe' }; } }));
   router.post('/api/agent', wrap(req => brain.agent.run(String(req.body.request || req.body.text || ''))));
   router.post('/api/agent/correct', wrap(req => brain.agent.correct(req.body.id, req.body.correction) || { error: 'no such run' }));
   router.post('/api/agent/approve', wrap(req => brain.agent.approve(req.body.id) || { error: 'no such run' }));

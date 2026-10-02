@@ -65,11 +65,13 @@ __modules['fs'] = function (m) {
 };
 `;
 
+const UNIVERSE_JSON = (() => { try { const r = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'synth', 'universe-report.json'), 'utf8')); delete r.samples; return JSON.stringify(r); } catch { return 'null'; } })();
 const wrapped = modules.map(name => `__modules['./${name}'] = function (module, exports, require, __dirname) {\n${read('core/' + name + '.js')}\n};`).join('\n');
 
 const glue = `
 // --- Boot the brain inside the page and expose a request() that mirrors the server API ---
 (function () {
+  var UNIVERSE = ${UNIVERSE_JSON};
   var Brain = __require('./brain').Brain;
   var importWhatsApp = __require('./importers').importWhatsApp;
   var brain = new Brain({ dataDir: '/atlas/data' });
@@ -142,6 +144,7 @@ const glue = `
           case 'POST /api/autopilot/approve': return brain.autopilot.approve(body.id) || { error: 'no such proposal' };
           case 'POST /api/autopilot/dismiss': return brain.autopilot.dismiss(body.id, body.reason || '') || { error: 'no such proposal' };
           case 'POST /api/autopilot/auto': return brain.autopilot.setAuto(String(body.kind || 'follow_up'), !!body.on);
+          case 'GET /api/universe': return UNIVERSE;
           case 'POST /api/agent': return brain.agent.run(String(body.request || body.text || ''));
           case 'POST /api/agent/correct': return brain.agent.correct(body.id, body.correction) || { error: 'no such run' };
           case 'POST /api/agent/approve': return brain.agent.approve(body.id) || { error: 'no such run' };

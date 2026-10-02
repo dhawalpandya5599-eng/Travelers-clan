@@ -82,6 +82,7 @@ const routes = {
   'POST /api/autopilot/auto': async (q, body) => brain.autopilot.setAuto(String(body.kind || 'follow_up'), !!body.on),
   'GET /api/outbox': async () => brain.autopilot.outbox(),
   'POST /api/outbox/sent': async (q, body) => brain.autopilot.sent(body.id, !!body.ok, body.error) || { error: 'no such message' },
+  'GET /api/universe': async () => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'synth', 'universe-report.json'), 'utf8')); } catch { return { error: 'not run yet: npm run universe' }; } },
   'POST /api/agent': async (q, body) => brain.agent.run(String(body.request || body.text || '')),
   'POST /api/agent/correct': async (q, body) => brain.agent.correct(body.id, body.correction) || { error: 'no such run' },
   'POST /api/agent/approve': async (q, body) => brain.agent.approve(body.id) || { error: 'no such run' },
