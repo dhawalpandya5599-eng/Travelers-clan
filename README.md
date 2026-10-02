@@ -199,3 +199,9 @@ Setup once in **Grow → Setup**: phone number, city, and your upcoming trips wi
 | 6 | Expert: mixed-language constraints, couples-and-kids groups with total budgets, Gujarati multi-turn to a hold, instalments, extensions, weekday reasoning, competitor pricing, price-change maths, drafting broadcasts, run rate | 12 |
 
 Current: all six levels 100%.
+
+### Business skills (ask in plain words, in Teach ATLAS or through the agent)
+
+`14500 plus gst` · `gst on 14500 including` · `tcs on 250000` · `cost 11000 at 20% margin` · `cost 11000 price 13750 margin` · `break even with fixed cost 60000 at price 14500 and variable 9000` · `14500 in 3 instalments` · `500 usd in inr` · `altitude in ladakh` · `what to pack for manali in december` · `long weekends` · `invoice for Riya Shah 4 seats 14500 for the Goa trip` · `utm link for whatsapp campaign diwali` · `organiser offer for 12 seats at 14500` · `estimate custom spiti for 8 people 7 days`
+
+Knowledge lessons 17 to 24 add India and international destination deep-dives, money and margins, safety and emergencies, customer psychology by segment, ground operations and vendors, marketing and content, and the 2026-27 travel calendar (277 facts, all parse-checked).

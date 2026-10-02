@@ -1,4 +1,5 @@
 'use strict';
+const DEST = require('./destinations');
 /**
  * skills.js — procedural memory (the basal ganglia / cerebellum).
  *
@@ -244,6 +245,75 @@ class Skills {
       },
     });
 
+
+    // ---- Business skills for Travelers Clan ----
+    const INR = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+    const num = (x) => +String(x).replace(/,/g, '');
+    this.register({
+      name: 'gst', description: 'GST on tour packages (5% without input credit): price with or without GST.',
+      match: (input) => { const m = input.match(/\bgst\b.*?(?:on|for|of)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,}(?:\.\d+)?)|(?:rs\.?|₹|inr)?\s*([\d,]{3,}(?:\.\d+)?)\s*(?:plus|with|incl\w*|including|excl\w*|excluding|without)\s*gst/i); if (!m) return null; return { v: num(m[1] || m[2]), incl: /incl|including|with gst/i.test(input) && !/excl|without|plus/i.test(input) }; },
+      run: ({ v, incl }) => incl ? `${INR(v)} including 5% GST: base ${INR(v / 1.05)}, GST ${INR(v - v / 1.05)}. (Tour operators charge 5% GST without input credit.)` : `${INR(v)} + 5% GST = ${INR(v * 1.05)} (GST ${INR(v * 0.05)}). Quote prices as GST-inclusive to customers.`,
+    });
+    this.register({
+      name: 'tcs', description: 'TCS on overseas tour packages (5% up to ₹10 lakh a year, 20% above).',
+      match: (input) => { const m = input.match(/\btcs\b.*?(?:rs\.?|₹|inr)?\s*([\d,]{4,})|(?:rs\.?|₹|inr)?\s*([\d,]{4,})\b.*\btcs\b/i); return m ? { v: num(m[1] || m[2]) } : null; },
+      run: ({ v }) => { const low = Math.min(v, 1000000) * 0.05; const high = Math.max(0, v - 1000000) * 0.20; return `TCS on an overseas package of ${INR(v)}: ${INR(low + high)} (5% up to ₹10 lakh per year${high ? ', 20% above' : ''}). The customer claims it back against income tax; mention it before they see it on the invoice.`; },
+    });
+    this.register({
+      name: 'margin', description: 'Price from cost at a margin, or margin from cost and price.',
+      match: (input) => { let m = input.match(/\b(?:cost|costs?|costing)\s*(?:is|of)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,})\b.*?\b(\d{1,2})\s*%\s*(?:margin|markup|profit)/i); if (m) return { cost: num(m[1]), pct: +m[2], kind: /markup/i.test(input) ? 'markup' : 'margin' }; m = input.match(/\bmargin\b.*?\bcost\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,}).*?\b(?:price|sell\w*|selling)\s*(?:at|of|is)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,})/i) || input.match(/\bcost\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,}).*?\b(?:price|sell\w*|selling)\s*(?:at|of|is)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,}).*?\bmargin/i); if (m) return { cost: num(m[1]), price: num(m[2]), kind: 'solve' }; return null; },
+      run: (a) => { if (a.kind === 'solve') { const g = a.price - a.cost; return `Cost ${INR(a.cost)}, price ${INR(a.price)}: profit ${INR(g)} per person, margin ${(100 * g / a.price).toFixed(1)}% of price (markup ${(100 * g / a.cost).toFixed(1)}% on cost).`; } const price = a.kind === 'markup' ? a.cost * (1 + a.pct / 100) : a.cost / (1 - a.pct / 100); return `Cost ${INR(a.cost)} at ${a.pct}% ${a.kind}: price ${INR(price)} (profit ${INR(price - a.cost)} per person). Healthy group-trip margin is 18 to 25% of price.`; },
+    });
+    this.register({
+      name: 'break-even', description: 'Seats needed to cover fixed costs (bus, captain, permits) at a price.',
+      match: (input) => { const m = input.match(/break[- ]?even.*?(?:fixed|bus|costs?)\s*(?:of|is|are)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{4,}).*?(?:price|at|per person)\s*(?:of|is)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,})(?:.*?(?:variable|per head|per person cost)\s*(?:of|is)?\s*(?:rs\.?|₹|inr)?\s*([\d,]{3,}))?/i); return m ? { fixed: num(m[1]), price: num(m[2]), variable: m[3] ? num(m[3]) : 0 } : null; },
+      run: ({ fixed, price, variable }) => { const contrib = price - variable; if (contrib <= 0) return 'Price does not cover the per-person cost; no break-even.'; const seats = Math.ceil(fixed / contrib); return `Fixed costs ${INR(fixed)}, ${INR(contrib)} contribution per seat${variable ? ` (price ${INR(price)} − ${INR(variable)} per head)` : ''}: break-even at ${seats} seats. Every seat after that is ${INR(contrib)} profit.`; },
+    });
+    this.register({
+      name: 'instalments', description: 'Splits a trip price into advance and instalments by date.',
+      match: (input) => { const m = input.match(/(?:instal+ments?|emi|parts|kist\w*)\b.*?(?:rs\.?|₹|inr)?\s*([\d,]{4,})|(?:rs\.?|₹|inr)?\s*([\d,]{4,})\s*(?:in|into)\s*(\d)\s*(?:instal+ments?|parts|emi)/i); if (!m) return null; const parts = +(m[3] || (input.match(/\b(\d)\s*(?:instal+ments?|parts|emi)/i) || [])[1] || 3); return { v: num(m[1] || m[2]), parts: Math.min(6, Math.max(2, parts)) }; },
+      run: ({ v, parts }) => { const adv = Math.min(5000, Math.round(v * 0.3 / 500) * 500); const rest = v - adv; const each = Math.round(rest / (parts - 1)); return `${INR(v)} in ${parts} parts: advance ${INR(adv)} now (holds the seat), then ${parts - 1} × ${INR(each)}; the last one 7 days before departure. Seat is confirmed on the advance; the trip runs only when the balance is in.`; },
+    });
+    this.register({
+      name: 'forex', description: 'Rough INR conversion for trip budgeting (USD, AED, THB, IDR, VND, LKR, NPR, EUR, GBP, SGD, MVR, GEL).',
+      match: (input) => { const m = input.match(/([\d,]+(?:\.\d+)?)\s*(usd|\$|aed|dirham|thb|baht|idr|rupiah|vnd|dong|lkr|npr|eur|€|gbp|£|sgd|mvr|rufiyaa|gel|lari)\b.*?\b(?:in|to|into)\s*(?:inr|rupees?|₹)|(?:inr|₹|rs\.?)\s*([\d,]+)\s*(?:in|to|into)\s*(usd|\$|aed|thb|baht|idr|vnd|lkr|npr|eur|gbp|sgd|mvr|gel)/i); if (!m) return null; return m[4] ? { v: num(m[3]), cur: m[4].toLowerCase(), toInr: false } : { v: num(m[1]), cur: m[2].toLowerCase(), toInr: true }; },
+      run: ({ v, cur, toInr }) => { const R = { usd: 84, $: 84, aed: 22.9, dirham: 22.9, thb: 2.45, baht: 2.45, idr: 0.0053, rupiah: 0.0053, vnd: 0.0034, dong: 0.0034, lkr: 0.28, npr: 0.625, eur: 91, '€': 91, gbp: 107, '£': 107, sgd: 63, mvr: 5.45, rufiyaa: 5.45, gel: 31, lari: 31 }; const r = R[cur]; if (!r) throw new Error('unknown currency'); return toInr ? `${v} ${cur.toUpperCase()} ≈ ${INR(v * r)} (approximate rate ${r}; add a 3% buffer for card charges).` : `${INR(v)} ≈ ${(v / r).toFixed(cur === 'idr' || cur === 'vnd' ? 0 : 2)} ${cur.toUpperCase()} (approximate rate ${r}).`; },
+    });
+    this.register({
+      name: 'altitude', description: 'Altitude safety: acclimatisation days and who needs a doctor, from the destinations table.',
+      match: (input) => { if (!/\b(altitude|acclimati|oxygen|ams|mountain sickness|breath)\w*/i.test(input)) return null; const d = DEST.find(input); return d ? { name: d.name } : null; },
+      run: ({ name }) => { const d = DEST.find(name); const hi = d.maxAltitude >= 2500; return hi ? `${d.name} reaches ${d.maxAltitude} m (base ${d.altitude} m). Rules: ${d.acclimatize || 1} acclimatisation day${(d.acclimatize || 1) > 1 ? 's' : ''} before any climb, no alcohol the first 2 days, 3 litres of water a day, Diamox only on a doctor's advice. Kids: ${d.kids}. Seniors: ${d.seniors}. Carry a pulse oximeter and the local doctor's number; a reading under 85% means descend.` : `${d.name} is low altitude (max ${d.maxAltitude} m); no acclimatisation needed.`; },
+    });
+    this.register({
+      name: 'packing', description: 'Packing list for a destination and month.',
+      match: (input) => { if (!/\b(pack|packing|carry|what to (bring|take|wear)|bring)\b/i.test(input)) return null; const d = DEST.find(input); if (!d) return null; const mo = DEST.monthNum((input.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i) || [])[1]); return { name: d.name, month: mo }; },
+      run: ({ name, month }) => { const d = DEST.find(name); const cold = d.maxAltitude >= 2000 || (month && [11, 12, 1, 2].includes(month) && d.altitude > 500); const beach = /goa|andaman|gokarna|varkala|bali|thailand|maldives|sri lanka|pondicherry/i.test(d.name); const monsoon = month && [6, 7, 8, 9].includes(month); const base = ['government photo ID (original)', 'phone charger and power bank', 'personal medicines and a basic first-aid pouch', 'reusable water bottle', 'sunscreen, cap, sunglasses', 'small daypack', 'cash ₹2,000 for places without UPI']; const extra = []; if (cold) extra.push('thermal inner layer', 'fleece and a windproof jacket', 'woollen cap, gloves, warm socks', 'lip balm and moisturiser', 'trekking shoes with grip'); if (beach) extra.push('swimwear and a quick-dry towel', 'flip-flops', 'light cotton clothes', 'waterproof phone pouch'); if (monsoon) extra.push('rain jacket or poncho', 'zip-lock bags for electronics', 'extra socks'); if (d.country !== 'India') extra.push('passport (6 months validity) and visa printout', 'travel insurance copy', 'forex card'); if ((d.permits || []).length) extra.push('ID copies for permits (' + d.permits[0] + ')'); return `Packing for ${d.name}${month ? ' in ' + DEST.MONTHS[month - 1] : ''}:\n• ` + base.concat(extra).join('\n• '); },
+    });
+    this.register({
+      name: 'long-weekends', description: 'Long weekends and festival windows in India for the next months.',
+      match: (input) => /\b(long weekends?|holiday list|public holidays|festival dates|upcoming (holidays|festivals))\b/i.test(input) ? { now: Date.now() } : null,
+      run: ({ now }) => { const H = [['2026-10-02', 'Gandhi Jayanti (Fri)'], ['2026-10-20', 'Diwali (Tue)'], ['2026-10-21', 'Govardhan Puja (Wed)'], ['2026-11-04', 'Guru Nanak Jayanti (Wed)'], ['2026-12-25', 'Christmas (Fri)'], ['2027-01-01', 'New Year (Fri)'], ['2027-01-14', 'Makar Sankranti (Thu)'], ['2027-01-26', 'Republic Day (Tue)'], ['2027-03-04', 'Holi (Thu)'], ['2027-03-26', 'Ram Navami (Fri)'], ['2027-04-02', 'Good Friday'], ['2027-05-01', 'May Day (Sat)'], ['2027-08-15', 'Independence Day (Sun)'], ['2027-08-22', 'Ganesh Chaturthi (Sun)'], ['2027-10-02', 'Gandhi Jayanti (Sat)'], ['2027-10-09', 'Dussehra (Sat)'], ['2027-10-29', 'Diwali (Fri)']]; const up = H.filter(([d]) => new Date(d).getTime() >= now - 864e5).slice(0, 8); return 'Upcoming holidays and long-weekend windows:\n' + up.map(([d, n]) => { const dt = new Date(d); const wd = dt.getDay(); const lw = wd === 1 || wd === 5 ? ' → long weekend' : wd === 2 || wd === 4 ? ' → 4-day break with one leave' : ''; return `• ${dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}: ${n}${lw}`; }).join('\n') + '\nLaunch each batch 5 to 6 weeks before its window.'; },
+    });
+    this.register({
+      name: 'invoice', description: 'Drafts a GST invoice text for a booking.',
+      match: (input) => { const m = input.match(/\binvoice\b.*?(?:for|to)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)?)\b.*?(\d{1,2})\s*(?:seats?|people|pax|persons)\b.*?(?:rs\.?|₹|inr)?\s*([\d,]{4,})/i); return m ? { name: m[1], n: +m[2], price: num(m[3]), trip: (input.match(/\b(?:for|on)\s+(?:the\s+)?([A-Z][a-z]+(?: of [A-Z][a-z]+)?)\s+(?:trip|batch)/) || [])[1] || 'trip' } : null; },
+      run: ({ name, n, price, trip }) => { const base = price * n / 1.05; const gst = price * n - base; return `TAX INVOICE · Travelers Clan\nBill to: ${name}\nItem: ${trip}, ${n} seat${n > 1 ? 's' : ''} × ${INR(price)} (GST inclusive)\nTaxable value: ${INR(base)}\nGST 5% (tour operator, no ITC): ${INR(gst)}\nTotal: ${INR(price * n)}\nTerms: advance confirms the seat; balance 7 days before departure; cancellation as per written policy.\n(Add GSTIN, invoice number and date before sending.)`; },
+    });
+    this.register({
+      name: 'utm', description: 'Builds a tracked link for a campaign.',
+      match: (input) => { const m = input.match(/\b(?:utm|tracked|tracking) (?:link|url)\b.*?\b(?:for|source)\s+([a-z]+)\b(?:.*?\b(?:campaign|for)\s+([a-z0-9-]+))?/i); return m ? { source: m[1].toLowerCase(), campaign: (m[2] || 'trip').toLowerCase() } : null; },
+      run: ({ source, campaign }) => `https://travelersclan.in/?utm_source=${source}&utm_medium=${source === 'whatsapp' ? 'message' : source === 'instagram' ? 'social' : 'referral'}&utm_campaign=${campaign}\nUse one link per channel so the lead sheet shows where bookings come from.`,
+    });
+    this.register({
+      name: 'referral', description: 'Referral payout and organiser-free maths for a group.',
+      match: (input) => { const m = input.match(/\b(?:referral|organiser|organizer)\b.*?(\d{1,2})\s*(?:seats?|people|pax|persons)\b.*?(?:rs\.?|₹|inr)?\s*([\d,]{4,})/i); return m ? { n: +m[1], price: num(m[2]) } : null; },
+      run: ({ n, price }) => { const free = Math.floor(n / 10); const ref = Math.round(price * 0.05 / 100) * 100; return `${n} seats at ${INR(price)}: organiser offer = ${free || 1} free seat${free > 1 ? 's' : ''} per 10 paid (${n >= 10 ? INR(free * price) + ' value' : 'offer the first free seat at 8 paid to close it'}). Referral: ${INR(ref)} off for both sides per booking (5%). Revenue after offer: ${INR(price * (n - (free || (n >= 8 ? 1 : 0))))}.`; },
+    });
+    this.register({
+      name: 'trip-cost', description: 'Estimates a custom trip cost from the destinations table.',
+      match: (input) => { if (!/\b(estimate|cost|price|quote|budget)\b/i.test(input) || !/\b(custom|private|estimate|for \d+ days?|\d+ days?)\b/i.test(input)) return null; const d = DEST.find(input); if (!d) return null; const days = +(input.match(/\b(\d{1,2})\s*(?:days?|nights?|d\b)/i) || [])[1] || d.idealDays; const n = +(input.match(/\b(\d{1,2})\s*(?:people|pax|persons|of us|friends|members)\b/i) || [])[1] || 1; return { name: d.name, days, n }; },
+      run: ({ name, days, n }) => { const d = DEST.find(name); const per = Math.round(d.costPerDay * days / 500) * 500; const price = Math.round(per / 0.8 / 500) * 500; return `${d.name}, ${days} days: ground cost about ${INR(per)} per person (${INR(d.costPerDay)}/day: stay, meals, local travel${(d.permits || []).length ? ', permits' : ''}). Sell at ${INR(price)} per person for a 20% margin${n > 1 ? `; ${n} people: ${INR(price * n)} (profit ${INR((price - per) * n)})` : ''}. Flights or long-distance transport extra.`; },
+    });
     this.register({
       name: 'convert', description: 'Unit conversions (km/mi, kg/lb, °C/°F, currency hints).',
       match: (input) => { const m = input.match(/([\d.]+)\s*(km|kilometers?|mi|miles?|kg|lbs?|pounds?|°?c|celsius|°?f|fahrenheit|m|meters?|ft|feet)\s*(?:to|in|into)\s*(km|kilometers?|mi|miles?|kg|lbs?|pounds?|°?c|celsius|°?f|fahrenheit|m|meters?|ft|feet)\b/i); return m ? { v: +m[1], from: m[2].toLowerCase(), to: m[3].toLowerCase() } : null; },

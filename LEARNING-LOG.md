@@ -21,3 +21,9 @@ Every self-improvement run appends an entry: what was measured, what was weakest
 - Built scripts/levels.js: 80 checks across six levels, easiest to hardest. Started at L1 100%, L2 67%, then fixed level by level: group-change phrasing and re-holds, trip switching mid-chat, month confirmation, Gujarati safe/hold/discount words, nervous first-timers vs confusion, "husband says scam" vs escalation, bad-experience reliability answer, two-trip comparison against budget, cheapest-fit recommendation for large groups, destination questions (crowds, quiet, weather), senior notes on custom estimates, incident SOPs, push-or-merge decision, named campaigns, review replies that acknowledge the praised part, persona-based closing advice, zero-budget lead plan, couples+kids group counting, total-budget maths, trip extensions, weekday reasoning, competitor price objection with inclusion-match offer, price-change revenue maths, broadcast drafting, run-rate to fill.
 - Result: all six levels 100%; exam 130/130; stress 0.1% weak; universe 300/300; tests 19/19.
 - Next: level 7 (real customer transcripts once the number is live) and model-graded mastery in the routine.
+
+## 2026-10-02 · new knowledge and business skills
+
+- 8 lessons (17-24), 277 sentences, every one parse-checked; mind facts 738 → 1025 after training (generation 102).
+- 12 skills: gst, tcs, margin, break-even, instalments, forex, altitude, packing, long-weekends, invoice, utm, referral, trip-cost.
+- 19 exam cases for knowledge and skills; exam 149/149; levels 1-6 100%; stress 0.1%; universe 300/300.
