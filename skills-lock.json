@@ -19,11 +19,179 @@
       "skillPath": "skills/apify-ads-intelligence/SKILL.md",
       "computedHash": "cff9277ebafc30082306250dc49d47f722b3a4082941f9fd868e4e1c6c13974b"
     },
+    "apify-ai-search-visibility-tracker": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-ai-search-visibility-tracker/SKILL.md",
+      "computedHash": "e1da94c7c283965633d3b9ccded097bd791fe67275e976db98d7a5c2f7f10e5a"
+    },
+    "apify-app-store-intelligence": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-app-store-intelligence/SKILL.md",
+      "computedHash": "fdafd129252688c048a1f77b63e314f284e2801a9e60d35ab8776544d86a9f48"
+    },
+    "apify-ashby-jobs-scraper": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-ashby-jobs-scraper/SKILL.md",
+      "computedHash": "7b6473527b8bba7210aed23778fe1928d5a58f630c98614f2208d69c3505aff5"
+    },
+    "apify-blocked-scrape-triage": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-blocked-scrape-triage/SKILL.md",
+      "computedHash": "151bfacb75708944d2f7416310636aa89e76036608fd5e15a05c011deb0acc63"
+    },
+    "apify-booking-host-leads": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-booking-host-leads/SKILL.md",
+      "computedHash": "70cda583ca16b0c829c80d9ee3c1165cb8aa98cb3ef0ce4d1d9b198f38967120"
+    },
+    "apify-buying-signal-detection": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-buying-signal-detection/SKILL.md",
+      "computedHash": "9d33f1bdfcee87f61fcfd2b6a6dcea31c77b4861a883671f144af84b49bf7abe"
+    },
+    "apify-company-data-api": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-company-data-api/SKILL.md",
+      "computedHash": "55557401a0c8669993fa3e34e01a691a347dadda8d1badaaa87711fe5cf1d10a"
+    },
+    "apify-creator-emails": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-creator-emails/SKILL.md",
+      "computedHash": "5ebf3f5ba4eb11a8faed5d7c0920a7f72be779390a96763be9063e7383c7dc84"
+    },
+    "apify-easy-competitive-intelligence": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-easy-competitive-intelligence/SKILL.md",
+      "computedHash": "c5ce54b2f32d37442fd2a926a48e1b0bac2c07e2d7a68a8665c1a24be31b203d"
+    },
+    "apify-ecommerce": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-ecommerce/SKILL.md",
+      "computedHash": "ef41b820c4001dabc60a89957229cdbcc3de54ee16ceda1a64c8f0f3c41e9975"
+    },
+    "apify-generate-output-schema": {
+      "source": "apify/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-generate-output-schema/SKILL.md",
+      "computedHash": "4a2c1ee89daf0de190a70437ec116b7b31d4c359861f7bfe775581269b4f353e"
+    },
+    "apify-influencer-brand-collabs": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-influencer-brand-collabs/SKILL.md",
+      "computedHash": "85e62755324abcfcd46e146c2a58da028a701d6140c6bfd7a5194ebc3afcf7d6"
+    },
+    "apify-integration-development": {
+      "source": "apify/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-integration-development/SKILL.md",
+      "computedHash": "e9745309d8b4a6b5e44cf248ca3361d86e44ac3986cde091109ab0ae858847fb"
+    },
+    "apify-job-boards": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-job-boards/SKILL.md",
+      "computedHash": "6b350034018a8271f4f8a82e403f62a8194a9587822b256d9046318ec1b0992f"
+    },
+    "apify-jobs-data": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-jobs-data/SKILL.md",
+      "computedHash": "f747653595f060afb9184dea2e56de33660337afb4dff97deb2f5c8cf61f2cd8"
+    },
+    "apify-lead-scoring-enrichment": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-lead-scoring-enrichment/SKILL.md",
+      "computedHash": "3a4e71db936c5c120e268e779237839c503b911b6552ccad71e8e7d04dedda2a"
+    },
+    "apify-link-prospecting-outreach": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-link-prospecting-outreach/SKILL.md",
+      "computedHash": "f5d0f63c96c1955f671fb751aedce2cf87a4dd70c7e81dab3bae070e30c6bea2"
+    },
+    "apify-local-business-leads-osm": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-local-business-leads-osm/SKILL.md",
+      "computedHash": "6a3c6a832bdcd16735802a61219b1b79a3f5c060bb2dbffc478e0d2d7b377338"
+    },
+    "apify-marketing-agency-database": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-marketing-agency-database/SKILL.md",
+      "computedHash": "57b75759ee7105868d4c2b41cab2c2cd7ffcd4ebc53d852f6ff610301e9e0e9a"
+    },
+    "apify-orchestrator-actor-development": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-orchestrator-actor-development/SKILL.md",
+      "computedHash": "eebfdc425be2db61487186864e6947f226872bfa0450560024493e4bc6c9ddac"
+    },
+    "apify-osint-threat-intel": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-osint-threat-intel/SKILL.md",
+      "computedHash": "5092c323f5f22a7901d1b1084893c214cb4f483fbf1107bcdba3fa69d849753f"
+    },
+    "apify-plan-travel": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-plan-travel/SKILL.md",
+      "computedHash": "bb93050cf972f8ff49edef24ee79a97644d8123d96015b7394891347ea468eba"
+    },
+    "apify-product-data-setup": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-product-data-setup/SKILL.md",
+      "computedHash": "ae226130552c7faf810ddc8520e8bca99914da5246857b64797a46d8471f249b"
+    },
+    "apify-reddit-scraper": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-reddit-scraper/SKILL.md",
+      "computedHash": "91cc400755acb5ae614440368de1acbd15be05822b7dba85ffe158f2a771426a"
+    },
     "apify-ultimate-scraper": {
       "source": "apify/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/apify-ultimate-scraper/SKILL.md",
       "computedHash": "04248bcb9227819a38d95a348d9ca550fc1ae087d9a1e666930b3a3499db317a"
+    },
+    "apify-verified-email-finder": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-verified-email-finder/SKILL.md",
+      "computedHash": "7b987a45acd9e4b4e78db3f8ee956d533dcb9bd5b75828b75ae72eb45f6e1771"
+    },
+    "apify-x402-agentic-wallet": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-x402-agentic-wallet/SKILL.md",
+      "computedHash": "0d731b10957934d915ec599339c1f95c4a53c2c9381ecb1e0ee3789daa66907c"
+    },
+    "apify-yandex-image-search-api": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-yandex-image-search-api/SKILL.md",
+      "computedHash": "4408f385603c96e92e7cd6b12d70dc53c5224fe0f3cb4c3055255e76fffcc5a0"
+    },
+    "apify-yandex-search-api": {
+      "source": "apify/awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apify-yandex-search-api/SKILL.md",
+      "computedHash": "d111fc032e4fe085755461f535b592f9505465f2bfaa72b50938166cef6d1513"
     },
     "find-skills": {
       "source": "vercel-labs/skills",
