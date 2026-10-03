@@ -7,7 +7,7 @@
  */
 const { execSync } = require('child_process'); const path = require('path'); const fs = require('fs');
 const root = path.join(__dirname, '..'); const quick = process.argv.includes('--quick');
-const steps = [['Unit tests', 'npm test --silent'], ['Eval', 'node scripts/eval.js'], ['Levels 1 to 10', 'node scripts/levels.js'], ['Paraphrases', 'node scripts/paraphrase.js']].concat(quick ? [] : [['Stress', 'node scripts/stress.js --n 200'], ['Customer universe', 'node scripts/universe.js --n 300'], ['Browser smoke', 'node scripts/smoke.js']]).concat([['Web bundle', 'node scripts/build-web.js']]);
+const steps = [['Unit tests', 'npm test --silent'], ['Eval', 'node scripts/eval.js'], ['Levels 1 to 11', 'node scripts/levels.js'], ['Paraphrases', 'node scripts/paraphrase.js']].concat(quick ? [] : [['Stress', 'node scripts/stress.js --n 200'], ['Customer universe', 'node scripts/universe.js --n 300'], ['Browser smoke', 'node scripts/smoke.js']]).concat([['Web bundle', 'node scripts/build-web.js']]);
 const t0 = Date.now(); const results = [];
 for (const [name, cmd] of steps) {
   const s = Date.now(); let ok = true, out = '';

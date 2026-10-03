@@ -159,6 +159,20 @@ const LEVELS = [
     { agent: 'a traveller lost her passport in goa on day 2, what does the captain do, step by step', must: [/police|FIR/i, /passport office|RPO|embassy|Passport Seva/i, /captain/i] },
     { agent: 'a journalist asks why a traveller got hurt on our trek, what is our statement', must: [/statement|safe|sorry|family|recover/i, /captain|first aid|insurance|hospital/i], not: [/(say|reply|respond|answer|give)[^.]{0,20}"?no comment/i, /^no comment/i] },
   ] },
+  { level: 11, name: 'Desks: visas, routes, local intelligence and the captain pack, in the customer\'s words and the chief\'s', items: [
+    { chat: ['thailand trip hai dec mein, visa lagega?'], must: [/visa-free|arrival card/i, /TDAC|tdac/i, /passport/i] },
+    { chat: ['dubai for 4', 'visa kitne din me aur kitna?'], must: [/working days/i, /₹/, /airline|agent|hotel/i] },
+    { chat: ['ladakh in july for 2, permit chahiye?'], must: [/Inner Line|permit/i, /Nubra|Pangong/i, /ID/i] },
+    { chat: ['goa bus se kitne ghante lagte hain, raat ko chalegi?'], must: [/18 h/, /Kolhapur/i, /sleeper|overnight/i] },
+    { chat: ['manali kaise pahunchenge ahmedabad se?'], must: [/Delhi/i, /Volvo|train/i, /12 to 14 h|14 h/i] },
+    { chat: ['bali mein upi chalega? cash kitna le jaun?'], must: [/Money:/i, /rupiah/i, /2,500/] },
+    { chat: ['dubai mein daaru milegi? aur kya pehen sakte hain?'], must: [/Alcohol:/i, /licensed/i, /Dress/i] },
+    { chat: ['nepal ke liye passport chahiye ya aadhaar chalega?'], must: [/voter ID|voter/i, /Aadhaar/i, /not accepted|only for/i] },
+    { agent: 'route for spiti in january', must: [/Shimla/i, /closed/i, /Kunzum/i] },
+    { agent: 'local tips for thailand', must: [/Grab/i, /baht/i, /1155/] },
+    { agent: 'trip pack for goa', must: [/TRIP PACK/, /JOURNEY/, /EMERGENCY/, /Kolhapur/i] },
+    { agent: 'which trips need visa', must: [/Goa|no upcoming trip|all clear|Thailand|Manali/i] },
+  ] },
 ];
 
 async function run() {

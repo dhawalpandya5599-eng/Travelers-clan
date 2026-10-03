@@ -78,6 +78,10 @@ Cases open themselves for every traveller on hold, advance or balance for a trip
 
 Where they connect: customers asking "bus kitne ghante", "kaise jayenge", "upi chalega?", "daaru milegi?" on WhatsApp or the widget; the chief asking "route for ladakh in july" or "local tips for dubai"; the model's `route` and `local` tools; the pre-departure brief's journey line; lessons 31 and 32 in the mind. `RESOURCES.md` lists the official links a human verifies against.
 
+## 4e. The captain's trip pack and the knowledge map
+
+`trip pack for <trip>` (chief chat), the Trip pack button on the board, or `/api/pack?trip=` builds one document per departure: entry rules and apply-by, journey and driving days, local intelligence, activities, travellers with names and emergency contacts, the brief to send, and emergency numbers. `npm run knowledge` prints what OYE knows per destination (route, local notes, visa or permit, activities) and the gaps to fill next.
+
 ## 5. How OYE gets better
 
 Three exam ladders, all rules only, all at 100% right now:
@@ -85,7 +89,7 @@ Three exam ladders, all rules only, all at 100% right now:
 | Ladder | Command | What it proves |
 |---|---|---|
 | Eval, 173 checks | `node scripts/eval.js` | facts, funnel, playbook, council, WhatsApp, expression |
-| Levels 1 to 10, 128 checks | `node scripts/levels.js` | easiest to hardest: facts, flow, emotion, requirements, business judgement, expert, master, grandmaster, legend, chief |
+| Levels 1 to 11, 140 checks | `node scripts/levels.js` | easiest to hardest: facts, flow, emotion, requirements, business judgement, expert, master, grandmaster, legend, chief |
 | Paraphrases, 152 wordings | `node scripts/paraphrase.js` | the same intent said many ways routes the same (guards against rules tuned to one sentence) |
 
 Plus stress (200 chats), the customer universe (400 personas from a space of a billion), mastery (model-graded when a model is connected), and the browser smoke (`npm run smoke`).

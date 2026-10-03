@@ -26,7 +26,8 @@
     "check": "npm test && npm run exam && node scripts/paraphrase.js && node scripts/stress.js --n 200 && node scripts/universe.js --n 300",
     "paraphrase": "node scripts/paraphrase.js",
     "smoke": "node scripts/smoke.js",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "knowledge": "node scripts/knowledge.js"
   },
   "license": "MIT",
   "private": true

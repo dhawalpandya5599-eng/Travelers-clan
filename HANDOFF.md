@@ -33,7 +33,7 @@ npm run check
 |---|---|---|
 | Unit tests | `npm test` | 24/24 |
 | Eval | `node scripts/eval.js` | 177/177 |
-| Levels 1 to 10 | `node scripts/levels.js` | 128/128, all 100% |
+| Levels 1 to 11 | `node scripts/levels.js` | 140/140, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
 | Customer universe (400 personas) | `node scripts/universe.js` | 400/400 |
 | Paraphrases | `node scripts/paraphrase.js` | 184/184 |

@@ -1,5 +1,5 @@
 {
- "at": "2026-10-03T10:48:13.918Z",
+ "at": "2026-10-03T10:51:39.283Z",
  "report": [
   {
    "level": 1,
@@ -67,6 +67,13 @@
   {
    "level": 10,
    "name": "Chief: terse six-turn chats, first-time women travellers, name changes, self-drive joins, flights, chat summaries, Gujarati date changes, merge-or-cancel with money, content calendars, weekly review, lost passport, press",
+   "pass": 12,
+   "total": 12,
+   "pct": 100
+  },
+  {
+   "level": 11,
+   "name": "Desks: visas, routes, local intelligence and the captain pack, in the customer's words and the chief's",
    "pass": 12,
    "total": 12,
    "pct": 100

@@ -6,6 +6,7 @@
 - Local intelligence for 24 places: money and UPI, SIM, transport, food, dress, scams, tipping, emergency, plugs, time, alcohol, phrases, water, health; answers "upi chalega?", "daaru milegi?", "local tips for dubai".
 - Lessons 31 and 32, RESOURCES.md, 20 new paraphrases, 2 eval checks.
 - Cloud routine paused to preserve credits.
+- Captain's trip pack (`trip pack for goa`, Trip pack button, `/api/pack`), level 11 (desks in the customer's and the chief's words), `npm run knowledge` coverage report.
 
 ## 1.1.0 (2026-10-03)
 

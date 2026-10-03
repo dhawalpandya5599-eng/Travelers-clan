@@ -101,6 +101,7 @@ const routes = {
   'POST /api/growth/leads': async (q, body) => body.id && brain.growth.state.leads.some(l => l.id === body.id) ? brain.growth.updateLead(body.id, body) : brain.growth.addLead(body || {}),
   'GET /api/growth/today': async () => brain.growth.today(),
   'GET /api/growth/board': async () => brain.growth.tripBoard(),
+  'GET /api/pack': async (q) => ({ __raw: require('./core/pack').pack(brain, q.get('trip') || ''), type: 'text/plain' }),
   'GET /api/visa': async (q) => q.get('country') ? { card: brain.visa.card(q.get('country')), rule: brain.visa.rule(q.get('country')) } : { trips: brain.visa.sync(brain.growth), summary: brain.visa.summary() },
   'GET /api/visa/cases': async (q) => brain.visa.cases({ trip: q.get('trip') || '', status: q.get('status') || '' }),
   'POST /api/visa/cases': async (q, body) => body.id ? brain.visa.update(body.id, body) : brain.visa.openCase(body || {}),
