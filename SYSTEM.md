@@ -90,9 +90,12 @@ Three exam ladders, all rules only, all at 100% right now:
 |---|---|---|
 | Eval, 173 checks | `node scripts/eval.js` | facts, funnel, playbook, council, WhatsApp, expression |
 | Levels 1 to 11, 140 checks | `node scripts/levels.js` | easiest to hardest: facts, flow, emotion, requirements, business judgement, expert, master, grandmaster, legend, chief |
-| Paraphrases, 152 wordings | `node scripts/paraphrase.js` | the same intent said many ways routes the same (guards against rules tuned to one sentence) |
+| Paraphrases, 184 wordings | `node scripts/paraphrase.js` | the same intent said many ways routes the same (guards against rules tuned to one sentence) |
+| Procedural ladder, levels 12 to 100 | `node scripts/ladder.js` | generated conversations that get harder with the level (more turns, mixed languages and scripts, typos, group changes, trip switches, objections, desk questions), judged against the trip data; highest level passed at 100% right now: 36 |
 
 Plus stress (200 chats), the customer universe (400 personas from a space of a billion), mastery (model-graded when a model is connected), and the browser smoke (`npm run smoke`).
+
+**The ladder.** `npm run ladder` climbs from level 12 and stops at the first level under 100%; the release gate requires the recorded maximum, so a regression blocks a release. To climb higher: `node scripts/ladder.js --from <max+1> --verbose`, read the failing turn, fix the wording or the rule in `core/growth.js` (never the generator, unless the scenario is genuinely unfair). The next known failure is a typo inside a keyword ("chaeper"), which needs fuzzy matching of intent words.
 
 **Adding a level.** In `scripts/levels.js` add a block with 12 items harder than the last level: `chat` (messages, judged on the last reply), `agent` (a chief request) or `review` (a plan), with `must` and `not` patterns. Run it alone with `--level N`, fix OYE until 100%, then run everything. A check that encodes a wrong policy is a test bug: fix the test, not OYE.
 
