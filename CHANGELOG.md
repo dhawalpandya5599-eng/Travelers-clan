@@ -6,7 +6,7 @@
 - Local intelligence for 24 places: money and UPI, SIM, transport, food, dress, scams, tipping, emergency, plugs, time, alcohol, phrases, water, health; answers "upi chalega?", "daaru milegi?", "local tips for dubai".
 - Lessons 31 and 32, RESOURCES.md, 20 new paraphrases, 2 eval checks.
 - Cloud routine paused to preserve credits.
-- Procedural exam ladder, levels 12 to 100 (`npm run ladder`), in the release gate; highest level at 100%: 36. Fixes it found: Hinglish "jana" read as January, a group size said earlier lost on the hold turn, Gujarati and Hindi travel and local words, Hinglish competitor objections.
+- Procedural exam ladder, levels 12 to 100 (`npm run ladder`), in the release gate; highest level at 100%: 100. Fixes it found: Hinglish "jana" read as January, a group size said earlier lost on the hold turn, Gujarati and Hindi travel and local words, Hinglish competitor objections, typo tolerance for intent keywords, Gujarati hand-off wording.
 - Captain's trip pack (`trip pack for goa`, Trip pack button, `/api/pack`), level 11 (desks in the customer's and the chief's words), `npm run knowledge` coverage report.
 
 ## 1.1.0 (2026-10-03)

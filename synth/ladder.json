@@ -1,8 +1,8 @@
 {
- "at": "2026-10-03T10:59:29.551Z",
+ "at": "2026-10-03T11:08:12.092Z",
  "from": 12,
  "to": 100,
- "maxPassed": 36,
+ "maxPassed": 100,
  "report": [
   {
    "level": 12,
@@ -131,8 +131,323 @@
   },
   {
    "level": 37,
-   "pass": 11,
-   "pct": 92
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 38,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 39,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 40,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 41,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 42,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 43,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 44,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 45,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 46,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 47,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 48,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 49,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 50,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 51,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 52,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 53,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 54,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 55,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 56,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 57,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 58,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 59,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 60,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 61,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 62,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 63,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 64,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 65,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 66,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 67,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 68,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 69,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 70,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 71,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 72,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 73,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 74,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 75,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 76,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 77,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 78,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 79,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 80,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 81,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 82,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 83,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 84,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 85,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 86,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 87,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 88,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 89,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 90,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 91,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 92,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 93,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 94,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 95,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 96,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 97,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 98,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 99,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 100,
+   "pass": 12,
+   "pct": 100
   }
  ]
 }
