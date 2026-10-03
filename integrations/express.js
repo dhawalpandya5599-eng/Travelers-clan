@@ -117,6 +117,7 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   pub.get('/widget.js', (req, res) => { res.type('text/javascript'); res.send(fs.readFileSync(path.join(ROOT, 'public', 'widget.js'), 'utf8')); });
   pub.post('/chat', wrap(req => brain.growth.chat({ id: String(req.body.id || '').slice(0, 40), name: String(req.body.name || '').slice(0, 60), text: String(req.body.text || '').slice(0, 1000), source: 'web', page: String(req.body.page || '').slice(0, 120) })));
   pub.get('/profile', wrap(() => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(6).map(t => ({ name: t.name, date: t.date, days: t.days, price: t.price, seatsLeft: brain.growth.seatsLeft(t), from: t.from })) }; }));
+  pub.post('/event', wrap(req => brain.growth.widgetEvent(String(req.body.kind || '').slice(0, 30), String(req.body.id || '').slice(0, 40))));
   pub.post('/lead', wrap(req => require('../core/connections').webhookLead(brain.growth, req.body)));
   router.widget = pub;
   return router;

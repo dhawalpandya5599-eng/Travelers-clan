@@ -68,7 +68,7 @@
       '<div class="ic"><button class="min" title="Minimise" aria-label="Minimise">—</button></div></div>' +
       '<div class="msgs"></div><div class="chips"></div>' +
       '<form><input placeholder="Ask about any trip, dates, price…" autocomplete="off" maxlength="600"><button type="submit" aria-label="Send">➤</button></form>' +
-      '<a class="wa" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-.9 1.2-.3.2-.6.1a7.6 7.6 0 0 1-3.7-3.2c-.3-.5.3-.4.8-1.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.5 13.5 0 0 0 5.2 4.6c1.9.8 2.7.9 3.7.8a3.1 3.1 0 0 0 2-1.5 2.5 2.5 0 0 0 .2-1.5c-.1-.1-.3-.2-.6-.3M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2m0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2"/></svg>Continue on WhatsApp</a>' +
+      '<a class="wa" target="_blank" rel="noopener" onclick="window.OYE&&window.OYE._wa&&window.OYE._wa()"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-.9 1.2-.3.2-.6.1a7.6 7.6 0 0 1-3.7-3.2c-.3-.5.3-.4.8-1.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.5 13.5 0 0 0 5.2 4.6c1.9.8 2.7.9 3.7.8a3.1 3.1 0 0 0 2-1.5 2.5 2.5 0 0 0 .2-1.5c-.1-.1-.3-.2-.6-.3M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2m0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2"/></svg>Continue on WhatsApp</a>' +
       '<div class="foot">Replies come from ' + NAME + ', the clan\'s own assistant. A team member joins for bookings.</div>' +
     '</div>' +
     '<button class="fab" aria-label="Chat with ' + NAME + '"><span class="av"><img src="' + logo + '" alt=""><i></i></span><span><b>Ask ' + NAME + '</b><small>trips · dates · seats</small></span></button>';
@@ -103,11 +103,13 @@
     add('a', g); if (P.trips && P.trips.length) { add('a', 'Next departures:', false); cards(P.trips); }
     chipSet(CHIPS);
   }
-  function restore() { history.forEach(function (h) { add(h.r, h.t, false); }); var d = document.createElement('div'); d.className = 'm sys'; d.textContent = 'Earlier chat restored · ' + NAME + ' remembers you'; msgs.appendChild(d); chipSet(CHIPS); }
-  function openPanel() { open = true; panel.classList.add('on'); fab.style.display = 'none'; nudge.classList.remove('on'); if (!msgs.children.length) { if (history.length) restore(); else greet(); } setTimeout(function () { inp.focus(); scroll(); }, 50); }
+  function track(kind) { try { fetch(base + '/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: kind, id: id }), keepalive: true }).catch(function () {}); } catch (e) {} }
+  function restore() { history.forEach(function (h) { add(h.r, h.t, false); }); var d = document.createElement('div'); d.className = 'm sys'; d.textContent = 'Earlier chat restored · ' + NAME + ' remembers you'; msgs.appendChild(d); if (P.trips && P.trips.length) { add('a', 'Next departures:', false); cards(P.trips); } chipSet(CHIPS); }
+  var openedOnce = false;
+  function openPanel() { if (!openedOnce) { openedOnce = true; track('open'); } open = true; panel.classList.add('on'); fab.style.display = 'none'; nudge.classList.remove('on'); if (!msgs.children.length) { if (history.length) restore(); else greet(); } setTimeout(function () { inp.focus(); scroll(); }, 50); }
   function closePanel() { open = false; panel.classList.remove('on'); fab.style.display = ''; }
   function send(text) {
-    text = String(text || '').trim(); if (!text || busy) return; add('u', text); busy = true; typing(true); chips.innerHTML = '';
+    text = String(text || '').trim(); if (!text || busy) return; add('u', text); busy = true; typing(true); chips.innerHTML = ''; track(/^hold \d|^put me on the waiting list/i.test(text) ? 'hold' : /talk to a team member/i.test(text) ? 'human' : 'message');
     fetch(base + '/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, text: text, page: location.pathname }) })
       .then(function (r) { return r.json(); })
       .then(function (r) {
@@ -120,7 +122,7 @@
       })
       .catch(function () { typing(false); busy = false; add('a', 'Network hiccup on my side. Tap "Continue on WhatsApp" and the team replies there.'); chipSet(CHIPS); });
   }
-  fetch(base + '/profile').then(function (r) { return r.json(); }).then(function (p) { P = p || P; P.trips = P.trips || []; if (!P.waLink) wa.style.display = 'none'; else waContext(); }).catch(function () { wa.style.display = 'none'; });
+  fetch(base + '/profile').then(function (r) { return r.json(); }).then(function (p) { P = p || P; P.trips = P.trips || []; if (!P.waLink) wa.style.display = 'none'; else waContext(); if (open && P.trips.length && !msgs.querySelector('.cards')) { add('a', 'Next departures:', false); cards(P.trips); } }).catch(function () { wa.style.display = 'none'; });
   fab.onclick = openPanel; w.querySelector('.min').onclick = closePanel; nudge.querySelector('.x').onclick = function (e) { e.stopPropagation(); nudge.classList.remove('on'); store.set('oye-nudged', '1'); };
   nudge.onclick = openPanel;
   form.onsubmit = function (e) { e.preventDefault(); var t = inp.value; inp.value = ''; send(t); };
@@ -128,5 +130,5 @@
   if (!nudged && !reduce) setTimeout(function () { if (!open) { nudge.classList.add('on'); store.set('oye-nudged', '1'); setTimeout(function () { nudge.classList.remove('on'); }, 12000); } }, DELAY);
   // Any element on the site can open the chat with a message: <a href="#oye" data-oye="Goa in December for 4?">
   document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-oye]'); if (!a) return; e.preventDefault(); openPanel(); var t = a.getAttribute('data-oye'); if (t) send(t); });
-  window.OYE = { open: openPanel, close: closePanel, ask: function (t) { openPanel(); send(t); } };
+  window.OYE = { open: openPanel, close: closePanel, ask: function (t) { openPanel(); send(t); }, _wa: function () { track('whatsapp'); } };
 })();

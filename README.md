@@ -113,6 +113,8 @@ Admin routes are under `/api/` (mounted at `/admin/atlas` inside the site); publ
 `core/` is the mind and the office, `scripts/` the training and examination tools, `curriculum/` the lessons, `public/` the dashboard and the website blocks, `integrations/` the Express mount, `mind/` the trained mind, `synth/` generated data and reports, `test/` unit tests. All checks: `npm run check`. Before pushing anything that touches `core/` run it; the routine refuses to keep any change that lowers a score.
 
 
+Lock the dashboard with `OYE_PASSWORD=yourword node server.js`; backups land in `data/backups/` daily.
+
 ## The operating system
 
 How the clan runs OYE day to day, how it gets better, and the release gate: see [SYSTEM.md](SYSTEM.md). Continuing on a new machine: [HANDOFF.md](HANDOFF.md).

@@ -295,3 +295,16 @@ test('visa desk: rules, timeline, cases, chat, agent, autopilot and board flags'
   const st = await b.agent.run('visa status for the thailand batch'); assert.match(st.final, /Thailand/); assert.match(st.final, /approved 1|all clear/);
   const c = await b.council.handle({ conversation: 'customer: thailand trip in december, do we need visa?', name: 'Ravi' }); const out = (c.agents && c.agents.visa) || c.visa; assert.ok(out && out.findings.length, 'council visa agent ran');
 });
+
+test('names, emergency contact and widget analytics land on the lead and the board', async () => {
+  const b = new Brain({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'oye-names-')), autosave: false }); b.evolution.genome.curiosity = 0;
+  const soon = new Date(Date.now() + 4 * 86400e3).toISOString().slice(0, 10);
+  b.growth.setProfile({ phone: '9876543210', upi: 'tc@upi', trips: [{ name: 'Goa', date: soon, days: 4, price: 14500, seats: 16, booked: 9 }] }); const g = b.growth;
+  await g.chat({ id: 'nm1', name: 'Asha', text: 'goa for 2', source: 'web' }); await g.chat({ id: 'nm1', text: 'ok hold', source: 'web' }); g.updateLead('nm1', { stage: 'advance' });
+  assert.ok(g.tripBoard().trips[0].flags.some(f => /without traveller names/.test(f)));
+  await g.chat({ id: 'nm1', text: 'paid. names: Asha Patel, Ravi Patel. emergency contact: 98765 11111', source: 'web' });
+  const l = g.state.leads.find(x => x.id === 'nm1'); assert.deepEqual(l.names, ['Asha Patel', 'Ravi Patel']); assert.equal(l.emergency, '9876511111');
+  assert.ok(!g.tripBoard().trips[0].flags.some(f => /without traveller names/.test(f)));
+  g.widgetEvent('open', 'v1'); g.widgetEvent('open', 'v1'); g.widgetEvent('message', 'v1'); g.widgetEvent('hold', 'v1'); assert.equal(g.widgetStats(7).open, 2); assert.equal(g.widgetStats(7).visitors, 1); assert.equal(g.widgetStats(7).holdRate, 0.5);
+  assert.equal(g.widgetEvent('evil', 'v1').ok, false);
+});

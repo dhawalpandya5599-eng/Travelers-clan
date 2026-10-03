@@ -107,6 +107,13 @@ Upload the printed zip in hPanel → Websites → travelersclan.in → Deploy. D
 <script src="/atlas-chat/widget.js" data-base="/atlas-chat"></script>
 ```
 
+## 6b. Running it safely
+
+- **Password**: set `OYE_PASSWORD=yourword` before `node server.js` and the dashboard and API ask for it (any username, that password); the website widget routes stay open. Inside travelersclan.in the site's own admin login protects `/admin/atlas`.
+- **Backups**: the server copies every data file to `data/backups/<date>/` on start and every 6 hours, keeping 14 days. Export mind in Advanced is the manual copy.
+- **Website numbers**: the floating OYE reports opened, messages, holds, WhatsApp handoffs and human requests; the last 7 days show on the Trip board.
+- **Names and emergency contacts**: when a booked traveller sends "names: A, B" or "emergency contact: number", OYE keeps them on the lead; the board flags bookings without names inside 7 days and without an emergency contact inside 3.
+
 ## 7. What is still weak (honest list)
 
 - The exams are keyword checks written by the same author as the fixes. A model-graded pass (`npm run mastery` with a key in Set up) is the real second opinion; run it monthly.
@@ -114,6 +121,7 @@ Upload the printed zip in hPanel → Websites → travelersclan.in → Deploy. D
 - The transliteration table covers common Hindi and Gujarati words only; new words found in real chats go into `XLIT` in `core/growth.js`.
 - Dates in the suites are in 2099; add one fixture with a departure 10 days out so run-rate and hold-expiry paths run under test.
 - The WhatsApp bridge and the Express mount are exercised by hand, not by a test.
+- Fees and conditions in the visa desk are approximate and dated; the official link in each card is the truth.
 - Two customers holding the last seat at the same moment is not tested.
 
 ## 8. If you are continuing with Claude Code on a PC

@@ -108,6 +108,7 @@ const routes = {
   'GET /api/growth/digest': async () => brain.growth.digest(),
   'GET /api/growth/content': async () => brain.growth.content(),
   'GET /api/growth/roi': async (q) => brain.growth.roi({ adSpend: +q.get('adSpend') || 0 }),
+  'POST /atlas-chat/event': async (q, body) => brain.growth.widgetEvent(String(body.kind || '').slice(0, 30), String(body.id || '').slice(0, 40)),
   'POST /atlas-chat/chat': async (q, body) => brain.growth.chat({ id: String(body.id || '').slice(0, 40), name: String(body.name || '').slice(0, 60), text: String(body.text || '').slice(0, 1000), source: 'web', page: String(body.page || '').slice(0, 120) }),
   'GET /atlas-chat/profile': async () => { const P = brain.growth.profile; return { name: P.name, phone: P.phone, waLink: brain.growth.waLink('Hi, I want to know about your upcoming trips'), trips: brain.growth.upcoming(6).map(t => ({ name: t.name, date: t.date, days: t.days, price: t.price, seatsLeft: brain.growth.seatsLeft(t), from: t.from })) }; },
   'GET /api/growth/thread': async (q) => brain.growth.thread(q.get('id') || ''),
@@ -122,8 +123,14 @@ const routes = {
   },
 };
 
+const PASSWORD = process.env.OYE_PASSWORD || process.env.ATLAS_PASSWORD || '';
+// Daily backup of everything in the data folder (mind, leads, visa cases): data/backups/<date>/, 14 kept.
+function backup() { try { const dir = brain.dataDir; const out = path.join(dir, 'backups', new Date().toISOString().slice(0, 10)); if (fs.existsSync(out)) return; fs.mkdirSync(out, { recursive: true }); for (const f of fs.readdirSync(dir)) if (/\.json$/.test(f)) fs.copyFileSync(path.join(dir, f), path.join(out, f)); const all = fs.readdirSync(path.join(dir, 'backups')).sort(); for (const old of all.slice(0, Math.max(0, all.length - 14))) fs.rmSync(path.join(dir, 'backups', old), { recursive: true, force: true }); console.log('backup written to', out); } catch (e) { console.warn('backup skipped:', e.message); } }
+backup(); setInterval(backup, 6 * 3600e3).unref();
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+  // The public widget routes stay open; everything else needs the password when one is set.
+  if (PASSWORD && !url.pathname.startsWith('/atlas-chat/')) { const h = req.headers.authorization || ''; const given = h.startsWith('Basic ') ? Buffer.from(h.slice(6), 'base64').toString().split(':').slice(1).join(':') : ''; if (given !== PASSWORD) { res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="OYE"' }); return res.end('OYE: password needed'); } }
   if (url.pathname === '/api/events') {
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
     res.write(`data: ${JSON.stringify({ t: Date.now(), kind: 'system', text: 'Connected to the mind of OYE.' })}\n\n`);

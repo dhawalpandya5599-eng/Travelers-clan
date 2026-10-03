@@ -21,7 +21,7 @@ cd Travelers-clan
 node server.js
 ```
 
-Open http://localhost:3000. Zero dependencies, Node 22 or newer. Already cloned? `git checkout claude/clever-maxwell-aclt88 && git pull`.
+Open http://localhost:3000. Zero dependencies, Node 22 or newer. Optional: `set OYE_PASSWORD=yourword` first to lock the dashboard. Version 1.1.0; see CHANGELOG.md. Already cloned? `git checkout claude/clever-maxwell-aclt88 && git pull`.
 
 Everything green right now (all run without a model, rules only):
 
@@ -31,7 +31,7 @@ npm run check
 
 | Suite | Command | Result at handoff |
 |---|---|---|
-| Unit tests | `npm test` | 22/22 |
+| Unit tests | `npm test` | 23/23 |
 | Eval | `node scripts/eval.js` | 175/175 |
 | Levels 1 to 10 | `node scripts/levels.js` | 128/128, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
