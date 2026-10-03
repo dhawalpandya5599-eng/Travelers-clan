@@ -1,6 +1,6 @@
 {
   "name": "travelers-clan-atlas",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "OYE: a self-learning, self-evolving cognitive agent for the Travelers Clan, with a live brain visualizer.",
   "main": "server.js",
   "type": "commonjs",

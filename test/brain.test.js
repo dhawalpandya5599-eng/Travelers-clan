@@ -308,3 +308,18 @@ test('names, emergency contact and widget analytics land on the lead and the boa
   g.widgetEvent('open', 'v1'); g.widgetEvent('open', 'v1'); g.widgetEvent('message', 'v1'); g.widgetEvent('hold', 'v1'); assert.equal(g.widgetStats(7).open, 2); assert.equal(g.widgetStats(7).visitors, 1); assert.equal(g.widgetStats(7).holdRate, 0.5);
   assert.equal(g.widgetEvent('evil', 'v1').ok, false);
 });
+
+test('routing and local intelligence: cards, checks, chat and the brief', async () => {
+  const RT = require('../core/routing'); const LC = require('../core/local');
+  assert.equal(RT.route('Leh Ladakh').key, 'ladakh'); assert.ok(RT.journey('goa').includes('1,000 km')); assert.ok(RT.groupByDay(RT.route('manali')).length >= 3);
+  assert.ok(RT.check('ladakh').some(w => /rest days/.test(w))); assert.ok(RT.check('spiti', { month: 1 }).some(w => /closed/.test(w)));
+  assert.equal(LC.place('Phuket').key, 'thailand'); assert.ok(LC.answer('thailand', 'upi chalega?').startsWith('Money:')); assert.ok(LC.brief('dubai').includes('Type G'));
+  const b = new Brain({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'oye-route-')), autosave: false }); b.evolution.genome.curiosity = 0;
+  b.growth.setProfile({ city: 'Ahmedabad', phone: '9876543210', upi: 'tc@upi', trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }, { name: 'Thailand', date: '2099-11-20', days: 6, price: 42000, seats: 20, booked: 5 }] }); const g = b.growth;
+  let r = await g.chat({ id: 'rt1', text: 'goa bus se kitne ghante lagte hain?', source: 'web' }); assert.equal(r.intent, 'faq:route'); assert.match(r.reply, /18 h/); assert.match(r.reply, /Kolhapur/);
+  r = await g.chat({ id: 'rt2', text: 'how do we reach manali from ahmedabad?', source: 'web' }); assert.equal(r.intent, 'faq:route'); assert.match(r.reply, /Volvo|Delhi/);
+  r = await g.chat({ id: 'lc1', text: 'thailand mein upi chalega? aur daaru milegi?', source: 'web' }); assert.equal(r.intent, 'faq:local'); assert.match(r.reply, /Money:/); assert.match(r.reply, /Alcohol:/);
+  r = await g.chat({ id: 'lc2', text: 'goa for 2', source: 'web' }); assert.equal(r.intent, 'enquiry');
+  const a = await b.agent.run('route for ladakh in july'); assert.match(a.final, /Khardung La/); assert.match(a.final, /rest days/);
+  const l = await b.agent.run('local tips for dubai'); assert.match(l.final, /Careem|Metro/);
+});

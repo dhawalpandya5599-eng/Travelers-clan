@@ -21,7 +21,7 @@ cd Travelers-clan
 node server.js
 ```
 
-Open http://localhost:3000. Zero dependencies, Node 22 or newer. Optional: `set OYE_PASSWORD=yourword` first to lock the dashboard. Version 1.1.0; see CHANGELOG.md. Already cloned? `git checkout claude/clever-maxwell-aclt88 && git pull`.
+Open http://localhost:3000. Zero dependencies, Node 22 or newer. Optional: `set OYE_PASSWORD=yourword` first to lock the dashboard. Version 1.2.0; see CHANGELOG.md. Already cloned? `git checkout claude/clever-maxwell-aclt88 && git pull`.
 
 Everything green right now (all run without a model, rules only):
 
@@ -31,12 +31,12 @@ npm run check
 
 | Suite | Command | Result at handoff |
 |---|---|---|
-| Unit tests | `npm test` | 23/23 |
-| Eval | `node scripts/eval.js` | 175/175 |
+| Unit tests | `npm test` | 24/24 |
+| Eval | `node scripts/eval.js` | 177/177 |
 | Levels 1 to 10 | `node scripts/levels.js` | 128/128, all 100% |
 | Stress (200 WhatsApp chats) | `node scripts/stress.js` | 0.1% weak |
 | Customer universe (400 personas) | `node scripts/universe.js` | 400/400 |
-| Paraphrases | `node scripts/paraphrase.js` | 164/164 |
+| Paraphrases | `node scripts/paraphrase.js` | 184/184 |
 | Browser smoke | `npm run smoke` | 8/8 |
 | Release gate (all of the above + bundle + archive) | `npm run release` | RELEASE READY |
 | Mastery (needs a model) | `node scripts/mastery.js` | writes `MASTERY-REVIEW.md` when no model is connected |
@@ -78,6 +78,9 @@ Live trip cards: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js"
 | 79 destinations, activities with timings | `core/destinations.js`, `core/world.js` |
 | Skills, connections (CSV, ICS, webhook) | `core/skills.js`, `core/connections.js` |
 | Visa and permits desk (knowledge base + case file) | `core/visa.js`, `data/visa.json` |
+| Routes, roads and driving rules | `core/routing.js` |
+| Local intelligence per place | `core/local.js` |
+| Official links | `RESOURCES.md` |
 | Curriculum (30 lessons OYE studies at start) | `curriculum/*.md` |
 | Dashboard | `public/index.html`, `public/app.js`, `public/style.css`, 3D map libs in `public/vendor/` |
 | Customer-facing floating assistant | `public/widget.js` |
@@ -108,4 +111,4 @@ Environment variables accept `OYE_*` or the older `ATLAS_*` names. `ATLAS_NO_OLL
 
 ## Credits note
 
-The cloud session ran low on credits. Workflows and subagents were stopped; everything above was finished by hand and pushed. Nothing is pending in the cloud: the branch is the single source of truth.
+The cloud routine "OYE self-improvement loop" is paused (disabled) to save credits; re-enable it from the Routines list when you want the cloud to keep adding levels. The cloud session ran low on credits. Workflows and subagents were stopped; everything above was finished by hand and pushed. Nothing is pending in the cloud: the branch is the single source of truth.

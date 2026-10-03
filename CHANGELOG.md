@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 (2026-10-03)
+
+- Routing knowledge: 38 routes with legs, km, hours, halts, hazards, season, train and flight options, driving rules and a plan checker; answers "kaise jayenge", "bus kitne ghante" and "route for ladakh in july"; journey line in the pre-departure brief.
+- Local intelligence for 24 places: money and UPI, SIM, transport, food, dress, scams, tipping, emergency, plugs, time, alcohol, phrases, water, health; answers "upi chalega?", "daaru milegi?", "local tips for dubai".
+- Lessons 31 and 32, RESOURCES.md, 20 new paraphrases, 2 eval checks.
+- Cloud routine paused to preserve credits.
+
 ## 1.1.0 (2026-10-03)
 
 - OYE floating assistant for the website: trip cards, one-tap hold, quick replies, WhatsApp handoff with context, memory across pages, analytics (opened, messages, holds, WhatsApp, human).

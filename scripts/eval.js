@@ -145,6 +145,8 @@ const CASES = [
   { growth: ['4 of us goa in dec', 'any hidden costs?'], expect: /no hidden costs[\s\S]*not included/i, notExpect: /14,500 per person/, kind: 'whatsapp' },
   { growth: ['do we need a visa for thailand?'], expect: /visa-free[\s\S]*arrival card/i, kind: 'whatsapp' },
   { growth: ['vietnam visa documents?'], expect: /e-visa[\s\S]*passport/i, kind: 'whatsapp' },
+  { growth: ['goa tak bus kitne ghante?'], expect: /18 h[\s\S]*Kolhapur/i, kind: 'whatsapp' },
+  { growth: ['dubai mein upi chalega?'], expect: /Money:[\s\S]*dirham/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'what if we cancel?'], expect: /transferable|refund/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'is it safe for girls?'], expect: /women|captain/i, kind: 'whatsapp' },
   { growth: ['goa for 2', 'where is the pickup?'], expect: /pickup|start from|point/i, kind: 'whatsapp' },

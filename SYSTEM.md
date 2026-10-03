@@ -72,6 +72,12 @@ Where it connects:
 
 Cases open themselves for every traveller on hold, advance or balance for a trip that needs action; the founder only moves the status.
 
+## 4d. Routing and local intelligence
+
+`core/routing.js`: 38 routes from Ahmedabad or the gateway, leg by leg with km, hours, halts and hazards, the train and flight options, the season, and the driving rules (600 km a day on the plains, 300 in the hills, driver rest every 4 hours, no night driving in the hills, sleeping altitude up 500 m a night above 2,500 m). `check()` audits a plan against them; the Ladakh and Spiti orders are enforced. `core/local.js`: street-level notes for 24 places: money and UPI, SIM, getting around, food (veg and Jain), dress, scams, tipping, emergency numbers, plugs, time difference, alcohol, phrases, water, health.
+
+Where they connect: customers asking "bus kitne ghante", "kaise jayenge", "upi chalega?", "daaru milegi?" on WhatsApp or the widget; the chief asking "route for ladakh in july" or "local tips for dubai"; the model's `route` and `local` tools; the pre-departure brief's journey line; lessons 31 and 32 in the mind. `RESOURCES.md` lists the official links a human verifies against.
+
 ## 5. How OYE gets better
 
 Three exam ladders, all rules only, all at 100% right now:
