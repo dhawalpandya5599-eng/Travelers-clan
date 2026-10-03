@@ -323,3 +323,16 @@ test('routing and local intelligence: cards, checks, chat and the brief', async 
   const a = await b.agent.run('route for ladakh in july'); assert.match(a.final, /Khardung La/); assert.match(a.final, /rest days/);
   const l = await b.agent.run('local tips for dubai'); assert.match(l.final, /Careem|Metro/);
 });
+
+test('hex planning: cells, hotel zone, feasible day plan, hotel ranking, agent branches', async () => {
+  const G = require('../core/geo'); const o = G.PLACES.goa.center; const c = G.cell({ lat: 15.55, lng: 73.75 }, o, 1); assert.equal(G.kRing(c, 1).length, 7); assert.equal(G.hexDistance(c, G.kRing(c, 2)[0]), 2);
+  const back = G.cell(G.center(c, o), o, 1); assert.equal(back.id, c.id);
+  const z = G.hotelZone('goa'); assert.ok(['Baga', 'Calangute', 'Candolim'].includes(z.areas[0].area)); assert.ok(z.areas[0].score < z.areas[z.areas.length - 1].score);
+  const p = G.plan('goa', 4, { date: '2026-12-12' }); assert.equal(p.plan.length, 4); assert.ok(p.plan[0].note.startsWith('arrival')); assert.ok(p.plan[3].note.startsWith('departure')); assert.ok(p.plan.every(d => !d.full || (d.day !== 1 && d.day !== 4))); assert.ok(p.feasibility >= 50); assert.match(G.planText(p), /Day 2/);
+  const dub = G.plan('dubai', 5, { date: '2026-12-20' }); assert.ok(dub.plan.some(d => d.full), 'Abu Dhabi excursion gets a middle day');
+  const rk = G.rankHotels(G.parseHotels('Hotel A, Calangute, 4, 4.5, 1200, google, 3500\nHotel B, Palolem, 5, 4.8, 40, own, 6000\nHotel C, Candolim, 3, 4.2, 800, booking, 2800'), { place: 'goa' }); assert.equal(rk.ranked[0].name, 'Hotel A'); assert.ok(rk.ranked.find(h => h.name === 'Hotel B').score < rk.ranked[0].score, 'few reviews on own site rank lower despite 4.8');
+  const b = new Brain({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'oye-geo-')), autosave: false }); b.evolution.genome.curiosity = 0; b.growth.setProfile({ trips: [{ name: 'Goa', date: '2099-12-12', days: 4, price: 14500, seats: 16, booked: 9 }] });
+  let a = await b.agent.run('where should the hotel be in goa'); assert.match(a.final, /Baga|Calangute|Candolim/); assert.match(a.final, /Hex cell/);
+  a = await b.agent.run('optimised itinerary for goa 4 days with timings'); assert.match(a.final, /Day 1/); assert.match(a.final, /feasibility/);
+  a = await b.agent.run('rank these hotels for goa:\nHotel A, Calangute, 4, 4.5, 1200, google, 3500\nHotel C, Candolim, 3, 4.2, 800, booking, 2800'); assert.match(a.final, /1\. Hotel A/);
+});

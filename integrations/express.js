@@ -80,6 +80,9 @@ module.exports = function atlasRouter({ dataDir = path.join(ROOT, 'data'), expre
   router.post('/api/growth/leads', wrap(req => req.body.id && brain.growth.state.leads.some(l => l.id === req.body.id) ? brain.growth.updateLead(req.body.id, req.body) : brain.growth.addLead(req.body || {})));
   router.get('/api/growth/today', wrap(() => brain.growth.today()));
   router.get('/api/growth/board', wrap(() => brain.growth.tripBoard()));
+  router.get('/api/itinerary', wrap(req => { const G = require('../core/geo'); const p = G.plan(req.query.place || req.query.trip || '', +req.query.days || 4, { date: req.query.date, base: req.query.base }); return { text: G.planText(p), plan: p }; }));
+  router.get('/api/hotelzone', wrap(req => require('../core/geo').hotelZone(req.query.place || '', { pickup: req.query.pickup })));
+  router.post('/api/hotels/rank', wrap(req => require('../core/geo').rankHotels(req.body.candidates || require('../core/geo').parseHotels(req.body.text || ''), { place: req.body.place })));
   router.get('/api/pack', (req, res) => { try { res.type('text/plain').send(require('../core/pack').pack(brain, req.query.trip || '')); } catch (e) { res.status(400).json({ error: e.message }); } });
   router.get('/api/visa', wrap(req => req.query.country ? { card: brain.visa.card(req.query.country), rule: brain.visa.rule(req.query.country) } : { trips: brain.visa.sync(brain.growth), summary: brain.visa.summary() }));
   router.get('/api/visa/cases', wrap(req => brain.visa.cases({ trip: req.query.trip || '', status: req.query.status || '' })));

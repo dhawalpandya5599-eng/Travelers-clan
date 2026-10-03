@@ -82,6 +82,17 @@ Where they connect: customers asking "bus kitne ghante", "kaise jayenge", "upi c
 
 `trip pack for <trip>` (chief chat), the Trip pack button on the board, or `/api/pack?trip=` builds one document per departure: entry rules and apply-by, journey and driving days, local intelligence, activities, travellers with names and emergency contacts, the brief to send, and emergency numbers. `npm run knowledge` prints what OYE knows per destination (route, local notes, visa or permit, activities) and the gaps to fill next.
 
+## 4f. Hex planning (H3-style), hotel zones and hotel ranking
+
+`core/geo.js` carries a hexagonal grid in the style of Uber's H3 (axial cells on a local plane, edges 8, 3 and 1 km, k-rings, cell centres; zero dependencies, swap in `h3-js` later if wanted) and coordinates, visit hours, time windows, weekday closures and seasons for the attractions of Goa, Manali, Bangkok, Phuket, Dubai and Kerala.
+
+- **Hotel zone**: the cell and named area with the lowest hours-weighted travel minutes to every attraction, pulled a quarter towards the common pickup point. Ask "where should the hotel be in goa".
+- **Itinerary**: "optimised itinerary for dubai 5 days with timings" builds day by day: arrival day from 1 pm, departure day until 3 pm, full-day excursions in the middle, sunset spots in the last daylight slot, markets on their open weekday, out-of-season spots left out, a second base when a cluster sits over 45 km away, and a feasibility score with checks (minutes in the vehicle over the limit, spots that did not fit).
+- **Hotel ranking**: "rank these hotels for goa:" followed by one hotel per line (name, area, stars, rating, reviews, source, price). Score = 50% reviews (Bayesian average towards 4.1 with 100 pseudo-reviews, weighted by source reliability: Google and Booking 1.0, TripAdvisor 0.9, MakeMyTrip and Agoda 0.85, own site 0.4; under 50 reviews trusted less) + 20% stars + 30% distance to the ideal zone. The operations head still visits or calls the top pick; the ranker removes the guesswork, not the judgement.
+- API: `/api/itinerary?place=goa&days=4&date=2026-12-12`, `/api/hotelzone?place=dubai`, `POST /api/hotels/rank`. Lesson 33 holds the rules in plain sentences.
+
+Add a destination by adding its centre, pickups, areas and attractions with coordinates to `PLACES`; live review data (Google, Booking) still has to be pasted or imported, OYE does not fetch it.
+
 ## 5. How OYE gets better
 
 Three exam ladders, all rules only, all at 100% right now:

@@ -80,6 +80,7 @@ Live trip cards: `<div id="atlas-trips"></div><script src="/atlas-chat/trips.js"
 | Skills, connections (CSV, ICS, webhook) | `core/skills.js`, `core/connections.js` |
 | Visa and permits desk (knowledge base + case file) | `core/visa.js`, `data/visa.json` |
 | Routes, roads and driving rules | `core/routing.js` |
+| Hex planning: hotel zones, itineraries, hotel ranking | `core/geo.js` |
 | Local intelligence per place | `core/local.js` |
 | Official links | `RESOURCES.md` |
 | Curriculum (30 lessons OYE studies at start) | `curriculum/*.md` |
