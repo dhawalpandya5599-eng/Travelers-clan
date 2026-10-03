@@ -27,7 +27,8 @@
     "paraphrase": "node scripts/paraphrase.js",
     "smoke": "node scripts/smoke.js",
     "release": "node scripts/release.js",
-    "knowledge": "node scripts/knowledge.js"
+    "knowledge": "node scripts/knowledge.js",
+    "ladder": "node scripts/ladder.js"
   },
   "license": "MIT",
   "private": true

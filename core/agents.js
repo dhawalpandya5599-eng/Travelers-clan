@@ -12,7 +12,8 @@ const cohorts = require('./cohorts');
 const { detectStage } = require('./funnel');
 const DEST = require('./destinations');
 
-const MONTH_RE = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i;
+// Hinglish traps: "jana" (to go), "janta" (people), "mar" (hit), "maro", "may be" are not months.
+const MONTH_RE = /\b(?!jana\b|jaana\b|janta\b|jane\b|jani\b|jab\b|mara\b|maro\b|mare\b|marne\b|marke\b|market\b|maybe\b|augur\b|decide\b|decent\b|decor\b|novel\b|octopus\b|sept\b)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i;
 function parseRequirements(text) {
   const t = String(text);
   const dest = DEST.find(t);

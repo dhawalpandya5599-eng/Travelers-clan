@@ -1,55 +1,61 @@
 {
- "at": "2026-10-03T10:52:13.850Z",
- "sha": "5d47282",
+ "at": "2026-10-03T11:00:05.534Z",
+ "sha": "9177840",
  "ok": true,
  "results": [
   {
    "name": "Unit tests",
    "ok": true,
-   "last": "# duration_ms 2066.31992",
-   "ms": 2249
+   "last": "# duration_ms 1935.537056",
+   "ms": 2157
   },
   {
    "name": "Eval",
    "ok": true,
    "last": "  TOTAL       177/177  (100%)",
-   "ms": 22660
+   "ms": 23137
   },
   {
    "name": "Levels 1 to 11",
    "ok": true,
    "last": "ALL LEVELS PASSED (100%)",
-   "ms": 866
+   "ms": 956
   },
   {
    "name": "Paraphrases",
    "ok": true,
    "last": "Paraphrases: 184/184 routed right (100%) PASS",
-   "ms": 221
+   "ms": 267
+  },
+  {
+   "name": "Ladder (levels 12+)",
+   "ok": true,
+   "last": "Ladder: highest level passed at 100% = 36 (required 36)",
+   "ms": 9717
   },
   {
    "name": "Stress",
    "ok": true,
    "last": "ATLAS WhatsApp stress test: 200 conversations, 669 turns, 0 weak replies (0.0%), holds reached 94/94",
-   "ms": 4122
+   "ms": 4483
   },
   {
    "name": "Customer universe",
    "ok": true,
    "last": "Taught 13 lesson(s) to the mind.",
-   "ms": 6637
+   "ms": 7313
   },
   {
    "name": "Browser smoke",
    "ok": true,
    "last": "SMOKE PASSED",
-   "ms": 23071
+   "ms": 23639
   },
   {
    "name": "Web bundle",
    "ok": true,
-   "last": "dist/oye-web.html: 6852 KB · dist/oye-standalone.html: 6853 KB",
-   "ms": 162
+   "last": "dist/oye-web.html: 6854 KB · dist/oye-standalone.html: 6855 KB",
+   "ms": 174
   }
  ]
 }

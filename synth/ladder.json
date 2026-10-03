@@ -1,0 +1,138 @@
+{
+ "at": "2026-10-03T10:59:29.551Z",
+ "from": 12,
+ "to": 100,
+ "maxPassed": 36,
+ "report": [
+  {
+   "level": 12,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 13,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 14,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 15,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 16,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 17,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 18,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 19,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 20,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 21,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 22,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 23,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 24,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 25,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 26,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 27,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 28,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 29,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 30,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 31,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 32,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 33,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 34,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 35,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 36,
+   "pass": 12,
+   "pct": 100
+  },
+  {
+   "level": 37,
+   "pass": 11,
+   "pct": 92
+  }
+ ]
+}
